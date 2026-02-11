@@ -1,3 +1,5 @@
+import org.jetbrains.kotlin.gradle.targets.js.webpack.KotlinWebpackConfig
+import kotlin.js.asDynamic
 plugins {
     alias(libs.plugins.kotlinMultiplatform)
     alias(libs.plugins.composeMultiplatform)
@@ -10,6 +12,11 @@ kotlin {
             commonWebpackConfig {
                 cssSupport {
                     enabled.set(true)
+                }
+                // SPA fallback: /login, /sign-up, etc. resolve to index.html
+                devServer = (devServer ?: KotlinWebpackConfig.DevServer()).apply {
+                    // property not exposed in typed API on some plugin versions
+                    asDynamic().historyApiFallback = true
                 }
             }
         }
