@@ -23,6 +23,16 @@ kotlin {
     // and the `jvmMain` source set below.
     configAsKobwebApplication("testKotlin" /*, includeServer = true*/)
 
+    js {
+        browser {
+            commonWebpackConfig {
+                cssSupport {
+                    enabled.set(true)
+                }
+            }
+        }
+    }
+
     sourceSets {
         val commonMain by getting {
             dependencies {
@@ -35,6 +45,8 @@ kotlin {
                 implementation(compose.html.core)
                 implementation(libs.kobweb.core)
                 implementation(libs.kobweb.silk)
+                implementation(npm("firebase", "11.0.1"))
+                implementation(npm("firebaseui", "6.1.0"))
                 // This default template uses built-in SVG icons, but what's available is limited.
                 // Uncomment the following if you want access to a large set of font-awesome icons:
                 // implementation(libs.silk.icons.fa)
