@@ -67,7 +67,6 @@ fun HomePage() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             SpanText("Firebase Auth", Modifier.fontSize(1.5.cssRem))
-            SpanText("Замените конфиг своими ключами Firebase.", Modifier.color(Colors.Gray))
 
             if (user == null) {
                 AuthUiContainer()
