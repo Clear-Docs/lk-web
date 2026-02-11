@@ -1,16 +1,35 @@
 package com.example.testKotlin.pages
 
 import androidx.compose.runtime.*
+import com.example.testKotlin.AuthGoogleButtonVariant
+import com.example.testKotlin.AuthPrimaryButtonVariant
+import com.example.testKotlin.AuthTabActiveVariant
+import com.example.testKotlin.AuthTabInactiveVariant
+import com.example.testKotlin.AuthToggleButtonVariant
 import com.example.testKotlin.components.sections.ProfileBlock
 import com.example.testKotlin.firebase.*
 import com.example.testKotlin.toSitePalette
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
+import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
-import com.varabyte.kobweb.compose.ui.modifiers.*
-import com.varabyte.kobweb.compose.ui.toAttrs
+import com.varabyte.kobweb.compose.ui.graphics.Colors
+import com.varabyte.kobweb.compose.ui.modifiers.borderRadius
+import com.varabyte.kobweb.compose.ui.modifiers.color
+import com.varabyte.kobweb.compose.ui.modifiers.backgroundColor
+import com.varabyte.kobweb.compose.ui.modifiers.boxShadow
+import com.varabyte.kobweb.compose.ui.modifiers.fillMaxSize
+import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
+import com.varabyte.kobweb.compose.ui.modifiers.fontSize
+import com.varabyte.kobweb.compose.ui.modifiers.fontWeight
+import com.varabyte.kobweb.compose.ui.modifiers.gap
+import com.varabyte.kobweb.compose.ui.modifiers.margin
+import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
+import com.varabyte.kobweb.compose.ui.modifiers.padding
+import com.varabyte.kobweb.compose.ui.modifiers.flexGrow
 import com.varabyte.kobweb.core.Page
+import com.varabyte.kobweb.silk.components.forms.Button
 import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import com.varabyte.kobweb.silk.theme.colors.palette.background
@@ -19,10 +38,7 @@ import com.varabyte.kobweb.silk.theme.colors.palette.toPalette
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.attributes.*
 import org.jetbrains.compose.web.css.cssRem
-import org.jetbrains.compose.web.dom.Button
-import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Input
-import org.jetbrains.compose.web.dom.Text
 
 private enum class AuthMode {
     SIGN_IN,
@@ -65,6 +81,8 @@ fun AuthPage() {
     var user by remember { mutableStateOf<dynamic>(firebase.auth.currentUser) }
     val palette = ColorMode.current.toSitePalette()
     val colorPalette = ColorMode.current.toPalette()
+    val inputBg = colorPalette.background.toString()
+    val inputFg = colorPalette.color.toString()
     val scope = rememberCoroutineScope()
     var mode by remember { mutableStateOf(AuthMode.SIGN_IN) }
     var email by remember { mutableStateOf("") }
@@ -108,160 +126,127 @@ fun AuthPage() {
             SpanText("Вход в аккаунт", Modifier.fontSize(1.5.cssRem))
 
             if (user == null) {
-                Div(
-                    Modifier
-                        .fillMaxWidth()
-                        .toAttrs()
-                ) {
-                    Div({
-                        style {
-                            property("display", "flex")
-                            property("gap", "0.5rem")
-                            property("margin-bottom", "1rem")
-                        }
-                    }) {
-                        Button(attrs = {
-                            if (isLoading) disabled()
-                            onClick {
+                Column(Modifier.fillMaxWidth().gap(1.cssRem)) {
+                    Row(
+                        Modifier.fillMaxWidth().gap(0.5.cssRem).margin(bottom = 0.25.cssRem),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Button(
+                            onClick = {
                                 mode = AuthMode.SIGN_IN
                                 errorMessage = null
-                            }
-                            style {
-                                property("width", "50%")
-                                property("padding", "0.65rem")
-                                property("border-radius", "0.65rem")
-                                property("border", "0")
-                                property("cursor", "pointer")
-                                property(
-                                    "background",
-                                    if (mode == AuthMode.SIGN_IN) palette.brand.primary.toString() else palette.nearBackground.toString()
-                                )
-                                property("color", if (mode == AuthMode.SIGN_IN) colorPalette.background.toString() else colorPalette.color.toString())
-                            }
-                        }) {
-                            Text("Вход")
+                            },
+                            modifier = Modifier.fillMaxWidth().flexGrow(1).padding(0.65.cssRem).borderRadius(0.65.cssRem),
+                            variant = if (mode == AuthMode.SIGN_IN) AuthTabActiveVariant else AuthTabInactiveVariant,
+                            enabled = !isLoading
+                        ) {
+                            SpanText("Вход")
                         }
-                        Button(attrs = {
-                            if (isLoading) disabled()
-                            onClick {
+                        Button(
+                            onClick = {
                                 mode = AuthMode.SIGN_UP
                                 errorMessage = null
-                            }
-                            style {
-                                property("width", "50%")
-                                property("padding", "0.65rem")
-                                property("border-radius", "0.65rem")
-                                property("border", "0")
-                                property("cursor", "pointer")
-                                property(
-                                    "background",
-                                    if (mode == AuthMode.SIGN_UP) palette.brand.primary.toString() else palette.nearBackground.toString()
-                                )
-                                property("color", if (mode == AuthMode.SIGN_UP) colorPalette.background.toString() else colorPalette.color.toString())
-                            }
-                        }) {
-                            Text("Регистрация")
+                            },
+                            modifier = Modifier.fillMaxWidth().flexGrow(1).padding(0.65.cssRem).borderRadius(0.65.cssRem),
+                            variant = if (mode == AuthMode.SIGN_UP) AuthTabActiveVariant else AuthTabInactiveVariant,
+                            enabled = !isLoading
+                        ) {
+                            SpanText("Регистрация")
                         }
                     }
 
-                    Input(type = InputType.Email, attrs = {
-                        value(email)
-                        placeholder("Email")
-                        if (isLoading) disabled()
-                        onInput { email = it.value }
-                        style {
-                            property("width", "100%")
-                            property("padding", "0.7rem")
-                            property("margin-bottom", "0.75rem")
-                            property("border-radius", "0.6rem")
-                            property("border", "0")
-                            property("outline", "none")
-                            property("background", colorPalette.background.toString())
-                            property("color", colorPalette.color.toString())
-                        }
-                    })
-
-                    Div({
-                        style {
-                            property("display", "flex")
-                            property("gap", "0.5rem")
-                            property("margin-bottom", "0.75rem")
-                        }
-                    }) {
-                        Input(type = if (isPasswordVisible) InputType.Text else InputType.Password, attrs = {
-                            value(password)
-                            placeholder("Пароль")
+                    Input(
+                        type = InputType.Email,
+                        attrs = {
+                            value(email)
+                            placeholder("Email")
                             if (isLoading) disabled()
-                            onInput { password = it.value }
+                            onInput { email = it.value }
                             style {
                                 property("width", "100%")
                                 property("padding", "0.7rem")
+                                property("margin-bottom", "0.75rem")
                                 property("border-radius", "0.6rem")
                                 property("border", "0")
                                 property("outline", "none")
-                                property("background", colorPalette.background.toString())
-                                property("color", colorPalette.color.toString())
+                                property("background", inputBg)
+                                property("color", inputFg)
                             }
-                        })
-                        Button(attrs = {
-                            if (isLoading) disabled()
-                            onClick { isPasswordVisible = !isPasswordVisible }
-                            style {
-                                property("padding", "0.7rem 0.85rem")
-                                property("border-radius", "0.6rem")
-                                property("border", "0")
-                                property("cursor", "pointer")
-                                property("background", colorPalette.background.toString())
-                                property("color", colorPalette.color.toString())
-                            }
-                        }) {
-                            Text(if (isPasswordVisible) "Скрыть" else "Показать")
+                        }
+                    )
+
+                    Row(
+                        Modifier.fillMaxWidth().gap(0.5.cssRem).margin(bottom = 0.75.cssRem),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box(Modifier.fillMaxWidth().flexGrow(1)) {
+                            Input(
+                                type = if (isPasswordVisible) InputType.Text else InputType.Password,
+                                attrs = {
+                                    value(password)
+                                    placeholder("Пароль")
+                                    if (isLoading) disabled()
+                                    onInput { password = it.value }
+                                    style {
+                                        property("width", "100%")
+                                        property("padding", "0.7rem")
+                                        property("border-radius", "0.6rem")
+                                        property("border", "0")
+                                        property("outline", "none")
+                                        property("background", inputBg)
+                                        property("color", inputFg)
+                                    }
+                                }
+                            )
+                        }
+                        Button(
+                            onClick = { isPasswordVisible = !isPasswordVisible },
+                            modifier = Modifier.padding(0.7.cssRem, 0.85.cssRem).borderRadius(0.6.cssRem),
+                            variant = AuthToggleButtonVariant,
+                            enabled = !isLoading
+                        ) {
+                            SpanText(if (isPasswordVisible) "Скрыть" else "Показать")
                         }
                     }
 
                     if (mode == AuthMode.SIGN_UP) {
-                        Div({
-                            style {
-                                property("display", "flex")
-                                property("gap", "0.5rem")
-                                property("margin-bottom", "0.75rem")
+                        Row(
+                            Modifier.fillMaxWidth().gap(0.5.cssRem).margin(bottom = 0.75.cssRem),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Box(Modifier.fillMaxWidth().flexGrow(1)) {
+                                Input(
+                                    type = if (isConfirmPasswordVisible) InputType.Text else InputType.Password,
+                                    attrs = {
+                                        value(confirmPassword)
+                                        placeholder("Повторите пароль")
+                                        if (isLoading) disabled()
+                                        onInput { confirmPassword = it.value }
+                                        style {
+                                            property("width", "100%")
+                                            property("padding", "0.7rem")
+                                            property("border-radius", "0.6rem")
+                                            property("border", "0")
+                                            property("outline", "none")
+                                            property("background", inputBg)
+                                            property("color", inputFg)
+                                        }
+                                    }
+                                )
                             }
-                        }) {
-                            Input(type = if (isConfirmPasswordVisible) InputType.Text else InputType.Password, attrs = {
-                                value(confirmPassword)
-                                placeholder("Повторите пароль")
-                                if (isLoading) disabled()
-                                onInput { confirmPassword = it.value }
-                                style {
-                                    property("width", "100%")
-                                    property("padding", "0.7rem")
-                                    property("border-radius", "0.6rem")
-                                    property("border", "0")
-                                    property("outline", "none")
-                                    property("background", colorPalette.background.toString())
-                                    property("color", colorPalette.color.toString())
-                                }
-                            })
-                            Button(attrs = {
-                                if (isLoading) disabled()
-                                onClick { isConfirmPasswordVisible = !isConfirmPasswordVisible }
-                                style {
-                                    property("padding", "0.7rem 0.85rem")
-                                    property("border-radius", "0.6rem")
-                                    property("border", "0")
-                                    property("cursor", "pointer")
-                                    property("background", colorPalette.background.toString())
-                                    property("color", colorPalette.color.toString())
-                                }
-                            }) {
-                                Text(if (isConfirmPasswordVisible) "Скрыть" else "Показать")
+                            Button(
+                                onClick = { isConfirmPasswordVisible = !isConfirmPasswordVisible },
+                                modifier = Modifier.padding(0.7.cssRem, 0.85.cssRem).borderRadius(0.6.cssRem),
+                                variant = AuthToggleButtonVariant,
+                                enabled = !isLoading
+                            ) {
+                                SpanText(if (isConfirmPasswordVisible) "Скрыть" else "Показать")
                             }
                         }
                     }
 
-                    Button(attrs = {
-                        if (isLoading) disabled()
-                        onClick {
+                    Button(
+                        onClick = {
                             scope.launch {
                                 errorMessage = null
                                 val normalizedEmail = email.trim()
@@ -293,25 +278,20 @@ fun AuthPage() {
                                     isLoading = false
                                 }
                             }
-                        }
-                        style {
-                            property("width", "100%")
-                            property("padding", "0.75rem")
-                            property("border-radius", "0.7rem")
-                            property("border", "0")
-                            property("margin-top", "0.2rem")
-                            property("cursor", "pointer")
-                            property("background", palette.brand.primary.toString())
-                            property("color", colorPalette.background.toString())
-                            property("font-weight", "600")
-                        }
-                    }) {
-                        Text(if (isLoading) "Подождите..." else if (mode == AuthMode.SIGN_IN) "Войти" else "Создать аккаунт")
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(0.75.cssRem).borderRadius(0.7.cssRem).margin(top = 0.2.cssRem),
+                        variant = AuthPrimaryButtonVariant,
+                        enabled = !isLoading
+                    ) {
+                        SpanText(
+                            if (isLoading) "Подождите..."
+                            else if (mode == AuthMode.SIGN_IN) "Войти"
+                            else "Создать аккаунт"
+                        )
                     }
 
-                    Button(attrs = {
-                        if (isLoading) disabled()
-                        onClick {
+                    Button(
+                        onClick = {
                             scope.launch {
                                 errorMessage = null
                                 isLoading = true
@@ -324,32 +304,19 @@ fun AuthPage() {
                                     isLoading = false
                                 }
                             }
-                        }
-                        style {
-                            property("width", "100%")
-                            property("padding", "0.75rem")
-                            property("border-radius", "0.7rem")
-                            property("border", "0")
-                            property("margin-top", "0.6rem")
-                            property("cursor", "pointer")
-                            property("background", colorPalette.background.toString())
-                            property("color", colorPalette.color.toString())
-                            property("font-weight", "600")
-                        }
-                    }) {
-                        Text("Войти через Google")
+                        },
+                        modifier = Modifier.fillMaxWidth().padding(0.75.cssRem).borderRadius(0.7.cssRem).margin(top = 0.6.cssRem),
+                        variant = AuthGoogleButtonVariant,
+                        enabled = !isLoading
+                    ) {
+                        SpanText("Войти через Google")
                     }
 
                     errorMessage?.let { message ->
-                        Div({
-                            style {
-                                property("margin-top", "0.75rem")
-                                property("color", "#d93025")
-                                property("font-size", "0.9rem")
-                            }
-                        }) {
-                            Text(message)
-                        }
+                        SpanText(
+                            message,
+                            Modifier.margin(top = 0.75.cssRem).color(Colors.Red).fontSize(0.9.cssRem)
+                        )
                     }
                 }
             } else {

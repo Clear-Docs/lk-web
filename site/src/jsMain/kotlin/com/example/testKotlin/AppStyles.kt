@@ -13,8 +13,10 @@ import com.varabyte.kobweb.silk.components.style.base
 import com.varabyte.kobweb.silk.init.InitSilk
 import com.varabyte.kobweb.silk.init.InitSilkContext
 import com.varabyte.kobweb.silk.init.registerStyleBase
+import com.varabyte.kobweb.silk.theme.colors.palette.background
 import com.varabyte.kobweb.silk.theme.colors.palette.color
 import com.varabyte.kobweb.silk.theme.colors.palette.toPalette
+import com.example.testKotlin.toSitePalette
 import com.varabyte.kobweb.silk.theme.modifyComponentStyleBase
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.percent
@@ -58,4 +60,45 @@ val CircleButtonVariant by ButtonStyle.addVariantBase {
 
 val UncoloredButtonVariant by ButtonStyle.addVariantBase {
     Modifier.setVariable(ButtonVars.BackgroundDefaultColor, Colors.Transparent)
+}
+
+// Auth page button variants (must be public for KSP auto-registration)
+val AuthTabActiveVariant by ButtonStyle.addVariantBase {
+    val sitePalette = colorMode.toSitePalette()
+    val palette = colorMode.toPalette()
+    Modifier
+        .setVariable(ButtonVars.BackgroundDefaultColor, sitePalette.brand.primary)
+        .color(palette.background)
+}
+
+val AuthTabInactiveVariant by ButtonStyle.addVariantBase {
+    val sitePalette = colorMode.toSitePalette()
+    val palette = colorMode.toPalette()
+    Modifier
+        .setVariable(ButtonVars.BackgroundDefaultColor, sitePalette.nearBackground)
+        .color(palette.color)
+}
+
+val AuthPrimaryButtonVariant by ButtonStyle.addVariantBase {
+    val sitePalette = colorMode.toSitePalette()
+    val palette = colorMode.toPalette()
+    Modifier
+        .setVariable(ButtonVars.BackgroundDefaultColor, sitePalette.brand.primary)
+        .color(palette.background)
+        .fontWeight(600)
+}
+
+val AuthGoogleButtonVariant by ButtonStyle.addVariantBase {
+    val palette = colorMode.toPalette()
+    Modifier
+        .setVariable(ButtonVars.BackgroundDefaultColor, palette.background)
+        .color(palette.color)
+        .fontWeight(600)
+}
+
+val AuthToggleButtonVariant by ButtonStyle.addVariantBase {
+    val palette = colorMode.toPalette()
+    Modifier
+        .setVariable(ButtonVars.BackgroundDefaultColor, palette.background)
+        .color(palette.color)
 }
