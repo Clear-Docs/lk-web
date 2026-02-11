@@ -157,8 +157,14 @@ fun onAuthStateChanged(auth: dynamic, handler: (dynamic) -> Unit): () -> Unit {
     }
 }
 
-suspend fun signOut(auth: dynamic) {
-    FirebaseAuth.signOut(auth).await()
+fun signOut(auth: dynamic) {
+    try {
+        // Firebase v9+ signOut returns a Promise; we don't need to await it here.
+        val result = FirebaseAuth.signOut(auth)
+        console.log("Firebase: signOut invoked", result)
+    } catch (e: dynamic) {
+        console.error("Firebase: signOut threw synchronously", e)
+    }
 }
 
 suspend fun signInWithEmailAndPassword(auth: dynamic, email: String, password: String): dynamic {
