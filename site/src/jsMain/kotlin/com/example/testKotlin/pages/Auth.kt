@@ -55,6 +55,8 @@ fun AuthPage() {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
+    var isPasswordVisible by remember { mutableStateOf(false) }
+    var isConfirmPasswordVisible by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
@@ -164,33 +166,21 @@ fun AuthPage() {
                         }
                     })
 
-                    Input(type = InputType.Password, attrs = {
-                        value(password)
-                        placeholder("Пароль")
-                        if (isLoading) disabled()
-                        onInput { password = it.value }
+                    Div({
                         style {
-                            property("width", "100%")
-                            property("padding", "0.7rem")
+                            property("display", "flex")
+                            property("gap", "0.5rem")
                             property("margin-bottom", "0.75rem")
-                            property("border-radius", "0.6rem")
-                            property("border", "0")
-                            property("outline", "none")
-                            property("background", colorPalette.background.toString())
-                            property("color", colorPalette.color.toString())
                         }
-                    })
-
-                    if (mode == AuthMode.SIGN_UP) {
-                        Input(type = InputType.Password, attrs = {
-                            value(confirmPassword)
-                            placeholder("Повторите пароль")
+                    }) {
+                        Input(type = if (isPasswordVisible) InputType.Text else InputType.Password, attrs = {
+                            value(password)
+                            placeholder("Пароль")
                             if (isLoading) disabled()
-                            onInput { confirmPassword = it.value }
+                            onInput { password = it.value }
                             style {
                                 property("width", "100%")
                                 property("padding", "0.7rem")
-                                property("margin-bottom", "0.75rem")
                                 property("border-radius", "0.6rem")
                                 property("border", "0")
                                 property("outline", "none")
@@ -198,6 +188,60 @@ fun AuthPage() {
                                 property("color", colorPalette.color.toString())
                             }
                         })
+                        Button(attrs = {
+                            if (isLoading) disabled()
+                            onClick { isPasswordVisible = !isPasswordVisible }
+                            style {
+                                property("padding", "0.7rem 0.85rem")
+                                property("border-radius", "0.6rem")
+                                property("border", "0")
+                                property("cursor", "pointer")
+                                property("background", colorPalette.background.toString())
+                                property("color", colorPalette.color.toString())
+                            }
+                        }) {
+                            Text(if (isPasswordVisible) "Скрыть" else "Показать")
+                        }
+                    }
+
+                    if (mode == AuthMode.SIGN_UP) {
+                        Div({
+                            style {
+                                property("display", "flex")
+                                property("gap", "0.5rem")
+                                property("margin-bottom", "0.75rem")
+                            }
+                        }) {
+                            Input(type = if (isConfirmPasswordVisible) InputType.Text else InputType.Password, attrs = {
+                                value(confirmPassword)
+                                placeholder("Повторите пароль")
+                                if (isLoading) disabled()
+                                onInput { confirmPassword = it.value }
+                                style {
+                                    property("width", "100%")
+                                    property("padding", "0.7rem")
+                                    property("border-radius", "0.6rem")
+                                    property("border", "0")
+                                    property("outline", "none")
+                                    property("background", colorPalette.background.toString())
+                                    property("color", colorPalette.color.toString())
+                                }
+                            })
+                            Button(attrs = {
+                                if (isLoading) disabled()
+                                onClick { isConfirmPasswordVisible = !isConfirmPasswordVisible }
+                                style {
+                                    property("padding", "0.7rem 0.85rem")
+                                    property("border-radius", "0.6rem")
+                                    property("border", "0")
+                                    property("cursor", "pointer")
+                                    property("background", colorPalette.background.toString())
+                                    property("color", colorPalette.color.toString())
+                                }
+                            }) {
+                                Text(if (isConfirmPasswordVisible) "Скрыть" else "Показать")
+                            }
+                        }
                     }
 
                     Button(attrs = {
