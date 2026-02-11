@@ -25,21 +25,8 @@ import org.jetbrains.compose.web.dom.Text
 @Page
 @Composable
 fun HomePage() {
-    val firebaseConfig = remember {
-        FirebaseConfig(
-            apiKey = "AIzaSyDkXYVilutKS9snUQc3CvzvHpXuyqf3YAA",
-            authDomain = "radar-cffdb.firebaseapp.com",
-            projectId = "radar-cffdb",
-            appId = "1:895561447215:web:3244853d278422d1d1d3da",
-            messagingSenderId = "895561447215",
-            storageBucket = "radar-cffdb.firebasestorage.app",
-            measurementId = "G-4L1T5SEYST"
-        )
-    }
-
-    val firebase = remember { initializeFirebase(firebaseConfig) }
+    val firebase = remember { initializeFirebase(defaultFirebaseConfig) }
     var user by remember { mutableStateOf<dynamic>(firebase.auth.currentUser) }
-    val uiReady = remember(firebase.ui) { firebase.ui != null }
     val scope = rememberCoroutineScope()
     val palette = ColorMode.current.toSitePalette()
 
@@ -83,7 +70,7 @@ fun HomePage() {
             SpanText("Замените конфиг своими ключами Firebase.", Modifier.color(Colors.Gray))
 
             if (user == null) {
-                AuthUiContainer(uiReady)
+                AuthUiContainer()
             } else {
                 ProfileBlock(
                     profile = firebaseUserProfile(user),
@@ -97,13 +84,10 @@ fun HomePage() {
 }
 
 @Composable
-private fun AuthUiContainer(uiReady: Boolean) {
+private fun AuthUiContainer() {
     val palette = ColorMode.current.toSitePalette()
     Column(Modifier.fillMaxWidth().gap(1.cssRem)) {
         SpanText("Вход или регистрация через FirebaseUI", Modifier.fontSize(1.1.cssRem))
-        if (!uiReady) {
-            SpanText("Виджет FirebaseUI не инициализировался — смотрите console.log", Modifier.color(Colors.Red))
-        }
         Div(
             Modifier
                 .fillMaxWidth()
