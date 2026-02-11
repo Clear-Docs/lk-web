@@ -29,17 +29,32 @@ private enum class AuthMode {
     SIGN_UP
 }
 
-private fun authErrorToMessage(error: dynamic): String {
-    return when (error?.code as? String) {
+private fun authErrorToMessage(error: dynamic, isGoogleAuth: Boolean = false): String {
+    val code = error?.code as? String
+    return when (code) {
         "auth/invalid-email" -> "Некорректный email."
-        "auth/invalid-credential" -> "Неверный email или пароль."
+        "auth/invalid-credential" -> {
+            if (isGoogleAuth) {
+                "Google-вход отклонен. Проверьте настройки Google-провайдера в Firebase."
+            } else {
+                "Неверный email или пароль."
+            }
+        }
         "auth/user-not-found" -> "Пользователь не найден."
         "auth/wrong-password" -> "Неверный пароль."
         "auth/email-already-in-use" -> "Этот email уже используется."
         "auth/weak-password" -> "Слишком простой пароль."
+        "auth/operation-not-allowed" -> "Google-вход не включен в Firebase (Authentication -> Sign-in method)."
+        "auth/unauthorized-domain" -> "Текущий домен не добавлен в Authorized domains в Firebase."
         "auth/popup-closed-by-user" -> "Вход через Google отменен."
         "auth/popup-blocked" -> "Браузер заблокировал всплывающее окно для Google-входа."
-        else -> "Не удалось выполнить авторизацию. Попробуйте еще раз."
+        else -> {
+            if (isGoogleAuth) {
+                "Не удалось войти через Google. Код: ${code ?: "unknown"}."
+            } else {
+                "Не удалось выполнить авторизацию. Попробуйте еще раз."
+            }
+        }
     }
 }
 
@@ -273,7 +288,7 @@ fun AuthPage() {
                                         createUserWithEmailAndPassword(firebase.auth, normalizedEmail, password)
                                     }
                                 } catch (e: dynamic) {
-                                    errorMessage = authErrorToMessage(e)
+                                    errorMessage = authErrorToMessage(e, isGoogleAuth = false)
                                 } finally {
                                     isLoading = false
                                 }
@@ -303,7 +318,8 @@ fun AuthPage() {
                                 try {
                                     signInWithGoogle(firebase.auth)
                                 } catch (e: dynamic) {
-                                    errorMessage = authErrorToMessage(e)
+                                    console.error("Google sign-in failed", e?.code, e?.message, e)
+                                    errorMessage = authErrorToMessage(e, isGoogleAuth = true)
                                 } finally {
                                     isLoading = false
                                 }

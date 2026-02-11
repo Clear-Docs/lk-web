@@ -20,7 +20,6 @@ external object FirebaseAuth {
     fun signInWithPopup(auth: dynamic, provider: dynamic): dynamic
     fun signInWithEmailAndPassword(auth: dynamic, email: String, password: String): dynamic
     fun createUserWithEmailAndPassword(auth: dynamic, email: String, password: String): dynamic
-    fun GoogleAuthProvider(): dynamic
     fun EmailAuthProvider(): dynamic
 }
 
@@ -159,7 +158,10 @@ suspend fun createUserWithEmailAndPassword(auth: dynamic, email: String, passwor
 }
 
 suspend fun signInWithGoogle(auth: dynamic): dynamic {
-    val provider = FirebaseAuth.GoogleAuthProvider()
+    // Access GoogleAuthProvider as a named export from the firebase/auth module
+    // (the standalone @JsModule external class doesn't work because it treats the whole module as the constructor)
+    val providerCtor = FirebaseAuth.asDynamic().GoogleAuthProvider
+    val provider = js("new providerCtor()")
     return FirebaseAuth.signInWithPopup(auth, provider).await()
 }
 
