@@ -16,12 +16,27 @@ fun HomePage() {
         initializeFirebase(defaultFirebaseConfig)
     }
     val ctx = rememberPageContext()
+    val currentPath = js("window.location.pathname") as? String
+    console.log("Index: mount", "path=", currentPath, "currentUser=", firebase.auth.currentUser?.uid)
 
     DisposableEffect(firebase.auth) {
+        console.log("Index: subscribe onAuthStateChanged", "path=", js("window.location.pathname"))
         val unsubscribe = onAuthStateChanged(firebase.auth) { firebaseUser ->
             val targetRoute = if (firebaseUser == null) "/auth" else "/profile"
+            console.log(
+                "Index: onAuthStateChanged",
+                "uid=",
+                firebaseUser?.uid,
+                "targetRoute=",
+                targetRoute,
+                "path=",
+                js("window.location.pathname")
+            )
             ctx.router.tryRoutingTo(targetRoute)
         }
-        onDispose { unsubscribe() }
+        onDispose {
+            console.log("Index: unmount", "path=", js("window.location.pathname"))
+            unsubscribe()
+        }
     }
 }

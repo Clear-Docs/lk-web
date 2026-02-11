@@ -6,7 +6,6 @@ import com.example.testKotlin.AuthPrimaryButtonVariant
 import com.example.testKotlin.AuthTabActiveVariant
 import com.example.testKotlin.AuthTabInactiveVariant
 import com.example.testKotlin.AuthToggleButtonVariant
-import com.example.testKotlin.components.sections.ProfileBlock
 import com.example.testKotlin.firebase.*
 import com.example.testKotlin.toSitePalette
 import com.varabyte.kobweb.compose.foundation.layout.Box
@@ -29,6 +28,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.flexGrow
 import com.varabyte.kobweb.core.Page
+import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.components.forms.Button
 import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
@@ -79,6 +79,9 @@ private fun authErrorToMessage(error: dynamic, isGoogleAuth: Boolean = false): S
 fun AuthPage() {
     val firebase = remember { initializeFirebase(defaultFirebaseConfig) }
     var user by remember { mutableStateOf<dynamic>(firebase.auth.currentUser) }
+    val ctx = rememberPageContext()
+    val currentPath = js("window.location.pathname") as? String
+    console.log("Auth: mount", "path=", currentPath, "currentUser=", firebase.auth.currentUser?.uid)
     val palette = ColorMode.current.toSitePalette()
     val colorPalette = ColorMode.current.toPalette()
     val inputBg = colorPalette.background.toString()
@@ -94,13 +97,26 @@ fun AuthPage() {
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
     DisposableEffect(firebase.auth) {
+        console.log("Auth: subscribe onAuthStateChanged", "path=", js("window.location.pathname"))
         val unsubscribe = onAuthStateChanged(firebase.auth) { firebaseUser ->
+            console.log(
+                "Auth: onAuthStateChanged",
+                "uid=",
+                firebaseUser?.uid,
+                "path=",
+                js("window.location.pathname")
+            )
             user = firebaseUser
             if (firebaseUser != null) {
                 errorMessage = null
+                console.log("Auth: redirect to /profile", "path=", js("window.location.pathname"))
+                ctx.router.tryRoutingTo("/profile")
             }
         }
-        onDispose { unsubscribe() }
+        onDispose {
+            console.log("Auth: unmount", "path=", js("window.location.pathname"))
+            unsubscribe()
+        }
     }
 
     Box(
@@ -320,22 +336,7 @@ fun AuthPage() {
                     }
                 }
             } else {
-                ProfileBlock(
-                    profile = firebaseUserProfile(user),
-                    onSignOut = {
-                        scope.launch {
-                            isLoading = true
-                            errorMessage = null
-                            try {
-                                signOut(firebase.auth)
-                            } catch (e: dynamic) {
-                                errorMessage = "Не удалось выйти из аккаунта."
-                            } finally {
-                                isLoading = false
-                            }
-                        }
-                    }
-                )
+                SpanText("Перенаправляем в профиль...")
             }
         }
     }

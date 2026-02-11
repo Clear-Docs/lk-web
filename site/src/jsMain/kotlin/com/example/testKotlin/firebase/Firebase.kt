@@ -136,7 +136,16 @@ fun resetFirebaseUi(ui: dynamic) {
 }
 
 fun onAuthStateChanged(auth: dynamic, handler: (dynamic) -> Unit): () -> Unit {
-    val unsub = FirebaseAuth.onAuthStateChanged(auth, handler)
+    val unsub = FirebaseAuth.onAuthStateChanged(auth) { user ->
+        console.log(
+            "Firebase.onAuthStateChanged",
+            "uid=",
+            user?.uid,
+            "path=",
+            js("window.location.pathname")
+        )
+        handler(user)
+    }
     return {
         try {
             if (unsub != null && jsTypeOf(unsub) == "function") {

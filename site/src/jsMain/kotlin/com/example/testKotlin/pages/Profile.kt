@@ -21,24 +21,40 @@ import org.jetbrains.compose.web.css.cssRem
 fun ProfilePage() {
     val firebase = remember { initializeFirebase(defaultFirebaseConfig) }
     var user by remember { mutableStateOf<dynamic>(firebase.auth.currentUser) }
+    val currentPath = js("window.location.pathname") as? String
+    console.log("Profile: mount", "path=", currentPath, "currentUser=", firebase.auth.currentUser?.uid)
     val scope = rememberCoroutineScope()
     val palette = ColorMode.current.toSitePalette()
     val ctx = rememberPageContext()
 
     DisposableEffect(firebase.auth) {
+        console.log("Profile: subscribe onAuthStateChanged", "path=", js("window.location.pathname"))
         val unsubscribe = onAuthStateChanged(firebase.auth) { firebaseUser ->
+            console.log(
+                "Profile: onAuthStateChanged",
+                "uid=",
+                firebaseUser?.uid,
+                "path=",
+                js("window.location.pathname")
+            )
             user = firebaseUser
             // Если пользователь не авторизован, перенаправляем на страницу авторизации
             if (firebaseUser == null) {
+                console.log("Profile: redirect to /auth from callback", "path=", js("window.location.pathname"))
                 ctx.router.tryRoutingTo("/auth")
             }
         }
-        onDispose { unsubscribe() }
+        onDispose {
+            console.log("Profile: unmount", "path=", js("window.location.pathname"))
+            unsubscribe()
+        }
     }
 
     // Проверяем при загрузке страницы
     LaunchedEffect(Unit) {
+        console.log("Profile: LaunchedEffect check", "user=", user?.uid, "path=", js("window.location.pathname"))
         if (user == null) {
+            console.log("Profile: redirect to /auth from LaunchedEffect", "path=", js("window.location.pathname"))
             ctx.router.tryRoutingTo("/auth")
         }
     }
