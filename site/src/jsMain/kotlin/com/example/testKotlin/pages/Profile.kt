@@ -1,9 +1,8 @@
 package com.example.testKotlin.pages
 
 import androidx.compose.runtime.*
-import com.example.testKotlin.firebase.initializeFirebase
-import com.example.testKotlin.firebase.defaultFirebaseConfig
-import com.example.testKotlin.firebase.onAuthStateChanged
+import com.example.testKotlin.components.sections.ProfileBlock
+import com.example.testKotlin.firebase.*
 import com.example.testKotlin.toSitePalette
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
@@ -14,27 +13,34 @@ import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.css.cssRem
 
-@Page
+@Page("/profile")
 @Composable
-fun HomePage() {
+fun ProfilePage() {
     val firebase = remember { initializeFirebase(defaultFirebaseConfig) }
     var user by remember { mutableStateOf<dynamic>(firebase.auth.currentUser) }
+    val scope = rememberCoroutineScope()
     val palette = ColorMode.current.toSitePalette()
     val ctx = rememberPageContext()
 
     DisposableEffect(firebase.auth) {
         val unsubscribe = onAuthStateChanged(firebase.auth) { firebaseUser ->
             user = firebaseUser
-            // Если пользователь авторизовался, перенаправляем на страницу профиля
-            if (firebaseUser != null) {
-                ctx.router.tryRoutingTo("/profile")
-            } else {
+            // Если пользователь не авторизован, перенаправляем на страницу авторизации
+            if (firebaseUser == null) {
                 ctx.router.tryRoutingTo("/auth")
             }
         }
         onDispose { unsubscribe() }
+    }
+
+    // Проверяем при загрузке страницы
+    LaunchedEffect(Unit) {
+        if (user == null) {
+            ctx.router.tryRoutingTo("/auth")
+        }
     }
 
     Box(
@@ -57,8 +63,19 @@ fun HomePage() {
                 ),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            SpanText("Главная страница", Modifier.fontSize(1.5.cssRem))
-            SpanText("Добро пожаловать!")
+            SpanText("Профиль", Modifier.fontSize(1.5.cssRem))
+
+            if (user != null) {
+                ProfileBlock(
+                    profile = firebaseUserProfile(user),
+                    onSignOut = {
+                        scope.launch {
+                            signOut(firebase.auth)
+                            ctx.router.tryRoutingTo("/auth")
+                        }
+                    }
+                )
+            }
         }
     }
 }
