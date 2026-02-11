@@ -134,8 +134,16 @@ fun resetFirebaseUi(ui: dynamic) {
 }
 
 fun onAuthStateChanged(auth: dynamic, handler: (dynamic) -> Unit): () -> Unit {
-    val unsubscribe = FirebaseAuth.onAuthStateChanged(auth, handler)
-    return { unsubscribe?.invoke() }
+    val unsub = FirebaseAuth.onAuthStateChanged(auth, handler)
+    return {
+        try {
+            if (unsub != null && jsTypeOf(unsub) == "function") {
+                (unsub as (() -> Unit))()
+            }
+        } catch (e: dynamic) {
+            console.error("onAuthStateChanged: unsubscribe error", e)
+        }
+    }
 }
 
 suspend fun signOut(auth: dynamic) {

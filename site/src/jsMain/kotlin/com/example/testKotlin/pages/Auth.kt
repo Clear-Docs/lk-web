@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import com.example.testKotlin.components.sections.AuthUiContainer
 import com.example.testKotlin.firebase.*
 import com.example.testKotlin.toSitePalette
+import kotlinx.browser.window
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.ui.Alignment
@@ -28,13 +29,6 @@ fun AuthPage() {
         onDispose { unsubscribe() }
     }
 
-        if (user == null) {
-            val providers = listOfNotNull(emailProvider(), googleProvider()).toTypedArray()
-            startFirebaseUi(firebase.ui, "#firebaseui-auth-container", providers)
-        } else {
-            resetFirebaseUi(firebase.ui)
-        }
-
     Box(
         Modifier
             .fillMaxSize()
@@ -57,6 +51,19 @@ fun AuthPage() {
         ) {
             SpanText("Firebase Auth", Modifier.fontSize(1.5.cssRem))
             AuthUiContainer()
+            if (user == null) {
+                val providers = listOfNotNull(emailProvider(), googleProvider()).toTypedArray()
+                DisposableEffect(Unit) {
+                    // Небольшая задержка — DOM должен быть готов после смены страницы
+                    val timeoutId = window.setTimeout({
+                        startFirebaseUi(firebase.ui, "#firebaseui-auth-container", providers)
+                    }, 50)
+                    onDispose {
+                        window.clearTimeout(timeoutId)
+                        resetFirebaseUi(firebase.ui)
+                    }
+                }
+            }
         }
     }
 }
