@@ -1,5 +1,8 @@
 package com.example.testKotlin.firebase
 
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
+import kotlin.coroutines.suspendCoroutine
 import kotlinx.coroutines.await
 import kotlin.js.Console
 import kotlin.js.json
@@ -158,11 +161,23 @@ suspend fun createUserWithEmailAndPassword(auth: dynamic, email: String, passwor
 }
 
 suspend fun signInWithGoogle(auth: dynamic): dynamic {
-    // Access GoogleAuthProvider as a named export from the firebase/auth module
-    // (the standalone @JsModule external class doesn't work because it treats the whole module as the constructor)
     val providerCtor = FirebaseAuth.asDynamic().GoogleAuthProvider
     val provider = js("new providerCtor()")
-    return FirebaseAuth.signInWithPopup(auth, provider).await()
+    val popupResult = FirebaseAuth.signInWithPopup(auth, provider)
+    return suspendCoroutine { cont ->
+        val promise = when {
+            popupResult != null && jsTypeOf(popupResult.then) == "function" -> popupResult
+            else -> js("Promise.reject(new Error('signInWithPopup did not return a Promise'))")
+        }
+        promise.unsafeCast<kotlin.js.Promise<Any?>>().then(
+            { result -> cont.resume(result) },
+            { err ->
+                val e = err?.asDynamic()
+                val msg = (e?.message as? String) ?: (e?.code as? String) ?: "Unknown error"
+                cont.resumeWithException(Exception("$msg"))
+            }
+        )
+    }
 }
 
 fun emailProvider(): dynamic = "password"
