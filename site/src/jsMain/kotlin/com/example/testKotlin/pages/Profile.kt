@@ -19,43 +19,16 @@ import org.jetbrains.compose.web.css.cssRem
 @Page("/profile")
 @Composable
 fun ProfilePage() {
-    val firebase = remember { initializeFirebase(defaultFirebaseConfig) }
-    var user by remember { mutableStateOf<dynamic>(firebase.auth.currentUser) }
-    val currentPath = js("window.location.pathname") as? String
-    console.log("Profile: mount", "path=", currentPath, "currentUser=", firebase.auth.currentUser?.uid)
+    val repository = FirebaseProvider.repository
+    val authState by repository.authStateFlow.collectAsState()
+    val profile by repository.profileFlow.collectAsState()
     val scope = rememberCoroutineScope()
     val palette = ColorMode.current.toSitePalette()
     val ctx = rememberPageContext()
 
-    DisposableEffect(firebase.auth) {
-        console.log("Profile: subscribe onAuthStateChanged", "path=", js("window.location.pathname"))
-        val unsubscribe = onAuthStateChanged(firebase.auth) { firebaseUser ->
-            console.log(
-                "Profile: onAuthStateChanged",
-                "uid=",
-                firebaseUser?.uid,
-                "path=",
-                js("window.location.pathname")
-            )
-            user = firebaseUser
-            // Если пользователь не авторизован, перенаправляем на страницу авторизации
-            if (firebaseUser == null) {
-                console.log("Profile: redirect to /auth from callback", "path=", js("window.location.pathname"))
+    LaunchedEffect(authState) {
+        if (authState == AuthState.Unauthenticated) {
                 ctx.router.tryRoutingTo("/auth")
-            }
-        }
-        onDispose {
-            console.log("Profile: unmount", "path=", js("window.location.pathname"))
-            unsubscribe()
-        }
-    }
-
-    // Проверяем при загрузке страницы
-    LaunchedEffect(Unit) {
-        console.log("Profile: LaunchedEffect check", "user=", user?.uid, "path=", js("window.location.pathname"))
-        if (user == null) {
-            console.log("Profile: redirect to /auth from LaunchedEffect", "path=", js("window.location.pathname"))
-            ctx.router.tryRoutingTo("/auth")
         }
     }
 
@@ -81,16 +54,20 @@ fun ProfilePage() {
         ) {
             SpanText("Профиль", Modifier.fontSize(1.5.cssRem))
 
-            if (user != null) {
+            if (authState == AuthState.Loading) {
+                SpanText("Проверяем авторизацию...")
+            } else if (authState == AuthState.Authenticated) {
                 ProfileBlock(
-                    profile = firebaseUserProfile(user),
+                    profile = profile,
                     onSignOut = {
                         scope.launch {
-                            signOut(firebase.auth)
+                            signOut(repository.auth)
                             ctx.router.tryRoutingTo("/auth")
                         }
                     }
                 )
+            } else {
+                SpanText("Перенаправляем на авторизацию...")
             }
         }
     }

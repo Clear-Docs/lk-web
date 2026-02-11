@@ -77,11 +77,9 @@ private fun authErrorToMessage(error: dynamic, isGoogleAuth: Boolean = false): S
 @Page("/auth")
 @Composable
 fun AuthPage() {
-    val firebase = remember { initializeFirebase(defaultFirebaseConfig) }
-    var user by remember { mutableStateOf<dynamic>(firebase.auth.currentUser) }
+    val repository = FirebaseProvider.repository
+    val authState by repository.authStateFlow.collectAsState()
     val ctx = rememberPageContext()
-    val currentPath = js("window.location.pathname") as? String
-    console.log("Auth: mount", "path=", currentPath, "currentUser=", firebase.auth.currentUser?.uid)
     val palette = ColorMode.current.toSitePalette()
     val colorPalette = ColorMode.current.toPalette()
     val inputBg = colorPalette.background.toString()
@@ -96,26 +94,10 @@ fun AuthPage() {
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    DisposableEffect(firebase.auth) {
-        console.log("Auth: subscribe onAuthStateChanged", "path=", js("window.location.pathname"))
-        val unsubscribe = onAuthStateChanged(firebase.auth) { firebaseUser ->
-            console.log(
-                "Auth: onAuthStateChanged",
-                "uid=",
-                firebaseUser?.uid,
-                "path=",
-                js("window.location.pathname")
-            )
-            user = firebaseUser
-            if (firebaseUser != null) {
+    LaunchedEffect(authState) {
+        if (authState == AuthState.Authenticated) {
                 errorMessage = null
-                console.log("Auth: redirect to /profile", "path=", js("window.location.pathname"))
                 ctx.router.tryRoutingTo("/profile")
-            }
-        }
-        onDispose {
-            console.log("Auth: unmount", "path=", js("window.location.pathname"))
-            unsubscribe()
         }
     }
 
@@ -141,7 +123,11 @@ fun AuthPage() {
         ) {
             SpanText("Вход в аккаунт", Modifier.fontSize(1.5.cssRem))
 
-            if (user == null) {
+            if (authState != AuthState.Authenticated) {
+                if (authState == AuthState.Loading) {
+                    SpanText("Проверяем сессию...")
+                    return@Column
+                }
                 Column(Modifier.fillMaxWidth().gap(1.cssRem)) {
                     Row(
                         Modifier.fillMaxWidth().gap(0.5.cssRem).margin(bottom = 0.25.cssRem),
@@ -284,9 +270,9 @@ fun AuthPage() {
                                 isLoading = true
                                 try {
                                     if (mode == AuthMode.SIGN_IN) {
-                                        signInWithEmailAndPassword(firebase.auth, normalizedEmail, password)
+                                        signInWithEmailAndPassword(repository.auth, normalizedEmail, password)
                                     } else {
-                                        createUserWithEmailAndPassword(firebase.auth, normalizedEmail, password)
+                                        createUserWithEmailAndPassword(repository.auth, normalizedEmail, password)
                                     }
                                 } catch (e: dynamic) {
                                     errorMessage = authErrorToMessage(e, isGoogleAuth = false)
@@ -312,7 +298,7 @@ fun AuthPage() {
                                 errorMessage = null
                                 isLoading = true
                                 try {
-                                    signInWithGoogle(firebase.auth)
+                                    signInWithGoogle(repository.auth)
                                 } catch (e: dynamic) {
                                     console.error("Google sign-in failed", e?.code, e?.message, e)
                                     errorMessage = authErrorToMessage(e, isGoogleAuth = true)
