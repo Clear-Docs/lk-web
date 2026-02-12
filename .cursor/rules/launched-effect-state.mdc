@@ -1,0 +1,48 @@
+---
+description: Не использовать LaunchedEffect с ключом-стейтом в Compose
+globs: **/*.kt
+alwaysApply: true
+---
+
+# LaunchedEffect и стейт
+
+Не используй `LaunchedEffect` с ключом в виде стейта (`State`, `collectAsState()`, параметры composable).
+
+Стейт уже триггерит рекомпозицию — логику выполняй прямо в теле composable.
+
+## ❌ Плохо
+
+```kotlin
+LaunchedEffect(authState) {
+    if (authState == AuthState.Authenticated) {
+        ctx.router.tryRoutingTo("/profile")
+    }
+}
+
+LaunchedEffect(colorMode) {
+    localStorage.setItem(COLOR_MODE_KEY, colorMode.name)
+}
+
+LaunchedEffect(title) {
+    document.title = "Kobweb - $title"
+}
+```
+
+## ✅ Хорошо
+
+```kotlin
+if (authState == AuthState.Authenticated) {
+    ctx.router.tryRoutingTo("/profile")
+}
+
+SideEffect {
+    localStorage.setItem(COLOR_MODE_KEY, colorMode.name)
+}
+
+document.title = "Kobweb - $title"
+```
+
+## Исключения
+
+`LaunchedEffect` допустим для разовых эффектов без ключа-стейта (например, загрузка при появлении composable) или с ключом-идентификатором, не связанным с отображаемым стейтом.
+
