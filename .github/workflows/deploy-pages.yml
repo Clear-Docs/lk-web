@@ -65,24 +65,37 @@ jobs:
           cd site
           ../kobweb-${{ env.KOBWEB_CLI_VERSION }}/bin/kobweb export --notty --layout static
 
-      - name: Patch HTML asset paths for project pages
+      - name: Patch HTML for GitHub Pages project site
         run: |
-          python - <<'PY'
+          python3 - <<'PY'
           from pathlib import Path
 
           base_path = "/lk-web"
           site_root = Path("site/.kobweb/site")
-          replacements = {
+
+          # 1. Rewrite asset URLs to include the project base path
+          asset_replacements = {
               'href="/favicon.ico"': f'href="{base_path}/favicon.ico"',
               'src="/kobweb-logo.png"': f'src="{base_path}/kobweb-logo.png"',
               'src="/testKotlin.js"': f'src="{base_path}/testKotlin.js"',
           }
 
+          # 2. Inject a script that strips the base path from the URL
+          #    before the Kobweb router sees it (RoutePrefix workaround for Kobweb 0.15.x)
+          route_fix = (
+              f'<script>if(location.pathname.startsWith("{base_path}")){{history.replaceState(null,"",location.pathname.slice({len(base_path)})||"/")}}</script>'
+          )
+
           for html_file in site_root.rglob("*.html"):
               content = html_file.read_text(encoding="utf-8")
               updated = content
-              for old, new in replacements.items():
+              for old, new in asset_replacements.items():
                   updated = updated.replace(old, new)
+              # Insert the route-fix script right before the main bundle
+              updated = updated.replace(
+                  f'<script src="{base_path}/testKotlin.js">',
+                  f'{route_fix}\n  <script src="{base_path}/testKotlin.js">'
+              )
               if updated != content:
                   html_file.write_text(updated, encoding="utf-8")
           PY
