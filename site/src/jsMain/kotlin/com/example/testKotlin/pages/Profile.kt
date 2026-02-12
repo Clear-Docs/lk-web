@@ -26,10 +26,8 @@ fun ProfilePage() {
     val palette = ColorMode.current.toSitePalette()
     val ctx = rememberPageContext()
 
-    LaunchedEffect(authState) {
-        if (authState == AuthState.Unauthenticated) {
-                ctx.router.tryRoutingTo("/auth")
-        }
+    if (authState == AuthState.Unauthenticated) {
+        ctx.router.tryRoutingTo("/auth")
     }
 
     Box(

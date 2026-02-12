@@ -1,7 +1,6 @@
 package com.example.testKotlin.components.layouts
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import com.varabyte.kobweb.compose.dom.svg.*
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
@@ -63,9 +62,7 @@ private fun SvgCobweb(modifier: Modifier) {
 
 @Composable
 fun PageLayout(title: String, content: @Composable ColumnScope.() -> Unit) {
-    LaunchedEffect(title) {
-        document.title = "Kobweb - $title"
-    }
+    document.title = "Kobweb - $title"
 
     Box(
         Modifier

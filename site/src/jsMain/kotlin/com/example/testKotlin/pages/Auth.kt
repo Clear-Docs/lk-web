@@ -94,11 +94,9 @@ fun AuthPage() {
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    LaunchedEffect(authState) {
-        if (authState == AuthState.Authenticated) {
-                errorMessage = null
-                ctx.router.tryRoutingTo("/profile")
-        }
+    if (authState == AuthState.Authenticated) {
+        errorMessage = null
+        ctx.router.tryRoutingTo("/profile")
     }
 
     Box(

@@ -1,7 +1,7 @@
 package com.example.testKotlin
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.SideEffect
 import com.varabyte.kobweb.compose.css.ScrollBehavior
 import com.varabyte.kobweb.compose.ui.modifiers.minHeight
 import com.varabyte.kobweb.compose.ui.modifiers.scrollBehavior
@@ -28,7 +28,7 @@ fun initColorMode(ctx: InitSilkContext) {
 fun AppEntry(content: @Composable () -> Unit) {
     SilkApp {
         val colorMode = ColorMode.current
-        LaunchedEffect(colorMode) {
+        SideEffect {
             localStorage.setItem(COLOR_MODE_KEY, colorMode.name)
         }
 
