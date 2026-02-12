@@ -18,6 +18,8 @@ concurrency:
 jobs:
   export:
     runs-on: ubuntu-latest
+    env:
+      KOBWEB_CLI_VERSION: "0.9.15"
 
     steps:
       - name: Checkout
@@ -46,8 +48,22 @@ jobs:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ steps.browser-cache-id.outputs.value }}
 
+      - name: Fetch Kobweb CLI
+        uses: robinraju/release-downloader@v1.10
+        with:
+          repository: "varabyte/kobweb-cli"
+          tag: "v${{ env.KOBWEB_CLI_VERSION }}"
+          fileName: "kobweb-${{ env.KOBWEB_CLI_VERSION }}.zip"
+          tarBall: false
+          zipBall: false
+
+      - name: Unzip Kobweb CLI
+        run: unzip -o kobweb-${{ env.KOBWEB_CLI_VERSION }}.zip
+
       - name: Run export
-        run: ./gradlew :site:kobwebExport -Dkobweb.site.layout=STATIC
+        run: |
+          cd site
+          ../kobweb-${{ env.KOBWEB_CLI_VERSION }}/bin/kobweb export --notty --layout static
 
       - name: Patch HTML asset paths for project pages
         run: |
@@ -57,9 +73,9 @@ jobs:
           base_path = "/lk-web"
           site_root = Path("site/.kobweb/site")
           replacements = {
-              'href="/favicon.ico"': f'href="{base_path}/resources/favicon.ico"',
-              'src="/kobweb-logo.png"': f'src="{base_path}/resources/kobweb-logo.png"',
-              'src="/testKotlin.js"': f'src="{base_path}/system/testKotlin.js"',
+              'href="/favicon.ico"': f'href="{base_path}/favicon.ico"',
+              'src="/kobweb-logo.png"': f'src="{base_path}/kobweb-logo.png"',
+              'src="/testKotlin.js"': f'src="{base_path}/testKotlin.js"',
           }
 
           for html_file in site_root.rglob("*.html"):
