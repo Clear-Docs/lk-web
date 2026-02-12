@@ -3,9 +3,20 @@ package com.example.testKotlin.firebase
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
-import kotlinx.coroutines.await
-import kotlin.js.Console
 import kotlin.js.json
+
+private suspend fun <T> promiseToSuspend(promise: dynamic): T = suspendCoroutine { cont ->
+    val p = when {
+        promise != null && jsTypeOf(promise.then) == "function" -> promise
+        else -> js("Promise.reject(new Error('Not a Promise'))")
+    }
+    p.unsafeCast<kotlin.js.Promise<Any?>>().then(
+        { result -> cont.resume(result.unsafeCast<T>()) },
+        { err ->
+            cont.resumeWithException((err ?: js("new Error('Unknown')")).unsafeCast<Throwable>())
+        }
+    )
+}
 
 // Firebase Modular SDK v11.x
 @JsModule("firebase/app")
@@ -23,6 +34,7 @@ external object FirebaseAuth {
     fun signInWithPopup(auth: dynamic, provider: dynamic): dynamic
     fun signInWithEmailAndPassword(auth: dynamic, email: String, password: String): dynamic
     fun createUserWithEmailAndPassword(auth: dynamic, email: String, password: String): dynamic
+    fun sendEmailVerification(user: dynamic, actionCodeSettings: dynamic = definedExternally): dynamic
     fun EmailAuthProvider(): dynamic
 }
 
@@ -168,11 +180,15 @@ fun signOut(auth: dynamic) {
 }
 
 suspend fun signInWithEmailAndPassword(auth: dynamic, email: String, password: String): dynamic {
-    return FirebaseAuth.signInWithEmailAndPassword(auth, email, password).await()
+    return promiseToSuspend<dynamic>(FirebaseAuth.signInWithEmailAndPassword(auth, email, password))
 }
 
 suspend fun createUserWithEmailAndPassword(auth: dynamic, email: String, password: String): dynamic {
-    return FirebaseAuth.createUserWithEmailAndPassword(auth, email, password).await()
+    return promiseToSuspend<dynamic>(FirebaseAuth.createUserWithEmailAndPassword(auth, email, password))
+}
+
+suspend fun sendEmailVerification(user: dynamic): dynamic {
+    return promiseToSuspend<dynamic>(FirebaseAuth.sendEmailVerification(user))
 }
 
 suspend fun signInWithGoogle(auth: dynamic): dynamic {

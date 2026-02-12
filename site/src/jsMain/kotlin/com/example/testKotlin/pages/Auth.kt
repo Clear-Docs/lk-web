@@ -61,6 +61,7 @@ private fun authErrorToMessage(error: dynamic, isGoogleAuth: Boolean = false): S
         "auth/email-already-in-use" -> "Этот email уже используется."
         "auth/weak-password" -> "Слишком простой пароль."
         "auth/operation-not-allowed" -> "Google-вход не включен в Firebase (Authentication -> Sign-in method)."
+        "auth/too-many-requests" -> "Слишком много попыток. Попробуйте позже."
         "auth/unauthorized-domain" -> "Текущий домен не добавлен в Authorized domains в Firebase."
         "auth/popup-closed-by-user" -> "Вход через Google отменен."
         "auth/popup-blocked" -> "Браузер заблокировал всплывающее окно для Google-входа."
@@ -93,6 +94,7 @@ fun AuthPage() {
     var isConfirmPasswordVisible by remember { mutableStateOf(false) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var successMessage by remember { mutableStateOf<String?>(null) }
 
     if (authState == AuthState.Authenticated) {
         errorMessage = null
@@ -135,6 +137,7 @@ fun AuthPage() {
                             onClick = {
                                 mode = AuthMode.SIGN_IN
                                 errorMessage = null
+                                successMessage = null
                             },
                             modifier = Modifier.fillMaxWidth().flexGrow(1).padding(0.65.cssRem).borderRadius(0.65.cssRem),
                             variant = if (mode == AuthMode.SIGN_IN) AuthTabActiveVariant else AuthTabInactiveVariant,
@@ -146,6 +149,7 @@ fun AuthPage() {
                             onClick = {
                                 mode = AuthMode.SIGN_UP
                                 errorMessage = null
+                                successMessage = null
                             },
                             modifier = Modifier.fillMaxWidth().flexGrow(1).padding(0.65.cssRem).borderRadius(0.65.cssRem),
                             variant = if (mode == AuthMode.SIGN_UP) AuthTabActiveVariant else AuthTabInactiveVariant,
@@ -249,6 +253,7 @@ fun AuthPage() {
                         onClick = {
                             scope.launch {
                                 errorMessage = null
+                                successMessage = null
                                 val normalizedEmail = email.trim()
                                 if (normalizedEmail.isEmpty() || password.isEmpty()) {
                                     errorMessage = "Заполните email и пароль."
@@ -268,11 +273,32 @@ fun AuthPage() {
                                 isLoading = true
                                 try {
                                     if (mode == AuthMode.SIGN_IN) {
+                                        console.log("[Auth] Вход:", normalizedEmail)
                                         signInWithEmailAndPassword(repository.auth, normalizedEmail, password)
+                                        console.log("[Auth] Вход успешен")
                                     } else {
-                                        createUserWithEmailAndPassword(repository.auth, normalizedEmail, password)
+                                        console.log("[Auth] Регистрация: начало, email=", normalizedEmail)
+                                        val result = createUserWithEmailAndPassword(repository.auth, normalizedEmail, password)
+                                        val user = result?.user
+                                        console.log("[Auth] Регистрация: createUser OK, user=", user?.uid, "emailVerified=", user?.emailVerified)
+                                        if (user != null) {
+                                            try {
+                                                console.log("[Auth] Регистрация: отправка письма верификации...")
+                                                sendEmailVerification(user)
+                                                console.log("[Auth] Регистрация: sendEmailVerification OK")
+                                                successMessage = "Письмо отправлено на $normalizedEmail. Проверьте почту и папку «Спам»."
+                                            } catch (verifyErr: dynamic) {
+                                                console.error("[Auth] Регистрация: sendEmailVerification ошибка", verifyErr?.code, verifyErr?.message, verifyErr)
+                                                errorMessage = "Регистрация успешна, но не удалось отправить письмо подтверждения: ${authErrorToMessage(verifyErr, false)}"
+                                            }
+                                        } else {
+                                            console.warn("[Auth] Регистрация: user=null")
+                                            successMessage = "Аккаунт создан. Проверьте почту."
+                                        }
+                                        console.log("[Auth] Регистрация: завершено")
                                     }
                                 } catch (e: dynamic) {
+                                    console.error("[Auth] Ошибка:", e?.code, e?.message, e)
                                     errorMessage = authErrorToMessage(e, isGoogleAuth = false)
                                 } finally {
                                     isLoading = false
@@ -318,8 +344,20 @@ fun AuthPage() {
                             Modifier.margin(top = 0.75.cssRem).color(Colors.Red).fontSize(0.9.cssRem)
                         )
                     }
+                    successMessage?.let { message ->
+                        SpanText(
+                            message,
+                            Modifier.margin(top = 0.75.cssRem).color(Colors.Green).fontSize(0.9.cssRem)
+                        )
+                    }
                 }
             } else {
+                successMessage?.let { message ->
+                    SpanText(
+                        message,
+                        Modifier.margin(bottom = 0.5.cssRem).color(Colors.Green).fontSize(0.9.cssRem)
+                    )
+                }
                 SpanText("Перенаправляем в профиль...")
             }
         }
