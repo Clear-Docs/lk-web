@@ -1,4 +1,4 @@
-package com.example.testKotlin.components.layouts
+package ru.cleardocs.lkweb.components.layouts
 
 import androidx.compose.runtime.Composable
 import com.varabyte.kobweb.compose.dom.svg.*
@@ -17,9 +17,9 @@ import kotlinx.browser.document
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.fr
 import org.jetbrains.compose.web.css.percent
-import com.example.testKotlin.components.sections.Footer
-import com.example.testKotlin.components.sections.NavHeader
-import com.example.testKotlin.toSitePalette
+import ru.cleardocs.lkweb.components.sections.Footer
+import ru.cleardocs.lkweb.components.sections.NavHeader
+import ru.cleardocs.lkweb.toSitePalette
 
 val PageContentStyle by ComponentStyle {
     base { Modifier.fillMaxSize().padding(leftRight = 2.cssRem, top = 4.cssRem) }

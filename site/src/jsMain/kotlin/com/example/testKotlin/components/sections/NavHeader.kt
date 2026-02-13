@@ -1,4 +1,4 @@
-package com.example.testKotlin.components.sections
+package ru.cleardocs.lkweb.components.sections
 
 import androidx.compose.runtime.*
 import com.varabyte.kobweb.compose.css.functions.clamp
@@ -32,8 +32,8 @@ import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
 import com.varabyte.kobweb.silk.components.style.toModifier
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import org.jetbrains.compose.web.css.*
-import com.example.testKotlin.components.widgets.IconButton
-import com.example.testKotlin.toSitePalette
+import ru.cleardocs.lkweb.components.widgets.IconButton
+import ru.cleardocs.lkweb.toSitePalette
 
 val NavHeaderStyle by ComponentStyle.base {
     Modifier.fillMaxWidth().padding(1.cssRem)

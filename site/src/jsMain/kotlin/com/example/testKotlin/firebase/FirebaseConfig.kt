@@ -1,4 +1,4 @@
-package com.example.testKotlin.firebase
+package ru.cleardocs.lkweb.firebase
 
 /**
  * Firebase project configuration

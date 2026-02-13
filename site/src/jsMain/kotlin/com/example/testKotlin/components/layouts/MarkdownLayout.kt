@@ -1,4 +1,4 @@
-package com.example.testKotlin.components.layouts
+package ru.cleardocs.lkweb.components.layouts
 
 import androidx.compose.runtime.Composable
 import com.varabyte.kobweb.compose.css.FontWeight
@@ -16,7 +16,7 @@ import org.jetbrains.compose.web.css.DisplayStyle
 import org.jetbrains.compose.web.css.LineStyle
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
-import com.example.testKotlin.toSitePalette
+import ru.cleardocs.lkweb.toSitePalette
 
 val MarkdownStyle by ComponentStyle {
     // The following rules apply to all descendant elements, indicated by the leading space.

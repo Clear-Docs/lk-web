@@ -1,13 +1,13 @@
-package com.example.testKotlin.pages
+package ru.cleardocs.lkweb.pages
 
 import androidx.compose.runtime.*
-import com.example.testKotlin.AuthGoogleButtonVariant
-import com.example.testKotlin.AuthPrimaryButtonVariant
-import com.example.testKotlin.AuthTabActiveVariant
-import com.example.testKotlin.AuthTabInactiveVariant
-import com.example.testKotlin.AuthToggleButtonVariant
-import com.example.testKotlin.firebase.*
-import com.example.testKotlin.toSitePalette
+import ru.cleardocs.lkweb.AuthGoogleButtonVariant
+import ru.cleardocs.lkweb.AuthPrimaryButtonVariant
+import ru.cleardocs.lkweb.AuthTabActiveVariant
+import ru.cleardocs.lkweb.AuthTabInactiveVariant
+import ru.cleardocs.lkweb.AuthToggleButtonVariant
+import ru.cleardocs.lkweb.firebase.*
+import ru.cleardocs.lkweb.toSitePalette
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row

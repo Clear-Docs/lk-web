@@ -1,4 +1,4 @@
-package com.example.testKotlin.components.widgets
+package ru.cleardocs.lkweb.components.widgets
 
 import androidx.compose.runtime.Composable
 import com.varabyte.kobweb.compose.ui.Modifier
@@ -6,8 +6,8 @@ import com.varabyte.kobweb.compose.ui.modifiers.setVariable
 import com.varabyte.kobweb.silk.components.forms.Button
 import com.varabyte.kobweb.silk.components.forms.ButtonVars
 import org.jetbrains.compose.web.css.em
-import com.example.testKotlin.CircleButtonVariant
-import com.example.testKotlin.UncoloredButtonVariant
+import ru.cleardocs.lkweb.CircleButtonVariant
+import ru.cleardocs.lkweb.UncoloredButtonVariant
 
 @Composable
 fun IconButton(onClick: () -> Unit, content: @Composable () -> Unit) {

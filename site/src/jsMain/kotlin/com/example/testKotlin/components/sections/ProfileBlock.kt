@@ -1,7 +1,7 @@
-package com.example.testKotlin.components.sections
+package ru.cleardocs.lkweb.components.sections
 
 import androidx.compose.runtime.Composable
-import com.example.testKotlin.firebase.FirebaseProfile
+import ru.cleardocs.lkweb.firebase.FirebaseProfile
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Spacer
 import com.varabyte.kobweb.compose.ui.Alignment

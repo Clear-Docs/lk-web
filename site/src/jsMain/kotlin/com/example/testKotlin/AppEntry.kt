@@ -1,4 +1,4 @@
-package com.example.testKotlin
+package ru.cleardocs.lkweb
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect

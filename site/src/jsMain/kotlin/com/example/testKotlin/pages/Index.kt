@@ -1,10 +1,10 @@
-package com.example.testKotlin.pages
+package ru.cleardocs.lkweb.pages
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import com.example.testKotlin.firebase.AuthState
-import com.example.testKotlin.firebase.FirebaseProvider
+import ru.cleardocs.lkweb.firebase.AuthState
+import ru.cleardocs.lkweb.firebase.FirebaseProvider
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
 
