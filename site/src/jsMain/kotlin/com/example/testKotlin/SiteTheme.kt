@@ -1,4 +1,4 @@
-package ru.cleardocs.lkweb
+package com.example.testKotlin
 
 import com.varabyte.kobweb.compose.ui.graphics.Color
 import com.varabyte.kobweb.compose.ui.graphics.Colors
@@ -18,14 +18,14 @@ class SitePalette(
     val brand: Brand,
 ) {
     class Brand(
-        val primary: Color = Color.rgb(0x3C83EF),
-        val accent: Color = Color.rgb(0xF3DB5B),
+        val primary: Color = Color.rgb(0x3C6FEF),
+        val accent: Color = Color.rgb(0x60A5FA),
     )
 }
 
 object SitePalettes {
     val light = SitePalette(
-        nearBackground = Color.rgb(0xF8FAFC),
+        nearBackground = Color.rgb(0xF1F5F9),
         cobweb = Color.rgb(0xE2E8F0),
         brand = SitePalette.Brand(
             primary = Color.rgb(0x3C6FEF),
@@ -33,11 +33,11 @@ object SitePalettes {
         )
     )
     val dark = SitePalette(
-        nearBackground = Color.rgb(0x13171F),
-        cobweb = Colors.LightGray.inverted(),
+        nearBackground = Color.rgb(0x111827),
+        cobweb = Color.rgb(0x1F2937),
         brand = SitePalette.Brand(
-            primary = Color.rgb(0x3C83EF),
-            accent = Color.rgb(0xF3DB5B),
+            primary = Color.rgb(0x3C6FEF),
+            accent = Color.rgb(0x60A5FA),
         )
     )
 }
@@ -51,7 +51,7 @@ fun ColorMode.toSitePalette(): SitePalette {
 
 @InitSilk
 fun initTheme(ctx: InitSilkContext) {
-    ctx.theme.palettes.light.background = Color.rgb(0xFFFFFF)
+    ctx.theme.palettes.light.background = Color.rgb(0xF8FAFC)
     ctx.theme.palettes.light.color = Color.rgb(0x0F172A)
     ctx.theme.palettes.dark.background = Color.rgb(0x0B1120)
     ctx.theme.palettes.dark.color = Colors.White
