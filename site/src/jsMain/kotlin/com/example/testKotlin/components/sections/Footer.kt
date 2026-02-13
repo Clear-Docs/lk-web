@@ -12,6 +12,7 @@ import com.varabyte.kobweb.silk.components.style.ComponentStyle
 import com.varabyte.kobweb.silk.components.style.base
 import com.varabyte.kobweb.silk.components.style.toModifier
 import com.varabyte.kobweb.silk.components.text.SpanText
+import kotlin.js.Date
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Span
@@ -27,9 +28,10 @@ val FooterStyle by ComponentStyle.base {
 
 @Composable
 fun Footer(modifier: Modifier = Modifier) {
+    val currentYear = Date().getFullYear()
     Box(FooterStyle.toModifier().then(modifier), contentAlignment = Alignment.Center) {
         Span(Modifier.textAlign(TextAlign.Center).toAttrs()) {
-            SpanText("ClearDocs © 2025")
+            SpanText("ClearDocs © $currentYear")
         }
     }
 }
