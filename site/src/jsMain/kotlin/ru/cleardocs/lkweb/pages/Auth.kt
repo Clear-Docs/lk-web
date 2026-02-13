@@ -283,13 +283,13 @@ fun AuthPage() {
                                             console.log("[Auth] Вход успешен")
                                         } else {
                                             console.log("[Auth] Регистрация: начало, email=", normalizedEmail)
-                                            val result =
-                                                createUserWithEmailAndPassword(
-                                                    repository.auth,
-                                                    normalizedEmail,
-                                                    password
-                                                )
-                                            val user = result?.user
+                                            val result = createUserWithEmailAndPassword(
+                                                repository.auth,
+                                                normalizedEmail,
+                                                password
+                                            )
+                                            // В модульном SDK результат — UserCredential; user берём явно через asDynamic() для Kotlin/JS
+                                            val user = result?.asDynamic()?.user as? dynamic
                                             console.log(
                                                 "[Auth] Регистрация: createUser OK, user=",
                                                 user?.uid,

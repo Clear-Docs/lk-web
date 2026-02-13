@@ -55,6 +55,5 @@ private fun SvgCobweb(modifier: Modifier) {
 @Composable
 fun PageLayout(title: String, content: @Composable () -> Unit) {
     document.title = title
-
     content()
 }
