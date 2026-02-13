@@ -26,10 +26,6 @@ fun ProfilePage() {
     val palette = ColorMode.current.toSitePalette()
     val ctx = rememberPageContext()
 
-    if (authState == AuthState.Unauthenticated) {
-        ctx.router.tryRoutingTo("/auth")
-    }
-
     Box(
         Modifier
             .fillMaxSize()
@@ -52,10 +48,9 @@ fun ProfilePage() {
         ) {
             SpanText("Профиль", Modifier.fontSize(1.5.cssRem))
 
-            if (authState == AuthState.Loading) {
-                SpanText("Проверяем авторизацию...")
-            } else if (authState == AuthState.Authenticated) {
-                ProfileBlock(
+            when (authState) {
+                AuthState.Loading -> SpanText("Проверяем авторизацию...")
+                AuthState.Authenticated -> ProfileBlock(
                     profile = profile,
                     onSignOut = {
                         scope.launch {
@@ -64,8 +59,9 @@ fun ProfilePage() {
                         }
                     }
                 )
-            } else {
-                SpanText("Перенаправляем на авторизацию...")
+                AuthState.Unauthenticated -> {
+                    ctx.router.tryRoutingTo("/auth")
+                }
             }
         }
     }
