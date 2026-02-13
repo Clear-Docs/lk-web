@@ -1,10 +1,10 @@
-package com.example.testKotlin.pages
+package ru.cleardocs.lkweb.pages
 
 import androidx.compose.runtime.*
-import com.example.testKotlin.components.layouts.PageLayout
-import com.example.testKotlin.components.sections.ProfileBlock
+import ru.cleardocs.lkweb.components.layouts.PageLayout
+import ru.cleardocs.lkweb.components.sections.ProfileBlock
 import ru.cleardocs.lkweb.firebase.*
-import com.example.testKotlin.toSitePalette
+import ru.cleardocs.lkweb.toSitePalette
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.ui.Alignment
@@ -18,6 +18,7 @@ import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
+import ru.cleardocs.lkweb.toSitePalette
 
 @Page("/profile")
 @Composable

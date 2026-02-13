@@ -1,4 +1,4 @@
-package com.example.testKotlin.components.sections
+package ru.cleardocs.lkweb.components.sections
 
 import androidx.compose.runtime.Composable
 import org.jetbrains.compose.web.css.LineStyle
@@ -16,7 +16,7 @@ import kotlin.js.Date
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Span
-import com.example.testKotlin.toSitePalette
+import ru.cleardocs.lkweb.toSitePalette
 
 val FooterStyle by ComponentStyle.base {
     val palette = colorMode.toSitePalette()

@@ -1,4 +1,4 @@
-package com.example.testKotlin.components.sections
+package ru.cleardocs.lkweb.components.sections
 
 import androidx.compose.runtime.Composable
 import ru.cleardocs.lkweb.firebase.FirebaseProfile
@@ -15,7 +15,7 @@ import org.jetbrains.compose.web.dom.Img
 import org.jetbrains.compose.web.dom.Text
 
 @Composable
-fun ProfileBlock(profile: FirebaseProfile?, onSignOut: () -> Unit) {
+fun ProfileBlock(profile: ru.cleardocs.lkweb.firebase.FirebaseProfile?, onSignOut: () -> Unit) {
     Column(
         Modifier.fillMaxWidth().gap(1.cssRem),
         horizontalAlignment = Alignment.CenterHorizontally

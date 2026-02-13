@@ -5,7 +5,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 sealed interface AuthState {
-    data object Loading : AuthState
+    data object Loading : ru.cleardocs.lkweb.firebase.AuthState
     data object Authenticated : AuthState
     data object Unauthenticated : AuthState
 }
@@ -24,7 +24,8 @@ class FirebaseRepository(
 
     private val unsubscribeAuthListener: () -> Unit =
         onAuthStateChanged(firebase.auth) { user ->
-            _authStateFlow.value = if (user == null) AuthState.Unauthenticated else AuthState.Authenticated
+            _authStateFlow.value =
+                if (user == null) AuthState.Unauthenticated else AuthState.Authenticated
             _profileFlow.value = firebaseUserProfile(user)
         }
 

@@ -16,7 +16,7 @@ import org.jetbrains.compose.web.css.DisplayStyle
 import org.jetbrains.compose.web.css.LineStyle
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
-import com.example.testKotlin.toSitePalette
+import ru.cleardocs.lkweb.toSitePalette
 
 val MarkdownStyle by ComponentStyle {
     // The following rules apply to all descendant elements, indicated by the leading space.
@@ -90,8 +90,11 @@ val MarkdownStyle by ComponentStyle {
 
 @Composable
 fun MarkdownLayout(title: String, content: @Composable () -> Unit) {
-    com.example.testKotlin.components.layouts.PageLayout(title) {
-        Column(MarkdownStyle.toModifier().fillMaxSize(), horizontalAlignment = Alignment.Start) {
+    PageLayout(title) {
+        Column(
+            MarkdownStyle.toModifier().fillMaxSize(),
+            horizontalAlignment = Alignment.Start
+        ) {
             content()
         }
     }

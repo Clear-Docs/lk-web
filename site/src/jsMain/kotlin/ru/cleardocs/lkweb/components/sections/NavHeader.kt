@@ -1,4 +1,4 @@
-package com.example.testKotlin.components.sections
+package ru.cleardocs.lkweb.components.sections
 
 import androidx.compose.runtime.*
 import com.varabyte.kobweb.compose.css.functions.clamp
@@ -10,6 +10,7 @@ import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.graphics.Colors
 import com.varabyte.kobweb.compose.ui.modifiers.*
+import com.varabyte.kobweb.compose.ui.modifiers.setVariable
 import com.varabyte.kobweb.silk.components.animation.Keyframes
 import com.varabyte.kobweb.silk.components.animation.toAnimation
 import com.varabyte.kobweb.silk.components.text.SpanText
@@ -33,14 +34,14 @@ import com.varabyte.kobweb.silk.components.style.toModifier
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import org.jetbrains.compose.web.css.*
 import ru.cleardocs.lkweb.components.widgets.IconButton
-import com.example.testKotlin.toSitePalette
+import ru.cleardocs.lkweb.toSitePalette
 
 val NavHeaderStyle by ComponentStyle.base {
     val palette = colorMode.toSitePalette()
     Modifier
         .fillMaxWidth()
         .padding(1.cssRem)
-        .backgroundColor(palette.nearBackground)
+        .backgroundColor(palette.cobweb)
 }
 
 val NavLinkStyle by ComponentStyle.base {
@@ -145,13 +146,18 @@ fun NavHeader(menu: @Composable () -> Unit = {}) {
             var menuState by remember { mutableStateOf(SideMenuState.CLOSED) }
 
             ColorModeButton()
-            HamburgerButton(onClick =  { menuState = SideMenuState.OPEN })
+            HamburgerButton(onClick = {
+                menuState = SideMenuState.OPEN
+            })
 
             if (menuState != SideMenuState.CLOSED) {
                 SideMenu(
                     menuState,
                     close = { menuState = menuState.close() },
-                    onAnimationEnd = { if (menuState == SideMenuState.CLOSING) menuState = SideMenuState.CLOSED }
+                    onAnimationEnd = {
+                        if (menuState == SideMenuState.CLOSING) menuState =
+                            SideMenuState.CLOSED
+                    }
                 )
             }
         }

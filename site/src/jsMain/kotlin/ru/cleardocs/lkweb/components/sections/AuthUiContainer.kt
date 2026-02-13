@@ -1,7 +1,7 @@
 package ru.cleardocs.lkweb.components.sections
 
 import androidx.compose.runtime.Composable
-import com.example.testKotlin.toSitePalette
+import ru.cleardocs.lkweb.toSitePalette
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.*
@@ -10,6 +10,7 @@ import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.dom.Div
+import ru.cleardocs.lkweb.toSitePalette
 
 @Composable
 fun AuthUiContainer() {
