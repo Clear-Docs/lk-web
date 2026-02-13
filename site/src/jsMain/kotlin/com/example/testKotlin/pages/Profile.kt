@@ -1,7 +1,7 @@
 package com.example.testKotlin.pages
 
 import androidx.compose.runtime.*
-import ru.cleardocs.lkweb.components.sections.ProfileBlock
+import com.example.testKotlin.components.sections.ProfileBlock
 import ru.cleardocs.lkweb.firebase.*
 import ru.cleardocs.lkweb.toSitePalette
 import com.varabyte.kobweb.compose.foundation.layout.Box
