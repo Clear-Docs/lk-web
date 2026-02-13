@@ -13,7 +13,7 @@ import kotlinx.browser.document
 import org.jetbrains.compose.web.css.FlexDirection
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.vh
-import ru.cleardocs.lkweb.components.sections.Footer
+import com.example.testKotlin.components.sections.Footer
 import com.example.testKotlin.components.sections.NavHeader
 
 val PageContentStyle by ComponentStyle {

@@ -1,4 +1,4 @@
-package ru.cleardocs.lkweb.components.sections
+package com.example.testKotlin.components.sections
 
 import androidx.compose.runtime.Composable
 import org.jetbrains.compose.web.css.LineStyle
