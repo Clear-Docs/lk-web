@@ -6,7 +6,7 @@ package com.example.testKotlin.firebase
  */
 val defaultFirebaseConfig = FirebaseConfig(
     apiKey = "AIzaSyDkXYVilutKS9snUQc3CvzvHpXuyqf3YAA",
-    authDomain = "radar-cffdb.firebaseapp.com",
+    authDomain = "lk.cleardocs.ru",
     projectId = "radar-cffdb",
     appId = "1:895561447215:web:3244853d278422d1d1d3da",
     messagingSenderId = "895561447215",
