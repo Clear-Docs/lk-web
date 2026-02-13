@@ -13,7 +13,8 @@ version = "1.0-SNAPSHOT"
 kobweb {
     app {
         index {
-            description.set("ClearDocs - Powered by Kobweb")
+            description.set("ClearDocs")
+            faviconPath.set("/favicon.png")
         }
     }
 }
