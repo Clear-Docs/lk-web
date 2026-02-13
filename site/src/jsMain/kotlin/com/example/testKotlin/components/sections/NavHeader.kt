@@ -50,8 +50,8 @@ val NavLinkStyle by ComponentStyle.base {
 val ClearDocsLogoStyle by ComponentStyle.base {
     val palette = colorMode.toSitePalette()
     Modifier
-        .fontSize(1.5.cssRem)
-        .fontWeight(600)
+        .fontSize(1.6.cssRem)
+        .fontWeight(500)
         .setVariable(com.varabyte.kobweb.silk.components.style.vars.color.ColorVar, palette.brand.primary)
 }
 
