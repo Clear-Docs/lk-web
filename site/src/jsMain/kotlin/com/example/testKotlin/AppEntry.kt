@@ -16,7 +16,7 @@ import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import kotlinx.browser.localStorage
 import org.jetbrains.compose.web.css.vh
 
-private const val COLOR_MODE_KEY = "testKotlin:colorMode"
+private const val COLOR_MODE_KEY = "clearDocs:colorMode"
 
 @InitSilk
 fun initColorMode(ctx: InitSilkContext) {

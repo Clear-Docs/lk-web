@@ -1,4 +1,4 @@
-package ru.cleardocs.lkweb.pages
+package com.example.testKotlin.pages
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState

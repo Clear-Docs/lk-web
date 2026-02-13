@@ -7,14 +7,13 @@ plugins {
     alias(libs.plugins.kobwebx.markdown)
 }
 
-group = "ru.cleardocs.lkweb"
+group = "com.example.testKotlin"
 version = "1.0-SNAPSHOT"
 
 kobweb {
     app {
         index {
-            description.set("Powered by Kobweb")
-            faviconPath.set("/favicon.png")
+            description.set("ClearDocs - Powered by Kobweb")
         }
     }
 }
@@ -22,7 +21,7 @@ kobweb {
 kotlin {
     // This example is frontend only. However, for a fullstack app, you can uncomment the includeServer parameter
     // and the `jvmMain` source set below.
-    configAsKobwebApplication("lkweb" /*, includeServer = true*/)
+    configAsKobwebApplication("testKotlin" /*, includeServer = true*/)
 
     js {
         browser {

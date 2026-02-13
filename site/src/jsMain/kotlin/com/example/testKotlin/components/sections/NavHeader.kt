@@ -12,7 +12,7 @@ import com.varabyte.kobweb.compose.ui.graphics.Colors
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.silk.components.animation.Keyframes
 import com.varabyte.kobweb.silk.components.animation.toAnimation
-import com.varabyte.kobweb.silk.components.graphics.Image
+import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.components.icons.CloseIcon
 import com.varabyte.kobweb.silk.components.icons.HamburgerIcon
 import com.varabyte.kobweb.silk.components.icons.MoonIcon
@@ -31,17 +31,39 @@ import com.varabyte.kobweb.silk.components.style.base
 import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
 import com.varabyte.kobweb.silk.components.style.toModifier
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
+import com.varabyte.kobweb.silk.theme.colors.palette.toPalette
 import org.jetbrains.compose.web.css.*
 import ru.cleardocs.lkweb.components.widgets.IconButton
 import ru.cleardocs.lkweb.toSitePalette
 
 val NavHeaderStyle by ComponentStyle.base {
-    Modifier.fillMaxWidth().padding(1.cssRem)
+    val palette = colorMode.toSitePalette()
+    Modifier
+        .fillMaxWidth()
+        .padding(1.cssRem)
+        .backgroundColor(palette.nearBackground)
+}
+
+val NavLinkStyle by ComponentStyle.base {
+    Modifier
+}
+
+val ClearDocsLogoStyle by ComponentStyle.base {
+    val palette = colorMode.toSitePalette()
+    Modifier
+        .fontSize(1.5.cssRem)
+        .fontWeight(600)
+        .setVariable(com.varabyte.kobweb.silk.components.style.vars.color.ColorVar, palette.brand.primary)
 }
 
 @Composable
 private fun NavLink(path: String, text: String) {
-    Link(path, text, variant = UndecoratedLinkVariant.then(UncoloredLinkVariant))
+    Link(
+        path,
+        text,
+        modifier = NavLinkStyle.toModifier(),
+        variant = UndecoratedLinkVariant.then(UncoloredLinkVariant)
+    )
 }
 
 @Composable
@@ -100,7 +122,40 @@ enum class SideMenuState {
 
 @Composable
 fun NavHeader() {
+    Row(NavHeaderStyle.toModifier(), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.gap(1.5.cssRem).displayIfAtLeast(Breakpoint.MD), verticalAlignment = Alignment.CenterVertically) {
+            MenuItems()
+        }
+        Spacer()
+        Link("/", modifier = ClearDocsLogoStyle.toModifier(), variant = UndecoratedLinkVariant.then(UncoloredLinkVariant)) {
+            SpanText("ClearDocs")
+        }
+        Spacer()
+        Row(Modifier.gap(1.5.cssRem).displayIfAtLeast(Breakpoint.MD), verticalAlignment = Alignment.CenterVertically) {
+            ColorModeButton()
+        }
 
+        Row(
+            Modifier
+                .fontSize(1.5.cssRem)
+                .gap(1.cssRem)
+                .displayUntil(Breakpoint.MD),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            var menuState by remember { mutableStateOf(SideMenuState.CLOSED) }
+
+            ColorModeButton()
+            HamburgerButton(onClick =  { menuState = SideMenuState.OPEN })
+
+            if (menuState != SideMenuState.CLOSED) {
+                SideMenu(
+                    menuState,
+                    close = { menuState = menuState.close() },
+                    onAnimationEnd = { if (menuState == SideMenuState.CLOSING) menuState = SideMenuState.CLOSED }
+                )
+            }
+        }
+    }
 }
 
 @Composable
