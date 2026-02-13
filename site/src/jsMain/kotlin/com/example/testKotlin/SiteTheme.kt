@@ -20,12 +20,14 @@ object SitePalettes {
     val light = SitePalette(
         nearBackground = Color.rgb(0xF8FAFC),
         cobweb = Color.rgb(0xE2E8F0),
-        brand = SitePalette.Brand(Color.rgb(0x3C6FEF), Color.rgb(0x60A5FA)),
+        // Primary brand blue (slightly more "sky/голубой" than before)
+        brand = SitePalette.Brand(Color.rgb(0x3B82F6), Color.rgb(0x60A5FA)),
     )
     val dark = SitePalette(
         nearBackground = Color.rgb(0x13171F),
         cobweb = Colors.LightGray.inverted(),
-        brand = SitePalette.Brand(Color.rgb(0x3C83EF), Color.rgb(0xF3DB5B)),
+        // Keep primary consistent between light/dark for brand recognition
+        brand = SitePalette.Brand(Color.rgb(0x3B82F6), Color.rgb(0xF3DB5B)),
     )
 }
 
