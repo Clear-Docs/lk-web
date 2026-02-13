@@ -17,7 +17,7 @@ import com.varabyte.kobweb.silk.init.registerStyleBase
 import com.varabyte.kobweb.silk.theme.colors.palette.background
 import com.varabyte.kobweb.silk.theme.colors.palette.color
 import com.varabyte.kobweb.silk.theme.colors.palette.toPalette
-import ru.cleardocs.lkweb.toSitePalette
+import com.example.testKotlin.toSitePalette
 import com.varabyte.kobweb.silk.theme.modifyComponentStyleBase
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.percent

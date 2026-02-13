@@ -31,10 +31,9 @@ import com.varabyte.kobweb.silk.components.style.base
 import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
 import com.varabyte.kobweb.silk.components.style.toModifier
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
-import com.varabyte.kobweb.silk.theme.colors.palette.toPalette
 import org.jetbrains.compose.web.css.*
 import ru.cleardocs.lkweb.components.widgets.IconButton
-import ru.cleardocs.lkweb.toSitePalette
+import com.example.testKotlin.toSitePalette
 
 val NavHeaderStyle by ComponentStyle.base {
     val palette = colorMode.toSitePalette()

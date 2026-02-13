@@ -3,7 +3,7 @@ package com.example.testKotlin.pages
 import androidx.compose.runtime.*
 import com.example.testKotlin.components.sections.ProfileBlock
 import ru.cleardocs.lkweb.firebase.*
-import ru.cleardocs.lkweb.toSitePalette
+import com.example.testKotlin.toSitePalette
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.ui.Alignment

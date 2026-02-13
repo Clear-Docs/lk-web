@@ -7,7 +7,7 @@ import ru.cleardocs.lkweb.AuthTabActiveVariant
 import ru.cleardocs.lkweb.AuthTabInactiveVariant
 import ru.cleardocs.lkweb.AuthToggleButtonVariant
 import ru.cleardocs.lkweb.firebase.*
-import ru.cleardocs.lkweb.toSitePalette
+import com.example.testKotlin.toSitePalette
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
@@ -22,7 +22,6 @@ import com.varabyte.kobweb.compose.ui.modifiers.border
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxSize
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.fontSize
-import com.varabyte.kobweb.compose.ui.modifiers.fontWeight
 import com.varabyte.kobweb.compose.ui.modifiers.gap
 import com.varabyte.kobweb.compose.ui.modifiers.margin
 import com.varabyte.kobweb.compose.ui.modifiers.maxWidth

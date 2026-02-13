@@ -16,7 +16,7 @@ import org.jetbrains.compose.web.css.DisplayStyle
 import org.jetbrains.compose.web.css.LineStyle
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
-import ru.cleardocs.lkweb.toSitePalette
+import com.example.testKotlin.toSitePalette
 
 val MarkdownStyle by ComponentStyle {
     // The following rules apply to all descendant elements, indicated by the leading space.
