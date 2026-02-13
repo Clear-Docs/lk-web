@@ -119,12 +119,13 @@ enum class SideMenuState {
     }
 }
 
+//        Row(Modifier.gap(1.5.cssRem).displayIfAtLeast(Breakpoint.MD), verticalAlignment = Alignment.CenterVertically) {
+//            MenuItems()
+//        }
 @Composable
-fun NavHeader() {
+fun NavHeader(menu: @Composable () -> Unit = {}) {
     Row(NavHeaderStyle.toModifier(), verticalAlignment = Alignment.CenterVertically) {
-        Row(Modifier.gap(1.5.cssRem).displayIfAtLeast(Breakpoint.MD), verticalAlignment = Alignment.CenterVertically) {
-            MenuItems()
-        }
+        menu()
         Spacer()
         Link("/", modifier = ClearDocsLogoStyle.toModifier(), variant = UndecoratedLinkVariant.then(UncoloredLinkVariant)) {
             SpanText("ClearDocs")
