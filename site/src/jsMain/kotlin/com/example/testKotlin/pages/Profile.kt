@@ -1,6 +1,7 @@
 package com.example.testKotlin.pages
 
 import androidx.compose.runtime.*
+import com.example.testKotlin.components.layouts.PageLayout
 import com.example.testKotlin.components.sections.ProfileBlock
 import ru.cleardocs.lkweb.firebase.*
 import com.example.testKotlin.toSitePalette
@@ -32,39 +33,41 @@ fun ProfilePage() {
         ctx.router.tryRoutingTo("/auth")
     }
 
-    Box(
-        Modifier
-            .fillMaxSize()
-            .padding(3.cssRem),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
+    PageLayout("Профиль") {
+        Box(
             Modifier
-                .fillMaxWidth()
-                .maxWidth(32.cssRem)
-                .gap(1.25.cssRem)
-                .padding(2.cssRem)
-                .borderRadius(1.25.cssRem)
-                .backgroundColor(palette.nearBackground)
-                .border(1.px, LineStyle.Solid, palette.cobweb),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize()
+                .padding(3.cssRem),
+            contentAlignment = Alignment.Center
         ) {
-            SpanText("Профиль", Modifier.fontSize(1.5.cssRem))
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .maxWidth(32.cssRem)
+                    .gap(1.25.cssRem)
+                    .padding(2.cssRem)
+                    .borderRadius(1.25.cssRem)
+                    .backgroundColor(palette.nearBackground)
+                    .border(1.px, LineStyle.Solid, palette.cobweb),
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                SpanText("Профиль", Modifier.fontSize(1.5.cssRem))
 
-            if (authState == AuthState.Loading) {
-                SpanText("Проверяем авторизацию...")
-            } else if (authState == AuthState.Authenticated) {
-                ProfileBlock(
-                    profile = profile,
-                    onSignOut = {
-                        scope.launch {
-                            signOut(repository.auth)
-                            ctx.router.tryRoutingTo("/auth")
+                if (authState == AuthState.Loading) {
+                    SpanText("Проверяем авторизацию...")
+                } else if (authState == AuthState.Authenticated) {
+                    ProfileBlock(
+                        profile = profile,
+                        onSignOut = {
+                            scope.launch {
+                                signOut(repository.auth)
+                                ctx.router.tryRoutingTo("/auth")
+                            }
                         }
-                    }
-                )
-            } else {
-                SpanText("Перенаправляем на авторизацию...")
+                    )
+                } else {
+                    SpanText("Перенаправляем на авторизацию...")
+                }
             }
         }
     }

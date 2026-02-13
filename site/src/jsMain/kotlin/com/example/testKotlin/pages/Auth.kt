@@ -27,6 +27,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.margin
 import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.flexGrow
+import com.example.testKotlin.components.layouts.PageLayout
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.components.forms.Button
@@ -103,13 +104,14 @@ fun AuthPage() {
         ctx.router.tryRoutingTo("/profile")
     }
 
-    Box(
-        Modifier
-            .fillMaxSize()
-            .padding(3.cssRem),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
+    PageLayout("Вход в аккаунт") {
+        Box(
+            Modifier
+                .fillMaxSize()
+                .padding(3.cssRem),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(
             Modifier
                 .fillMaxWidth()
                 .maxWidth(32.cssRem)
@@ -359,6 +361,7 @@ fun AuthPage() {
                 }
                 SpanText("Перенаправляем в профиль...")
             }
+        }
         }
     }
 }
