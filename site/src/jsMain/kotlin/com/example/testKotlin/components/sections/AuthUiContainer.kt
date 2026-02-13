@@ -1,7 +1,7 @@
-package com.example.testKotlin.components.sections
+package ru.cleardocs.lkweb.components.sections
 
 import androidx.compose.runtime.Composable
-import com.example.testKotlin.toSitePalette
+import ru.cleardocs.lkweb.toSitePalette
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.*

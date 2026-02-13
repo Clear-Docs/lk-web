@@ -1,14 +1,14 @@
 site:
-  title: "K"
+  title: ""
 
 server:
   files:
     dev:
       contentRoot: "build/processedResources/js/main/public"
-      script: "build/dist/js/developmentExecutable/testKotlin.js"
-      api: "build/libs/testKotlin.jar"
+      script: "build/dist/js/developmentExecutable/lkweb.js"
+      api: "build/libs/lkweb.jar"
     prod:
-      script: "build/dist/js/productionExecutable/testKotlin.js"
+      script: "build/dist/js/productionExecutable/lkweb.js"
       siteRoot: ".kobweb/site"
 
   port: 8080

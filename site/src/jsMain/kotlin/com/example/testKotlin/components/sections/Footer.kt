@@ -1,4 +1,4 @@
-package com.example.testKotlin.components.sections
+package ru.cleardocs.lkweb.components.sections
 
 import androidx.compose.runtime.Composable
 import com.varabyte.kobweb.compose.css.TextAlign
@@ -19,7 +19,7 @@ import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.dom.Span
-import com.example.testKotlin.toSitePalette
+import ru.cleardocs.lkweb.toSitePalette
 
 val FooterStyle by ComponentStyle.base {
     Modifier
