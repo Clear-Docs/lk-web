@@ -24,7 +24,7 @@ LaunchedEffect(colorMode) {
 }
 
 LaunchedEffect(title) {
-    document.title = "Kobweb - $title"
+    document.title = "$title"
 }
 ```
 
