@@ -2,23 +2,15 @@ package ru.cleardocs.lkweb.components.layouts
 
 import androidx.compose.runtime.Composable
 import com.varabyte.kobweb.compose.dom.svg.*
-import com.varabyte.kobweb.compose.foundation.layout.Box
-import com.varabyte.kobweb.compose.foundation.layout.Column
-import com.varabyte.kobweb.compose.foundation.layout.ColumnScope
-import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.compose.ui.toAttrs
 import com.varabyte.kobweb.silk.components.style.ComponentStyle
 import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
-import com.varabyte.kobweb.silk.components.style.toModifier
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import kotlinx.browser.document
 import org.jetbrains.compose.web.css.cssRem
-import org.jetbrains.compose.web.css.fr
 import org.jetbrains.compose.web.css.percent
-import ru.cleardocs.lkweb.components.sections.Footer
-import ru.cleardocs.lkweb.components.sections.NavHeader
 import ru.cleardocs.lkweb.toSitePalette
 
 val PageContentStyle by ComponentStyle {
@@ -62,7 +54,6 @@ private fun SvgCobweb(modifier: Modifier) {
 
 @Composable
 fun PageLayout(title: String, content: @Composable () -> Unit) {
-    document.title = "Kobweb - $title"
-
+    document.title = title
     content()
 }

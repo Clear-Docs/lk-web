@@ -1,4 +1,4 @@
-package ru.cleardocs.lkweb.components.sections
+package com.example.testKotlin.components.sections
 
 import androidx.compose.runtime.*
 import com.varabyte.kobweb.compose.css.functions.clamp
