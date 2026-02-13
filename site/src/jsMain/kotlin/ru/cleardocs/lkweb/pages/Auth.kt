@@ -81,7 +81,7 @@ private fun authErrorToMessage(error: dynamic, isGoogleAuth: Boolean = false): S
 @Page("/auth")
 @Composable
 fun AuthPage() {
-    val repository = _root_ide_package_.ru.cleardocs.lkweb.firebase.FirebaseProvider.repository
+    val repository = FirebaseProvider.repository
     val authState by repository.authStateFlow.collectAsState()
     val ctx = rememberPageContext()
     val palette = ColorMode.current.toSitePalette()
@@ -90,7 +90,7 @@ fun AuthPage() {
     val inputFg = colorPalette.color.toString()
     val inputBorder = palette.cobweb.toString()
     val scope = rememberCoroutineScope()
-    var mode by remember { mutableStateOf(_root_ide_package_.ru.cleardocs.lkweb.pages.AuthMode.SIGN_IN) }
+    var mode by remember { mutableStateOf(AuthMode.SIGN_IN) }
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
     var confirmPassword by remember { mutableStateOf("") }
@@ -100,12 +100,12 @@ fun AuthPage() {
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var successMessage by remember { mutableStateOf<String?>(null) }
 
-    if (authState == _root_ide_package_.ru.cleardocs.lkweb.firebase.AuthState.Authenticated) {
+    if (authState == AuthState.Authenticated) {
         errorMessage = null
         ctx.router.tryRoutingTo("/profile")
     }
 
-    _root_ide_package_.ru.cleardocs.lkweb.components.layouts.PageLayout("Вход в аккаунт") {
+    PageLayout("Вход в аккаунт") {
         Box(
             Modifier
                 .fillMaxSize()
@@ -125,8 +125,8 @@ fun AuthPage() {
             ) {
                 SpanText("Вход в аккаунт", Modifier.fontSize(1.5.cssRem))
 
-                if (authState != _root_ide_package_.ru.cleardocs.lkweb.firebase.AuthState.Authenticated) {
-                    if (authState == _root_ide_package_.ru.cleardocs.lkweb.firebase.AuthState.Loading) {
+                if (authState != AuthState.Authenticated) {
+                    if (authState == AuthState.Loading) {
                         SpanText("Проверяем сессию...")
                         return@Column
                     }
@@ -137,26 +137,26 @@ fun AuthPage() {
                         ) {
                             Button(
                                 onClick = {
-                                    mode = _root_ide_package_.ru.cleardocs.lkweb.pages.AuthMode.SIGN_IN
+                                    mode = AuthMode.SIGN_IN
                                     errorMessage = null
                                     successMessage = null
                                 },
                                 modifier = Modifier.fillMaxWidth().flexGrow(1).padding(0.65.cssRem)
                                     .borderRadius(0.65.cssRem),
-                                variant = if (mode == _root_ide_package_.ru.cleardocs.lkweb.pages.AuthMode.SIGN_IN) _root_ide_package_.ru.cleardocs.lkweb.AuthTabActiveVariant else _root_ide_package_.ru.cleardocs.lkweb.AuthTabInactiveVariant,
+                                variant = if (mode == AuthMode.SIGN_IN) AuthTabActiveVariant else AuthTabInactiveVariant,
                                 enabled = !isLoading
                             ) {
                                 SpanText("Вход")
                             }
                             Button(
                                 onClick = {
-                                    mode = _root_ide_package_.ru.cleardocs.lkweb.pages.AuthMode.SIGN_UP
+                                    mode = AuthMode.SIGN_UP
                                     errorMessage = null
                                     successMessage = null
                                 },
                                 modifier = Modifier.fillMaxWidth().flexGrow(1).padding(0.65.cssRem)
                                     .borderRadius(0.65.cssRem),
-                                variant = if (mode == _root_ide_package_.ru.cleardocs.lkweb.pages.AuthMode.SIGN_UP) _root_ide_package_.ru.cleardocs.lkweb.AuthTabActiveVariant else _root_ide_package_.ru.cleardocs.lkweb.AuthTabInactiveVariant,
+                                variant = if (mode == AuthMode.SIGN_UP) AuthTabActiveVariant else AuthTabInactiveVariant,
                                 enabled = !isLoading
                             ) {
                                 SpanText("Регистрация")
@@ -210,14 +210,14 @@ fun AuthPage() {
                             Button(
                                 onClick = { isPasswordVisible = !isPasswordVisible },
                                 modifier = Modifier.padding(0.7.cssRem, 0.85.cssRem).borderRadius(0.6.cssRem),
-                                variant = _root_ide_package_.ru.cleardocs.lkweb.AuthToggleButtonVariant,
+                                variant = AuthToggleButtonVariant,
                                 enabled = !isLoading
                             ) {
                                 SpanText(if (isPasswordVisible) "Скрыть" else "Показать")
                             }
                         }
 
-                        if (mode == _root_ide_package_.ru.cleardocs.lkweb.pages.AuthMode.SIGN_UP) {
+                        if (mode == AuthMode.SIGN_UP) {
                             Row(
                                 Modifier.fillMaxWidth().gap(0.5.cssRem).margin(bottom = 0.75.cssRem),
                                 verticalAlignment = Alignment.CenterVertically
@@ -245,7 +245,7 @@ fun AuthPage() {
                                 Button(
                                     onClick = { isConfirmPasswordVisible = !isConfirmPasswordVisible },
                                     modifier = Modifier.padding(0.7.cssRem, 0.85.cssRem).borderRadius(0.6.cssRem),
-                                    variant = _root_ide_package_.ru.cleardocs.lkweb.AuthToggleButtonVariant,
+                                    variant = AuthToggleButtonVariant,
                                     enabled = !isLoading
                                 ) {
                                     SpanText(if (isConfirmPasswordVisible) "Скрыть" else "Показать")
@@ -263,7 +263,7 @@ fun AuthPage() {
                                         errorMessage = "Заполните email и пароль."
                                         return@launch
                                     }
-                                    if (mode == _root_ide_package_.ru.cleardocs.lkweb.pages.AuthMode.SIGN_UP) {
+                                    if (mode == AuthMode.SIGN_UP) {
                                         if (password.length < 6) {
                                             errorMessage = "Пароль должен содержать минимум 6 символов."
                                             return@launch
@@ -276,9 +276,9 @@ fun AuthPage() {
 
                                     isLoading = true
                                     try {
-                                        if (mode == _root_ide_package_.ru.cleardocs.lkweb.pages.AuthMode.SIGN_IN) {
+                                        if (mode == AuthMode.SIGN_IN) {
                                             console.log("[Auth] Вход:", normalizedEmail)
-                                            _root_ide_package_.ru.cleardocs.lkweb.firebase.signInWithEmailAndPassword(
+signInWithEmailAndPassword(
                                                 repository.auth,
                                                 normalizedEmail,
                                                 password
@@ -287,7 +287,7 @@ fun AuthPage() {
                                         } else {
                                             console.log("[Auth] Регистрация: начало, email=", normalizedEmail)
                                             val result =
-                                                _root_ide_package_.ru.cleardocs.lkweb.firebase.createUserWithEmailAndPassword(
+createUserWithEmailAndPassword(
                                                     repository.auth,
                                                     normalizedEmail,
                                                     password
@@ -302,7 +302,7 @@ fun AuthPage() {
                                             if (user != null) {
                                                 try {
                                                     console.log("[Auth] Регистрация: отправка письма верификации...")
-                                                    _root_ide_package_.ru.cleardocs.lkweb.firebase.sendEmailVerification(
+sendEmailVerification(
                                                         user
                                                     )
                                                     console.log("[Auth] Регистрация: sendEmailVerification OK")
@@ -317,7 +317,7 @@ fun AuthPage() {
                                                     )
                                                     errorMessage =
                                                         "Регистрация успешна, но не удалось отправить письмо подтверждения: ${
-                                                            _root_ide_package_.ru.cleardocs.lkweb.pages.authErrorToMessage(
+authErrorToMessage(
                                                                 verifyErr,
                                                                 false
                                                             )
@@ -331,7 +331,7 @@ fun AuthPage() {
                                         }
                                     } catch (e: dynamic) {
                                         console.error("[Auth] Ошибка:", e?.code, e?.message, e)
-                                        errorMessage = _root_ide_package_.ru.cleardocs.lkweb.pages.authErrorToMessage(
+                                        errorMessage = authErrorToMessage(
                                             e,
                                             isGoogleAuth = false
                                         )
@@ -342,12 +342,12 @@ fun AuthPage() {
                             },
                             modifier = Modifier.fillMaxWidth().padding(0.75.cssRem).borderRadius(0.7.cssRem)
                                 .margin(top = 0.2.cssRem),
-                            variant = _root_ide_package_.ru.cleardocs.lkweb.AuthPrimaryButtonVariant,
+                            variant = AuthPrimaryButtonVariant,
                             enabled = !isLoading
                         ) {
                             SpanText(
                                 if (isLoading) "Подождите..."
-                                else if (mode == _root_ide_package_.ru.cleardocs.lkweb.pages.AuthMode.SIGN_IN) "Войти"
+                                else if (mode == AuthMode.SIGN_IN) "Войти"
                                 else "Создать аккаунт"
                             )
                         }
@@ -358,10 +358,10 @@ fun AuthPage() {
                                     errorMessage = null
                                     isLoading = true
                                     try {
-                                        _root_ide_package_.ru.cleardocs.lkweb.firebase.signInWithGoogle(repository.auth)
+signInWithGoogle(repository.auth)
                                     } catch (e: dynamic) {
                                         console.error("Google sign-in failed", e?.code, e?.message, e)
-                                        errorMessage = _root_ide_package_.ru.cleardocs.lkweb.pages.authErrorToMessage(
+                                        errorMessage = authErrorToMessage(
                                             e,
                                             isGoogleAuth = true
                                         )
@@ -372,7 +372,7 @@ fun AuthPage() {
                             },
                             modifier = Modifier.fillMaxWidth().padding(0.75.cssRem).borderRadius(0.7.cssRem)
                                 .margin(top = 0.6.cssRem),
-                            variant = _root_ide_package_.ru.cleardocs.lkweb.AuthGoogleButtonVariant,
+                            variant = AuthGoogleButtonVariant,
                             enabled = !isLoading
                         ) {
                             SpanText("Войти через Google")
