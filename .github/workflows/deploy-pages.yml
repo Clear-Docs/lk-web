@@ -69,7 +69,16 @@ jobs:
           ../kobweb-${{ env.KOBWEB_CLI_VERSION }}/bin/kobweb export --notty --layout static
 
       - name: Add CNAME for custom domain
-        run: echo "lk.cleardocs.ru" > site/.kobweb/site/CNAME
+        run: |
+          mkdir -p site/.kobweb/site
+          echo "lk.cleardocs.ru" > site/.kobweb/site/CNAME
+
+      - name: Validate export artifact directory
+        run: |
+          test -d site/.kobweb/site || {
+            echo "Expected export directory site/.kobweb/site is missing"
+            exit 1
+          }
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
