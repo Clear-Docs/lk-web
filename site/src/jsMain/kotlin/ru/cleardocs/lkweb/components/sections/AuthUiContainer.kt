@@ -10,6 +10,7 @@ import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.dom.Div
+import ru.cleardocs.lkweb.toSitePalette
 
 @Composable
 fun AuthUiContainer() {

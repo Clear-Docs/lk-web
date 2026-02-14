@@ -8,7 +8,7 @@ import ru.cleardocs.lkweb.firebase.FirebaseProvider
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
 
-@Page
+@Page(routeOverride = "/index")
 @Composable
 fun HomePage() {
     val repository = FirebaseProvider.repository

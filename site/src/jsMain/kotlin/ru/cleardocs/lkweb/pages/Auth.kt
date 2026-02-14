@@ -16,17 +16,18 @@ import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.graphics.Colors
 import com.varabyte.kobweb.compose.ui.modifiers.borderRadius
 import com.varabyte.kobweb.compose.ui.modifiers.color
+import org.jetbrains.compose.web.css.LineStyle
 import com.varabyte.kobweb.compose.ui.modifiers.backgroundColor
-import com.varabyte.kobweb.compose.ui.modifiers.boxShadow
+import com.varabyte.kobweb.compose.ui.modifiers.border
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxSize
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.fontSize
-import com.varabyte.kobweb.compose.ui.modifiers.fontWeight
 import com.varabyte.kobweb.compose.ui.modifiers.gap
 import com.varabyte.kobweb.compose.ui.modifiers.margin
 import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.flexGrow
+import ru.cleardocs.lkweb.components.layouts.PageLayout
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.components.forms.Button
@@ -38,8 +39,9 @@ import com.varabyte.kobweb.silk.theme.colors.palette.toPalette
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.attributes.*
 import org.jetbrains.compose.web.css.cssRem
+import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Input
-import ru.cleardocs.lkweb.components.layouts.PageLayout
+import ru.cleardocs.lkweb.toSitePalette
 
 private enum class AuthMode {
     SIGN_IN,
@@ -57,7 +59,6 @@ private fun authErrorToMessage(error: dynamic, isGoogleAuth: Boolean = false): S
                 "Неверный email или пароль."
             }
         }
-
         "auth/user-not-found" -> "Пользователь не найден."
         "auth/wrong-password" -> "Неверный пароль."
         "auth/email-already-in-use" -> "Этот email уже используется."
@@ -87,6 +88,7 @@ fun AuthPage() {
     val colorPalette = ColorMode.current.toPalette()
     val inputBg = colorPalette.background.toString()
     val inputFg = colorPalette.color.toString()
+    val inputBorder = palette.cobweb.toString()
     val scope = rememberCoroutineScope()
     var mode by remember { mutableStateOf(AuthMode.SIGN_IN) }
     var email by remember { mutableStateOf("") }
@@ -118,10 +120,7 @@ fun AuthPage() {
                     .padding(2.cssRem)
                     .borderRadius(1.25.cssRem)
                     .backgroundColor(palette.nearBackground)
-                    .boxShadow(
-                        blurRadius = 1.2.cssRem,
-                        color = palette.cobweb
-                    ),
+                    .border(1.px, LineStyle.Solid, palette.cobweb),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 SpanText("Вход в аккаунт", Modifier.fontSize(1.5.cssRem))
@@ -176,7 +175,7 @@ fun AuthPage() {
                                     property("padding", "0.7rem")
                                     property("margin-bottom", "0.75rem")
                                     property("border-radius", "0.6rem")
-                                    property("border", "0")
+                                    property("border", "1px solid $inputBorder")
                                     property("outline", "none")
                                     property("background", inputBg)
                                     property("color", inputFg)
@@ -200,7 +199,7 @@ fun AuthPage() {
                                             property("width", "100%")
                                             property("padding", "0.7rem")
                                             property("border-radius", "0.6rem")
-                                            property("border", "0")
+                                            property("border", "1px solid $inputBorder")
                                             property("outline", "none")
                                             property("background", inputBg)
                                             property("color", inputFg)
@@ -235,7 +234,7 @@ fun AuthPage() {
                                                 property("width", "100%")
                                                 property("padding", "0.7rem")
                                                 property("border-radius", "0.6rem")
-                                                property("border", "0")
+                                                property("border", "1px solid $inputBorder")
                                                 property("outline", "none")
                                                 property("background", inputBg)
                                                 property("color", inputFg)
@@ -279,17 +278,21 @@ fun AuthPage() {
                                     try {
                                         if (mode == AuthMode.SIGN_IN) {
                                             console.log("[Auth] Вход:", normalizedEmail)
-                                            signInWithEmailAndPassword(repository.auth, normalizedEmail, password)
-                                            console.log("[Auth] Вход успешен")
-                                        } else {
-                                            console.log("[Auth] Регистрация: начало, email=", normalizedEmail)
-                                            val result = createUserWithEmailAndPassword(
+signInWithEmailAndPassword(
                                                 repository.auth,
                                                 normalizedEmail,
                                                 password
                                             )
-                                            // В модульном SDK результат — UserCredential; user берём явно через asDynamic() для Kotlin/JS
-                                            val user = result?.asDynamic()?.user as? dynamic
+                                            console.log("[Auth] Вход успешен")
+                                        } else {
+                                            console.log("[Auth] Регистрация: начало, email=", normalizedEmail)
+                                            val result =
+createUserWithEmailAndPassword(
+                                                    repository.auth,
+                                                    normalizedEmail,
+                                                    password
+                                                )
+                                            val user = result?.user
                                             console.log(
                                                 "[Auth] Регистрация: createUser OK, user=",
                                                 user?.uid,
@@ -299,7 +302,9 @@ fun AuthPage() {
                                             if (user != null) {
                                                 try {
                                                     console.log("[Auth] Регистрация: отправка письма верификации...")
-                                                    sendEmailVerification(user)
+sendEmailVerification(
+                                                        user
+                                                    )
                                                     console.log("[Auth] Регистрация: sendEmailVerification OK")
                                                     successMessage =
                                                         "Письмо отправлено на $normalizedEmail. Проверьте почту и папку «Спам»."
@@ -312,7 +317,7 @@ fun AuthPage() {
                                                     )
                                                     errorMessage =
                                                         "Регистрация успешна, но не удалось отправить письмо подтверждения: ${
-                                                            authErrorToMessage(
+authErrorToMessage(
                                                                 verifyErr,
                                                                 false
                                                             )
@@ -326,7 +331,10 @@ fun AuthPage() {
                                         }
                                     } catch (e: dynamic) {
                                         console.error("[Auth] Ошибка:", e?.code, e?.message, e)
-                                        errorMessage = authErrorToMessage(e, isGoogleAuth = false)
+                                        errorMessage = authErrorToMessage(
+                                            e,
+                                            isGoogleAuth = false
+                                        )
                                     } finally {
                                         isLoading = false
                                     }
@@ -350,10 +358,13 @@ fun AuthPage() {
                                     errorMessage = null
                                     isLoading = true
                                     try {
-                                        signInWithGoogle(repository.auth)
+signInWithGoogle(repository.auth)
                                     } catch (e: dynamic) {
                                         console.error("Google sign-in failed", e?.code, e?.message, e)
-                                        errorMessage = authErrorToMessage(e, isGoogleAuth = true)
+                                        errorMessage = authErrorToMessage(
+                                            e,
+                                            isGoogleAuth = true
+                                        )
                                     } finally {
                                         isLoading = false
                                     }

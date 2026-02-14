@@ -91,7 +91,10 @@ val MarkdownStyle by ComponentStyle {
 @Composable
 fun MarkdownLayout(title: String, content: @Composable () -> Unit) {
     PageLayout(title) {
-        Column(MarkdownStyle.toModifier().fillMaxSize(), horizontalAlignment = Alignment.Start) {
+        Column(
+            MarkdownStyle.toModifier().fillMaxSize(),
+            horizontalAlignment = Alignment.Start
+        ) {
             content()
         }
     }
