@@ -14,7 +14,7 @@ kobweb {
     app {
         index {
             description.set("ClearDocs")
-            faviconPath.set("/favicon.png")
+            faviconPath.set("/favicon.svg")
         }
     }
 }

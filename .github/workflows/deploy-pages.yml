@@ -18,8 +18,11 @@ concurrency:
 jobs:
   export:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
     env:
-      KOBWEB_CLI_VERSION: "0.9.15"
+      KOBWEB_CLI_VERSION: "0.9.21"
 
     steps:
       - name: Checkout
@@ -29,7 +32,7 @@ jobs:
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: "11"
 
       # When projects are created on Windows, the executable bit is sometimes lost. So set it back just in case.
       - name: Ensure Gradle is executable
