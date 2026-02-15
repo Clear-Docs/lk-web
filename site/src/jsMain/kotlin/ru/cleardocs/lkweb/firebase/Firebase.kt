@@ -49,6 +49,7 @@ private external val firebaseUiCss: dynamic
 data class FirebaseConfig(
     val apiKey: String,
     val authDomain: String,
+    val databaseUrl: String? = null,
     val projectId: String,
     val appId: String,
     val messagingSenderId: String,
@@ -85,6 +86,7 @@ fun initializeFirebase(config: FirebaseConfig): FirebaseContext {
     val options = js("{}")
     options.apiKey = config.apiKey
     options.authDomain = config.authDomain
+    config.databaseUrl?.let { options.databaseURL = it }
     options.projectId = config.projectId
     options.appId = config.appId
     options.messagingSenderId = config.messagingSenderId
