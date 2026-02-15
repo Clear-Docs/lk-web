@@ -4,10 +4,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
-sealed interface AuthState {
-    data object Loading : ru.cleardocs.lkweb.firebase.AuthState
-    data object Authenticated : AuthState
-    data object Unauthenticated : AuthState
+enum class AuthState {
+    Loading,
+    Authenticated,
+    Unauthenticated,
 }
 
 class FirebaseRepository(

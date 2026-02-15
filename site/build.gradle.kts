@@ -2,6 +2,7 @@ import com.varabyte.kobweb.gradle.application.util.configAsKobwebApplication
 
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.jetbrains.compose)
     alias(libs.plugins.kobweb.application)
     alias(libs.plugins.kobwebx.markdown)
@@ -46,12 +47,18 @@ kotlin {
                 implementation(compose.html.core)
                 implementation(libs.kobweb.core)
                 implementation(libs.kobweb.silk)
+                implementation(libs.kodein.di)
                 implementation(npm("firebase", "11.0.1"))
                 implementation(npm("firebaseui", "6.1.0"))
                 // This default template uses built-in SVG icons, but what's available is limited.
                 // Uncomment the following if you want access to a large set of font-awesome icons:
                 // implementation(libs.silk.icons.fa)
                 implementation(libs.kobwebx.markdown)
+                implementation(libs.ktor.client.core)
+                implementation(libs.ktor.client.js)
+                implementation(libs.ktor.client.content.negotiation)
+                implementation(libs.ktor.serialization.kotlinx.json)
+                implementation(libs.kotlinx.serialization.json)
             }
         }
 

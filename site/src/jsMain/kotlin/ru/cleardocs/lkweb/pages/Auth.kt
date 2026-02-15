@@ -14,6 +14,7 @@ import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.graphics.Colors
+import com.varabyte.kobweb.compose.ui.modifiers.background
 import com.varabyte.kobweb.compose.ui.modifiers.borderRadius
 import com.varabyte.kobweb.compose.ui.modifiers.color
 import org.jetbrains.compose.web.css.LineStyle
@@ -28,9 +29,13 @@ import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.flexGrow
 import ru.cleardocs.lkweb.components.layouts.PageLayout
+import ru.cleardocs.lkweb.components.widgets.AuthInput
+import ru.cleardocs.lkweb.components.widgets.PasswordFieldWithToggle
+import ru.cleardocs.lkweb.components.widgets.cardSurface
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.components.forms.Button
+import com.varabyte.kobweb.silk.components.style.toModifier
 import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import com.varabyte.kobweb.silk.theme.colors.palette.background
@@ -41,7 +46,9 @@ import org.jetbrains.compose.web.attributes.*
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Input
+import ru.cleardocs.lkweb.components.layouts.PageContentStyle
 import ru.cleardocs.lkweb.toSitePalette
+import ru.cleardocs.lkweb.utils.requireGuestRedirect
 
 private enum class AuthMode {
     SIGN_IN,
@@ -102,303 +109,251 @@ fun AuthPage() {
 
     if (authState == AuthState.Authenticated) {
         errorMessage = null
-        ctx.router.tryRoutingTo("/profile")
+        requireGuestRedirect(authState, ctx.router::tryRoutingTo)
     }
 
     PageLayout("Вход в аккаунт") {
-        Box(
-            Modifier
-                .fillMaxSize()
-                .padding(3.cssRem),
-            contentAlignment = Alignment.Center
+        Column(
+            PageContentStyle.toModifier(),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
+            Box(
                 Modifier
-                    .fillMaxWidth()
-                    .maxWidth(32.cssRem)
-                    .gap(1.25.cssRem)
-                    .padding(2.cssRem)
-                    .borderRadius(1.25.cssRem)
-                    .backgroundColor(palette.nearBackground)
-                    .border(1.px, LineStyle.Solid, palette.cobweb),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
             ) {
-                SpanText("Вход в аккаунт", Modifier.fontSize(1.5.cssRem))
+                Column(
+                    Modifier
+                        .fillMaxWidth()
+                        .maxWidth(32.cssRem)
+                        .gap(1.25.cssRem)
+                        .cardSurface(palette),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    SpanText("Вход в аккаунт", Modifier.fontSize(1.5.cssRem))
 
-                if (authState != AuthState.Authenticated) {
-                    if (authState == AuthState.Loading) {
-                        SpanText("Проверяем сессию...")
-                        return@Column
-                    }
-                    Column(Modifier.fillMaxWidth().gap(1.cssRem)) {
-                        Row(
-                            Modifier.fillMaxWidth().gap(0.5.cssRem).margin(bottom = 0.25.cssRem),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Button(
-                                onClick = {
-                                    mode = AuthMode.SIGN_IN
-                                    errorMessage = null
-                                    successMessage = null
-                                },
-                                modifier = Modifier.fillMaxWidth().flexGrow(1).padding(0.65.cssRem)
-                                    .borderRadius(0.65.cssRem),
-                                variant = if (mode == AuthMode.SIGN_IN) AuthTabActiveVariant else AuthTabInactiveVariant,
-                                enabled = !isLoading
-                            ) {
-                                SpanText("Вход")
-                            }
-                            Button(
-                                onClick = {
-                                    mode = AuthMode.SIGN_UP
-                                    errorMessage = null
-                                    successMessage = null
-                                },
-                                modifier = Modifier.fillMaxWidth().flexGrow(1).padding(0.65.cssRem)
-                                    .borderRadius(0.65.cssRem),
-                                variant = if (mode == AuthMode.SIGN_UP) AuthTabActiveVariant else AuthTabInactiveVariant,
-                                enabled = !isLoading
-                            ) {
-                                SpanText("Регистрация")
-                            }
+                    if (authState != AuthState.Authenticated) {
+                        if (authState == AuthState.Loading) {
+                            SpanText("Проверяем сессию...")
+                            return@Column
                         }
-
-                        Input(
-                            type = InputType.Email,
-                            attrs = {
-                                value(email)
-                                placeholder("Email")
-                                if (isLoading) disabled()
-                                onInput { email = it.value }
-                                style {
-                                    property("width", "100%")
-                                    property("padding", "0.7rem")
-                                    property("margin-bottom", "0.75rem")
-                                    property("border-radius", "0.6rem")
-                                    property("border", "1px solid $inputBorder")
-                                    property("outline", "none")
-                                    property("background", inputBg)
-                                    property("color", inputFg)
-                                }
-                            }
-                        )
-
-                        Row(
-                            Modifier.fillMaxWidth().gap(0.5.cssRem).margin(bottom = 0.75.cssRem),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(Modifier.fillMaxWidth().flexGrow(1)) {
-                                Input(
-                                    type = if (isPasswordVisible) InputType.Text else InputType.Password,
-                                    attrs = {
-                                        value(password)
-                                        placeholder("Пароль")
-                                        if (isLoading) disabled()
-                                        onInput { password = it.value }
-                                        style {
-                                            property("width", "100%")
-                                            property("padding", "0.7rem")
-                                            property("border-radius", "0.6rem")
-                                            property("border", "1px solid $inputBorder")
-                                            property("outline", "none")
-                                            property("background", inputBg)
-                                            property("color", inputFg)
-                                        }
-                                    }
-                                )
-                            }
-                            Button(
-                                onClick = { isPasswordVisible = !isPasswordVisible },
-                                modifier = Modifier.padding(0.7.cssRem, 0.85.cssRem).borderRadius(0.6.cssRem),
-                                variant = AuthToggleButtonVariant,
-                                enabled = !isLoading
-                            ) {
-                                SpanText(if (isPasswordVisible) "Скрыть" else "Показать")
-                            }
-                        }
-
-                        if (mode == AuthMode.SIGN_UP) {
+                        Column(Modifier.fillMaxWidth().gap(1.cssRem)) {
                             Row(
-                                Modifier.fillMaxWidth().gap(0.5.cssRem).margin(bottom = 0.75.cssRem),
+                                Modifier.fillMaxWidth().gap(0.5.cssRem).margin(bottom = 0.25.cssRem),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
-                                Box(Modifier.fillMaxWidth().flexGrow(1)) {
-                                    Input(
-                                        type = if (isConfirmPasswordVisible) InputType.Text else InputType.Password,
-                                        attrs = {
-                                            value(confirmPassword)
-                                            placeholder("Повторите пароль")
-                                            if (isLoading) disabled()
-                                            onInput { confirmPassword = it.value }
-                                            style {
-                                                property("width", "100%")
-                                                property("padding", "0.7rem")
-                                                property("border-radius", "0.6rem")
-                                                property("border", "1px solid $inputBorder")
-                                                property("outline", "none")
-                                                property("background", inputBg)
-                                                property("color", inputFg)
-                                            }
-                                        }
-                                    )
-                                }
                                 Button(
-                                    onClick = { isConfirmPasswordVisible = !isConfirmPasswordVisible },
-                                    modifier = Modifier.padding(0.7.cssRem, 0.85.cssRem).borderRadius(0.6.cssRem),
-                                    variant = AuthToggleButtonVariant,
+                                    onClick = {
+                                        mode = AuthMode.SIGN_IN
+                                        errorMessage = null
+                                        successMessage = null
+                                    },
+                                    modifier = Modifier.fillMaxWidth().flexGrow(1).padding(0.65.cssRem)
+                                        .borderRadius(0.65.cssRem),
+                                    variant = if (mode == AuthMode.SIGN_IN) AuthTabActiveVariant else AuthTabInactiveVariant,
                                     enabled = !isLoading
                                 ) {
-                                    SpanText(if (isConfirmPasswordVisible) "Скрыть" else "Показать")
+                                    SpanText("Вход")
+                                }
+                                Button(
+                                    onClick = {
+                                        mode = AuthMode.SIGN_UP
+                                        errorMessage = null
+                                        successMessage = null
+                                    },
+                                    modifier = Modifier.fillMaxWidth().flexGrow(1).padding(0.65.cssRem)
+                                        .borderRadius(0.65.cssRem),
+                                    variant = if (mode == AuthMode.SIGN_UP) AuthTabActiveVariant else AuthTabInactiveVariant,
+                                    enabled = !isLoading
+                                ) {
+                                    SpanText("Регистрация")
                                 }
                             }
-                        }
 
-                        Button(
-                            onClick = {
-                                scope.launch {
-                                    errorMessage = null
-                                    successMessage = null
-                                    val normalizedEmail = email.trim()
-                                    if (normalizedEmail.isEmpty() || password.isEmpty()) {
-                                        errorMessage = "Заполните email и пароль."
-                                        return@launch
-                                    }
-                                    if (mode == AuthMode.SIGN_UP) {
-                                        if (password.length < 6) {
-                                            errorMessage = "Пароль должен содержать минимум 6 символов."
+                            AuthInput(
+                                type = InputType.Email,
+                                value = email,
+                                placeholder = "Email",
+                                onValueChange = { email = it },
+                                inputBg = inputBg,
+                                inputFg = inputFg,
+                                inputBorder = inputBorder,
+                                enabled = !isLoading
+                            )
+
+                            PasswordFieldWithToggle(
+                                value = password,
+                                placeholder = "Пароль",
+                                onValueChange = { password = it },
+                                isPasswordVisible = isPasswordVisible,
+                                onToggleVisibility = { isPasswordVisible = !isPasswordVisible },
+                                inputBg = inputBg,
+                                inputFg = inputFg,
+                                inputBorder = inputBorder,
+                                enabled = !isLoading
+                            )
+
+                            if (mode == AuthMode.SIGN_UP) {
+                                PasswordFieldWithToggle(
+                                    value = confirmPassword,
+                                    placeholder = "Повторите пароль",
+                                    onValueChange = { confirmPassword = it },
+                                    isPasswordVisible = isConfirmPasswordVisible,
+                                    onToggleVisibility = { isConfirmPasswordVisible = !isConfirmPasswordVisible },
+                                    inputBg = inputBg,
+                                    inputFg = inputFg,
+                                    inputBorder = inputBorder,
+                                    enabled = !isLoading
+                                )
+                            }
+
+                            Button(
+                                onClick = {
+                                    scope.launch {
+                                        errorMessage = null
+                                        successMessage = null
+                                        val normalizedEmail = email.trim()
+                                        if (normalizedEmail.isEmpty() || password.isEmpty()) {
+                                            errorMessage = "Заполните email и пароль."
                                             return@launch
                                         }
-                                        if (password != confirmPassword) {
-                                            errorMessage = "Пароли не совпадают."
-                                            return@launch
+                                        if (mode == AuthMode.SIGN_UP) {
+                                            if (password.length < 6) {
+                                                errorMessage = "Пароль должен содержать минимум 6 символов."
+                                                return@launch
+                                            }
+                                            if (password != confirmPassword) {
+                                                errorMessage = "Пароли не совпадают."
+                                                return@launch
+                                            }
                                         }
-                                    }
 
-                                    isLoading = true
-                                    try {
-                                        if (mode == AuthMode.SIGN_IN) {
-                                            console.log("[Auth] Вход:", normalizedEmail)
-signInWithEmailAndPassword(
-                                                repository.auth,
-                                                normalizedEmail,
-                                                password
-                                            )
-                                            console.log("[Auth] Вход успешен")
-                                        } else {
-                                            console.log("[Auth] Регистрация: начало, email=", normalizedEmail)
-                                            val result =
-createUserWithEmailAndPassword(
+                                        isLoading = true
+                                        try {
+                                            if (mode == AuthMode.SIGN_IN) {
+                                                console.log("[Auth] Вход:", normalizedEmail)
+                                                signInWithEmailAndPassword(
                                                     repository.auth,
                                                     normalizedEmail,
                                                     password
                                                 )
-                                            val user = result?.user
-                                            console.log(
-                                                "[Auth] Регистрация: createUser OK, user=",
-                                                user?.uid,
-                                                "emailVerified=",
-                                                user?.emailVerified
-                                            )
-                                            if (user != null) {
-                                                try {
-                                                    console.log("[Auth] Регистрация: отправка письма верификации...")
-sendEmailVerification(
-                                                        user
-                                                    )
-                                                    console.log("[Auth] Регистрация: sendEmailVerification OK")
-                                                    successMessage =
-                                                        "Письмо отправлено на $normalizedEmail. Проверьте почту и папку «Спам»."
-                                                } catch (verifyErr: dynamic) {
-                                                    console.error(
-                                                        "[Auth] Регистрация: sendEmailVerification ошибка",
-                                                        verifyErr?.code,
-                                                        verifyErr?.message,
-                                                        verifyErr
-                                                    )
-                                                    errorMessage =
-                                                        "Регистрация успешна, но не удалось отправить письмо подтверждения: ${
-authErrorToMessage(
-                                                                verifyErr,
-                                                                false
-                                                            )
-                                                        }"
-                                                }
+                                                console.log("[Auth] Вход успешен")
                                             } else {
-                                                console.warn("[Auth] Регистрация: user=null")
-                                                successMessage = "Аккаунт создан. Проверьте почту."
+                                                console.log("[Auth] Регистрация: начало, email=", normalizedEmail)
+                                                val result =
+                                                    createUserWithEmailAndPassword(
+                                                        repository.auth,
+                                                        normalizedEmail,
+                                                        password
+                                                    )
+                                                val user = result?.user
+                                                console.log(
+                                                    "[Auth] Регистрация: createUser OK, user=",
+                                                    user?.uid,
+                                                    "emailVerified=",
+                                                    user?.emailVerified
+                                                )
+                                                if (user != null) {
+                                                    try {
+                                                        console.log("[Auth] Регистрация: отправка письма верификации...")
+                                                        sendEmailVerification(
+                                                            user
+                                                        )
+                                                        console.log("[Auth] Регистрация: sendEmailVerification OK")
+                                                        successMessage =
+                                                            "Письмо отправлено на $normalizedEmail. Проверьте почту и папку «Спам»."
+                                                    } catch (verifyErr: dynamic) {
+                                                        console.error(
+                                                            "[Auth] Регистрация: sendEmailVerification ошибка",
+                                                            verifyErr?.code,
+                                                            verifyErr?.message,
+                                                            verifyErr
+                                                        )
+                                                        errorMessage =
+                                                            "Регистрация успешна, но не удалось отправить письмо подтверждения: ${
+                                                                authErrorToMessage(
+                                                                    verifyErr,
+                                                                    false
+                                                                )
+                                                            }"
+                                                    }
+                                                } else {
+                                                    console.warn("[Auth] Регистрация: user=null")
+                                                    successMessage = "Аккаунт создан. Проверьте почту."
+                                                }
+                                                console.log("[Auth] Регистрация: завершено")
                                             }
-                                            console.log("[Auth] Регистрация: завершено")
+                                        } catch (e: dynamic) {
+                                            console.error("[Auth] Ошибка:", e?.code, e?.message, e)
+                                            errorMessage = authErrorToMessage(
+                                                e,
+                                                isGoogleAuth = false
+                                            )
+                                        } finally {
+                                            isLoading = false
                                         }
-                                    } catch (e: dynamic) {
-                                        console.error("[Auth] Ошибка:", e?.code, e?.message, e)
-                                        errorMessage = authErrorToMessage(
-                                            e,
-                                            isGoogleAuth = false
-                                        )
-                                    } finally {
-                                        isLoading = false
                                     }
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth().padding(0.75.cssRem).borderRadius(0.7.cssRem)
-                                .margin(top = 0.2.cssRem),
-                            variant = AuthPrimaryButtonVariant,
-                            enabled = !isLoading
-                        ) {
-                            SpanText(
-                                if (isLoading) "Подождите..."
-                                else if (mode == AuthMode.SIGN_IN) "Войти"
-                                else "Создать аккаунт"
-                            )
-                        }
+                                },
+                                modifier = Modifier.fillMaxWidth().padding(0.75.cssRem).borderRadius(0.7.cssRem)
+                                    .margin(top = 0.2.cssRem),
+                                variant = AuthPrimaryButtonVariant,
+                                enabled = !isLoading
+                            ) {
+                                SpanText(
+                                    if (isLoading) "Подождите..."
+                                    else if (mode == AuthMode.SIGN_IN) "Войти"
+                                    else "Создать аккаунт"
+                                )
+                            }
 
-                        Button(
-                            onClick = {
-                                scope.launch {
-                                    errorMessage = null
-                                    isLoading = true
-                                    try {
-signInWithGoogle(repository.auth)
-                                    } catch (e: dynamic) {
-                                        console.error("Google sign-in failed", e?.code, e?.message, e)
-                                        errorMessage = authErrorToMessage(
-                                            e,
-                                            isGoogleAuth = true
-                                        )
-                                    } finally {
-                                        isLoading = false
+                            Button(
+                                onClick = {
+                                    scope.launch {
+                                        errorMessage = null
+                                        isLoading = true
+                                        try {
+                                            signInWithGoogle(repository.auth)
+                                        } catch (e: dynamic) {
+                                            console.error("Google sign-in failed", e?.code, e?.message, e)
+                                            errorMessage = authErrorToMessage(
+                                                e,
+                                                isGoogleAuth = true
+                                            )
+                                        } finally {
+                                            isLoading = false
+                                        }
                                     }
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth().padding(0.75.cssRem).borderRadius(0.7.cssRem)
-                                .margin(top = 0.6.cssRem),
-                            variant = AuthGoogleButtonVariant,
-                            enabled = !isLoading
-                        ) {
-                            SpanText("Войти через Google")
-                        }
+                                },
+                                modifier = Modifier.fillMaxWidth().padding(0.75.cssRem).borderRadius(0.7.cssRem)
+                                    .margin(top = 0.6.cssRem),
+                                variant = AuthGoogleButtonVariant,
+                                enabled = !isLoading
+                            ) {
+                                SpanText("Войти через Google")
+                            }
 
-                        errorMessage?.let { message ->
-                            SpanText(
-                                message,
-                                Modifier.margin(top = 0.75.cssRem).color(Colors.Red).fontSize(0.9.cssRem)
-                            )
+                            errorMessage?.let { message ->
+                                SpanText(
+                                    message,
+                                    Modifier.margin(top = 0.75.cssRem).color(Colors.Red).fontSize(0.9.cssRem)
+                                )
+                            }
+                            successMessage?.let { message ->
+                                SpanText(
+                                    message,
+                                    Modifier.margin(top = 0.75.cssRem).color(Colors.Green).fontSize(0.9.cssRem)
+                                )
+                            }
                         }
+                    } else {
                         successMessage?.let { message ->
                             SpanText(
                                 message,
-                                Modifier.margin(top = 0.75.cssRem).color(Colors.Green).fontSize(0.9.cssRem)
+                                Modifier.margin(bottom = 0.5.cssRem).color(Colors.Green).fontSize(0.9.cssRem)
                             )
                         }
+                        SpanText("Перенаправляем в профиль...")
                     }
-                } else {
-                    successMessage?.let { message ->
-                        SpanText(
-                            message,
-                            Modifier.margin(bottom = 0.5.cssRem).color(Colors.Green).fontSize(0.9.cssRem)
-                        )
-                    }
-                    SpanText("Перенаправляем в профиль...")
                 }
             }
         }

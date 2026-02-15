@@ -7,6 +7,29 @@ import com.varabyte.kobweb.silk.init.InitSilkContext
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import com.varabyte.kobweb.silk.theme.colors.palette.background
 import com.varabyte.kobweb.silk.theme.colors.palette.color
+import org.jetbrains.compose.web.css.cssRem
+
+/**
+ * Design tokens for spacing and radius. Use for consistency across components.
+ */
+object SiteTokens {
+    object Spacing {
+        val xs = 0.25.cssRem
+        val sm = 0.5.cssRem
+        val md = 0.75.cssRem
+        val lg = 1.cssRem
+        val xl = 1.25.cssRem
+        val xxl = 2.cssRem
+        val page = 3.cssRem
+    }
+
+    object Radius {
+        val sm = 0.6.cssRem
+        val md = 0.75.cssRem
+        val lg = 1.cssRem
+        val card = 1.25.cssRem
+    }
+}
 
 class SitePalette(
     val nearBackground: Color,
