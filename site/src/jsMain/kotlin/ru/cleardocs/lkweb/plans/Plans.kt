@@ -59,7 +59,6 @@ private fun PlanCard(plan: PlanDto, palette: ru.cleardocs.lkweb.SitePalette) {
             .gap(0.5.cssRem)
     ) {
         SpanText(plan.title, Modifier.fontSize(1.15.cssRem))
-        SpanText("Код: ${plan.code}")
         SpanText("Цена: ${plan.priceRub} ₽")
         if (plan.periodDays > 0) {
             SpanText("Период: ${plan.periodDays} дн.")
