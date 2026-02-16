@@ -25,8 +25,8 @@ import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.fontSize
 import com.varabyte.kobweb.compose.ui.modifiers.gap
 import com.varabyte.kobweb.compose.ui.modifiers.margin
-import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.padding
+import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.compose.ui.modifiers.flexGrow
 import ru.cleardocs.lkweb.components.layouts.PageLayout
 import ru.cleardocs.lkweb.components.widgets.AuthInput
@@ -46,7 +46,6 @@ import org.jetbrains.compose.web.attributes.*
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Input
-import ru.cleardocs.lkweb.components.layouts.PageContentStyle
 import ru.cleardocs.lkweb.toSitePalette
 import ru.cleardocs.lkweb.utils.requireGuestRedirect
 
@@ -113,32 +112,28 @@ fun AuthPage() {
     }
 
     PageLayout("Вход в аккаунт") {
-        Column(
-            PageContentStyle.toModifier(),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Box(
+            Modifier
+                .fillMaxSize()
+                .padding(leftRight = 1.cssRem, top = 4.cssRem),
+            contentAlignment = Alignment.Center
         ) {
-            Box(
+            Column(
                 Modifier
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
+                    .width(32.cssRem)
+                    .gap(1.25.cssRem)
+                    .cardSurface(palette),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .maxWidth(32.cssRem)
-                        .gap(1.25.cssRem)
-                        .cardSurface(palette),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    SpanText("Вход в аккаунт", Modifier.fontSize(1.5.cssRem))
+                SpanText("Вход в аккаунт", Modifier.fontSize(1.5.cssRem))
 
-                    if (authState != AuthState.Authenticated) {
-                        if (authState == AuthState.Loading) {
-                            SpanText("Проверяем сессию...")
-                            return@Column
-                        }
-                        Column(Modifier.fillMaxWidth().gap(1.cssRem)) {
-                            Row(
+                if (authState != AuthState.Authenticated) {
+                    if (authState == AuthState.Loading) {
+                        SpanText("Проверяем сессию...")
+                        return@Column
+                    }
+                    Column(Modifier.fillMaxWidth().gap(1.cssRem)) {
+                        Row(
                                 Modifier.fillMaxWidth().gap(0.5.cssRem).margin(bottom = 0.25.cssRem),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -355,7 +350,6 @@ fun AuthPage() {
                         SpanText("Перенаправляем в профиль...")
                     }
                 }
-            }
         }
     }
 }

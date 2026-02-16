@@ -48,7 +48,7 @@ fun ProfileMenuCard(
             }
         }
         Button(
-            onClick = { onSignOut },
+            onClick = { onSignOut() },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Выйти")
