@@ -9,16 +9,13 @@ import com.varabyte.kobweb.compose.ui.modifiers.gap
 import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.silk.components.text.SpanText
-import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import org.jetbrains.compose.web.css.cssRem
 import ru.cleardocs.lkweb.api.dto.LimitDto
 import ru.cleardocs.lkweb.api.dto.PlanDto
 import ru.cleardocs.lkweb.plans.PlansList
-import ru.cleardocs.lkweb.toSitePalette
 
 @Composable
 fun PlansDemoContent() {
-    val palette = ColorMode.current.toSitePalette()
     Column(
         Modifier
             .fillMaxWidth()
@@ -29,7 +26,7 @@ fun PlansDemoContent() {
         SpanText("PlansList (фейковые тарифы)", Modifier.padding(bottom = 0.5.cssRem))
 
         SpanText("Полный список:", Modifier.fillMaxWidth())
-        PlansList(plans = FakeData.plans, palette = palette)
+        PlansList(plans = FakeData.plans)
 
         SpanText("Один тариф:", Modifier.fillMaxWidth().padding(top = 0.5.cssRem))
         PlansList(
@@ -41,11 +38,10 @@ fun PlansDemoContent() {
                     periodDays = 14,
                     limit = LimitDto(maxConnectors = 2),
                 )
-            ),
-            palette = palette,
+            )
         )
 
         SpanText("Пустой список:", Modifier.fillMaxWidth().padding(top = 0.5.cssRem))
-        PlansList(plans = emptyList(), palette = palette)
+        PlansList(plans = emptyList())
     }
 }

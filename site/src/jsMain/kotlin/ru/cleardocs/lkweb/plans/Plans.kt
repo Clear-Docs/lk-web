@@ -24,7 +24,6 @@ fun Plans() {
     val plans by viewModel.plans.collectAsState()
     val loading by viewModel.loading.collectAsState()
     val error by viewModel.error.collectAsState()
-    val palette = ColorMode.current.toSitePalette()
 
     Column(Modifier.fillMaxWidth().gap(1.25.cssRem)) {
         SpanText("Тарифы", Modifier.fontSize(1.5.cssRem))
@@ -32,7 +31,7 @@ fun Plans() {
             loading -> SpanText("Загрузка тарифов...")
             error != null -> SpanText("Ошибка: $error")
             plans.isEmpty() -> SpanText("Нет доступных тарифов.")
-            else -> PlansList(plans = plans, palette = palette)
+            else -> PlansList(plans = plans)
         }
     }
 }
@@ -41,10 +40,8 @@ fun Plans() {
  * Список карточек тарифов — переиспользуемый компонент для отображения [plans].
  */
 @Composable
-fun PlansList(
-    plans: List<PlanDto>,
-    palette: ru.cleardocs.lkweb.SitePalette,
-) {
+fun PlansList(plans: List<PlanDto>) {
+    val palette = ColorMode.current.toSitePalette()
     Column(Modifier.fillMaxWidth().gap(1.cssRem)) {
         plans.forEach { plan -> PlanCard(plan = plan, palette = palette) }
     }
