@@ -32,6 +32,7 @@ fun DemoRouterPage() {
         "" -> "Demo"
         "plans" -> "Demo — PlansList"
         "profile" -> "Demo — ProfileBlock"
+        "profile-menu" -> "Demo — ProfileMenu"
         "layout" -> "Demo — Layout"
         else -> "Demo"
     }
@@ -42,7 +43,7 @@ fun DemoRouterPage() {
         ) {
             when (subRoute) {
                 "" -> DemoIndexPage()
-                "plans", "profile", "layout" -> Column(Modifier.gap(1.cssRem)) {
+                "plans", "profile", "profile-menu", "layout" -> Column(Modifier.gap(1.cssRem)) {
                     Link(
                         "/demo",
                         "← Назад к демо",
@@ -51,6 +52,7 @@ fun DemoRouterPage() {
                     when (subRoute) {
                         "plans" -> PlansDemoContent()
                         "profile" -> ProfileDemoContent()
+                        "profile-menu" -> ProfileMenuDemoContent()
                         "layout" -> LayoutDemoContent()
                         else -> {}
                     }

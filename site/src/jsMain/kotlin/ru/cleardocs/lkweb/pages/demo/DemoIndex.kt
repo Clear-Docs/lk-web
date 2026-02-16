@@ -8,12 +8,10 @@ import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.gap
 import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.padding
-import com.varabyte.kobweb.silk.components.navigation.Link
-import com.varabyte.kobweb.silk.components.navigation.UncoloredLinkVariant
-import com.varabyte.kobweb.silk.components.navigation.UndecoratedLinkVariant
 import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import org.jetbrains.compose.web.css.cssRem
+import ru.cleardocs.lkweb.pages.demo.FakeData
 import ru.cleardocs.lkweb.plans.PlansList
 import ru.cleardocs.lkweb.toSitePalette
 
@@ -30,13 +28,13 @@ fun DemoIndexPage() {
         SpanText("ClearDocs Demo")
         SpanText("Верстка с фейковыми данными", Modifier.padding(bottom = 0.5.cssRem))
 
-        Column(horizontalAlignment = Alignment.Start) {
-            Link("/demo/profile", "ProfileBlock", variant = UndecoratedLinkVariant.then(UncoloredLinkVariant))
-            SpanText(" — демо ProfileBlock с фейковым профилем")
-            Link("/demo/layout", "Layout", variant = UndecoratedLinkVariant.then(UncoloredLinkVariant))
-            SpanText(" — демо PageLayout и карточек")
-            Link("/demo/plans", "PlansList", variant = UndecoratedLinkVariant.then(UncoloredLinkVariant))
-            SpanText(" — демо списка тарифов")
-        }
+        DemoNavCard(
+            entries = listOf(
+                Triple("/demo/profile", "ProfileBlock", "демо ProfileBlock с фейковым профилем"),
+                Triple("/demo/profile-menu", "ProfileMenu", "демо ProfileMenu (меню профиля)"),
+                Triple("/demo/layout", "Layout", "демо PageLayout и карточек"),
+                Triple("/demo/plans", "PlansList", "демо списка тарифов"),
+            )
+        )
     }
 }

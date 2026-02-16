@@ -1,4 +1,4 @@
-package ru.cleardocs.lkweb.demo.components
+package ru.cleardocs.lkweb.pages.demo
 
 import androidx.compose.runtime.Composable
 import com.varabyte.kobweb.compose.foundation.layout.Column
@@ -14,16 +14,6 @@ import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import org.jetbrains.compose.web.css.cssRem
 import ru.cleardocs.lkweb.components.widgets.cardSurface
 import ru.cleardocs.lkweb.toSitePalette
-
-@Composable
-fun DemoNavLink(path: String, text: String) {
-    Link(
-        path,
-        text,
-        modifier = Modifier.padding(0.5.cssRem),
-        variant = UndecoratedLinkVariant.then(UncoloredLinkVariant)
-    )
-}
 
 /**
  * Карточка навигации по демо-страницам в стиле ProfileMenuCard.
@@ -57,13 +47,4 @@ fun DemoNavCard(
             }
         }
     }
-}
-
-@Composable
-fun DemoMenuItems() {
-    DemoNavLink("/demo", "Demo")
-    DemoNavLink("/demo/profile", "ProfileBlock")
-    DemoNavLink("/demo/profile-menu", "ProfileMenu")
-    DemoNavLink("/demo/layout", "Layout")
-    DemoNavLink("/demo/plans", "PlansList")
 }

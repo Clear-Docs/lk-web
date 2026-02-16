@@ -3,8 +3,13 @@ package ru.cleardocs.lkweb.pages.demo
 import ru.cleardocs.lkweb.api.dto.LimitDto
 import ru.cleardocs.lkweb.api.dto.PlanDto
 import ru.cleardocs.lkweb.firebase.FirebaseProfile
+import ru.cleardocs.lkweb.pages.MainViewState
 
 object FakeData {
+    val profileMenuEntries = listOf(
+        MainViewState.Profile to "Профиль"
+    )
+
     val profileWithPhoto = FirebaseProfile(
         displayName = "Иван Петров",
         email = "ivan.petrov@example.com",
