@@ -6,7 +6,7 @@ import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.gap
-import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
+import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.silk.components.text.SpanText
 import org.jetbrains.compose.web.css.cssRem
@@ -18,8 +18,7 @@ import ru.cleardocs.lkweb.plans.PlansList
 fun PlansDemoContent() {
     Column(
         Modifier
-            .fillMaxWidth()
-            .maxWidth(36.cssRem)
+            .width(36.cssRem)
             .gap(1.5.cssRem),
         horizontalAlignment = Alignment.Start
     ) {
