@@ -4,8 +4,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import com.varabyte.kobweb.compose.foundation.layout.Arrangement
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
+import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.compose.ui.graphics.Colors
@@ -90,11 +92,16 @@ private fun PlanCard(plan: Plan, palette: ru.cleardocs.lkweb.SitePalette) {
         SpanText("Лимит коннекторов: ${plan.limit.maxConnectors}")
         if (!plan.isActive) {
             val ctx = rememberPageContext()
-            Button(
-                onClick = { ctx.router.navigateTo("/profile") },
-                modifier = Modifier.padding(0.25.cssRem)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
             ) {
-                Text("Выбрать")
+                Button(
+                    onClick = { ctx.router.navigateTo("/profile") },
+                    modifier = Modifier.padding(0.25.cssRem)
+                ) {
+                    Text("Выбрать")
+                }
             }
         }
     }
