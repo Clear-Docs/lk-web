@@ -1,5 +1,7 @@
 package ru.cleardocs.lkweb.pages.demo
 
+import ru.cleardocs.lkweb.api.dto.LimitDto
+import ru.cleardocs.lkweb.api.dto.PlanDto
 import ru.cleardocs.lkweb.firebase.FirebaseProfile
 
 object FakeData {
@@ -19,5 +21,29 @@ object FakeData {
         displayName = null,
         email = "user@example.com",
         photoUrl = null
+    )
+
+    val plans = listOf(
+        PlanDto(
+            code = "starter",
+            title = "Стартовый",
+            priceRub = 990,
+            periodDays = 30,
+            limit = LimitDto(maxConnectors = 5),
+        ),
+        PlanDto(
+            code = "pro",
+            title = "Профессиональный",
+            priceRub = 2990,
+            periodDays = 30,
+            limit = LimitDto(maxConnectors = 25),
+        ),
+        PlanDto(
+            code = "enterprise",
+            title = "Корпоративный",
+            priceRub = 9990,
+            periodDays = 365,
+            limit = LimitDto(maxConnectors = 100),
+        ),
     )
 }

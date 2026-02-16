@@ -8,6 +8,9 @@ import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.compose.ui.toAttrs
+import com.varabyte.kobweb.silk.components.navigation.Link
+import com.varabyte.kobweb.silk.components.navigation.UncoloredLinkVariant
+import com.varabyte.kobweb.silk.components.navigation.UndecoratedLinkVariant
 import com.varabyte.kobweb.silk.components.style.ComponentStyle
 import com.varabyte.kobweb.silk.components.style.base
 import com.varabyte.kobweb.silk.components.style.toModifier
@@ -32,6 +35,8 @@ fun Footer(modifier: Modifier = Modifier) {
     Box(FooterStyle.toModifier().then(modifier), contentAlignment = Alignment.Center) {
         Span(Modifier.textAlign(TextAlign.Center).toAttrs()) {
             SpanText("ClearDocs © $currentYear")
+            SpanText(" · ")
+            Link("/demo", "Демо", variant = UndecoratedLinkVariant.then(UncoloredLinkVariant))
         }
     }
 }
