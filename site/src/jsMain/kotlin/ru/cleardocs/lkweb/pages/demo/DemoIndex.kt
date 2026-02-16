@@ -38,19 +38,5 @@ fun DemoIndexPage() {
             Link("/demo/plans", "PlansList", variant = UndecoratedLinkVariant.then(UncoloredLinkVariant))
             SpanText(" — демо списка тарифов")
         }
-
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .maxWidth(28.cssRem)
-                .padding(top = 1.cssRem),
-            horizontalAlignment = Alignment.Start
-        ) {
-            SpanText("Превью PlansList:", Modifier.padding(bottom = 0.5.cssRem))
-            PlansList(
-                plans = FakeData.plans.take(2),
-                palette = ColorMode.current.toSitePalette(),
-            )
-        }
     }
 }
