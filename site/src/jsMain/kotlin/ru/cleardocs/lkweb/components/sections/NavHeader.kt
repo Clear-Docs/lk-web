@@ -183,6 +183,7 @@ fun NavHeader() {
                         SpanText("×", Modifier.fontSize(1.5.cssRem))
                     }
                     ProfileMenu(
+                        modifier = Modifier.fillMaxWidth(),
                         onSignOut = onSignOut,
                         onEntrySelected = {
                             drawerOpen = false
