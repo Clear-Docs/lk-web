@@ -1,9 +1,9 @@
 package ru.cleardocs.lkweb.pages.demo
 
 import ru.cleardocs.lkweb.api.dto.LimitDto
-import ru.cleardocs.lkweb.api.dto.PlanDto
 import ru.cleardocs.lkweb.firebase.FirebaseProfile
 import ru.cleardocs.lkweb.pages.MainViewState
+import ru.cleardocs.lkweb.plans.Plan
 
 object FakeData {
     val profileMenuEntries = listOf(
@@ -29,23 +29,26 @@ object FakeData {
     )
 
     val plans = listOf(
-        PlanDto(
+        Plan(
             code = "starter",
             title = "Стартовый",
+            isActive = false,
             priceRub = 990,
             periodDays = 30,
             limit = LimitDto(maxConnectors = 5),
         ),
-        PlanDto(
+        Plan(
             code = "pro",
             title = "Профессиональный",
+            isActive = true,
             priceRub = 2990,
             periodDays = 30,
             limit = LimitDto(maxConnectors = 25),
         ),
-        PlanDto(
+        Plan(
             code = "enterprise",
             title = "Корпоративный",
+            isActive = false,
             priceRub = 9990,
             periodDays = 365,
             limit = LimitDto(maxConnectors = 100),

@@ -6,10 +6,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import ru.cleardocs.lkweb.api.BackendApi
 import ru.cleardocs.lkweb.api.dto.PlanDto
 
-class PlansViewModel {
+class PlansViewModel(
+    /** Код текущего тарифа пользователя — от него зависит [Plan.isActive]. */
+    private val currentPlanCode: String? = null,
+) {
 
-    private val _plans = MutableStateFlow<List<PlanDto>>(emptyList())
-    val plans: StateFlow<List<PlanDto>> = _plans.asStateFlow()
+    private val _plans = MutableStateFlow<List<Plan>>(emptyList())
+    val plans: StateFlow<List<Plan>> = _plans.asStateFlow()
 
     private val _loading = MutableStateFlow(false)
     val loading: StateFlow<Boolean> = _loading.asStateFlow()
@@ -26,7 +29,16 @@ class PlansViewModel {
         _error.value = null
         try {
             val response = BackendApi.plans()
-            _plans.value = response.plans
+            _plans.value = response.plans.map { dto ->
+                Plan(
+                    code = dto.code,
+                    title = dto.title,
+                    isActive = dto.code == currentPlanCode,
+                    priceRub = dto.priceRub,
+                    periodDays = dto.periodDays,
+                    limit = dto.limit,
+                )
+            }
         } catch (e: Throwable) {
             _error.value = e.message ?: "Ошибка загрузки тарифов"
             _plans.value = emptyList()

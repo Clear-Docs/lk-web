@@ -11,7 +11,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.silk.components.text.SpanText
 import org.jetbrains.compose.web.css.cssRem
 import ru.cleardocs.lkweb.api.dto.LimitDto
-import ru.cleardocs.lkweb.api.dto.PlanDto
+import ru.cleardocs.lkweb.plans.Plan
 import ru.cleardocs.lkweb.plans.PlansList
 
 @Composable
@@ -30,9 +30,10 @@ fun PlansDemoContent() {
         SpanText("Один тариф:", Modifier.fillMaxWidth().padding(top = 0.5.cssRem))
         PlansList(
             plans = listOf(
-                PlanDto(
+                Plan(
                     code = "trial",
                     title = "Пробный",
+                    isActive = true,
                     priceRub = 0,
                     periodDays = 14,
                     limit = LimitDto(maxConnectors = 2),
