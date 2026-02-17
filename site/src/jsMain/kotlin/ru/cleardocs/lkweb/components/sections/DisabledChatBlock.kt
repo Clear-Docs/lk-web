@@ -70,7 +70,13 @@ fun DisabledChatBlock(
                     .padding(0.5.cssRem)
                     .backgroundColor(palette.nearBackground),
             ) {
-                repeat(4) { i ->
+                val placeholders = listOf(
+                    "Чем могу помочь?",
+                    "Опишите, пожалуйста, ваш вопрос.",
+                    "Есть вопрос по документу?",
+                    "Напишите сообщение в поле ввода ниже."
+                )
+                placeholders.forEachIndexed { i, text ->
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = if (i % 2 == 0) Arrangement.Start else Arrangement.End
@@ -80,7 +86,7 @@ fun DisabledChatBlock(
                                 .width(if (i % 2 == 0) 60.percent else 50.percent)
                                 .backgroundColor(palette.cobweb),
                         ) {
-                            SpanText("Сообщение ${i + 1}", Modifier.padding(0.5.cssRem))
+                            SpanText(text, Modifier.padding(0.5.cssRem))
                         }
                     }
                 }
