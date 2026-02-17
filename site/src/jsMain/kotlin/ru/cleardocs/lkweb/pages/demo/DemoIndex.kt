@@ -34,6 +34,7 @@ fun DemoIndexPage() {
                 Triple("/demo/profile-menu", "ProfileMenu", "демо ProfileMenu (меню профиля)"),
                 Triple("/demo/layout", "Layout", "демо PageLayout и карточек"),
                 Triple("/demo/plans", "PlansList", "демо списка тарифов"),
+                Triple("/demo/chat", "DisabledChatBlock", "заблокированный чат с placeholder"),
             )
         )
     }

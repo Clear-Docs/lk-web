@@ -66,4 +66,5 @@ fun DemoMenuItems() {
     DemoNavLink("/demo/profile-menu", "ProfileMenu")
     DemoNavLink("/demo/layout", "Layout")
     DemoNavLink("/demo/plans", "PlansList")
+    DemoNavLink("/demo/chat", "DisabledChatBlock")
 }

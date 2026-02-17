@@ -38,6 +38,7 @@ fun DemoRouterPage() {
         "profile" -> "Demo — ProfileBlock"
         "profile-menu" -> "Demo — ProfileMenu"
         "layout" -> "Demo — Layout"
+        "chat" -> "Demo — DisabledChatBlock"
         else -> "Demo"
     }
     PageLayout(title = pageTitle) {
@@ -47,7 +48,7 @@ fun DemoRouterPage() {
         ) {
             when (subRoute) {
                 "" -> DemoIndexPage()
-                "plans", "profile", "profile-menu", "layout" -> Column(Modifier.gap(1.cssRem)) {
+                "plans", "profile", "profile-menu", "layout", "chat" -> Column(Modifier.gap(1.cssRem)) {
                     Link(
                         "/demo",
                         "← Назад к демо",
@@ -58,6 +59,7 @@ fun DemoRouterPage() {
                         "profile" -> ProfileDemoContent()
                         "profile-menu" -> ProfileMenuDemoContent()
                         "layout" -> LayoutDemoContent()
+                        "chat" -> ChatDemoContent()
                         else -> {}
                     }
                 }

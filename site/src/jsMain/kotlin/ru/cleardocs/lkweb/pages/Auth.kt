@@ -30,6 +30,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.compose.ui.modifiers.flexGrow
 import ru.cleardocs.lkweb.components.layouts.PageLayout
 import ru.cleardocs.lkweb.components.widgets.AuthInput
+import ru.cleardocs.lkweb.components.widgets.InputLayout
 import ru.cleardocs.lkweb.components.widgets.PasswordFieldWithToggle
 import ru.cleardocs.lkweb.components.widgets.cardSurface
 import com.varabyte.kobweb.core.Page
@@ -165,18 +166,21 @@ fun AuthPage() {
                                 }
                             }
 
-                            AuthInput(
-                                type = InputType.Email,
-                                value = email,
-                                placeholder = "Email",
-                                onValueChange = { email = it },
-                                inputBg = inputBg,
-                                inputFg = inputFg,
-                                inputBorder = inputBorder,
-                                enabled = !isLoading
-                            )
+                            InputLayout(label = "Email") {
+                                AuthInput(
+                                    type = InputType.Email,
+                                    value = email,
+                                    placeholder = "Email",
+                                    onValueChange = { email = it },
+                                    inputBg = inputBg,
+                                    inputFg = inputFg,
+                                    inputBorder = inputBorder,
+                                    enabled = !isLoading
+                                )
+                            }
 
-                            PasswordFieldWithToggle(
+                            InputLayout(label = "Пароль") {
+                                PasswordFieldWithToggle(
                                 value = password,
                                 placeholder = "Пароль",
                                 onValueChange = { password = it },
@@ -186,10 +190,15 @@ fun AuthPage() {
                                 inputFg = inputFg,
                                 inputBorder = inputBorder,
                                 enabled = !isLoading
-                            )
+                                )
+                            }
 
                             if (mode == AuthMode.SIGN_UP) {
-                                PasswordFieldWithToggle(
+                                InputLayout(
+                                    label = "Повторите пароль",
+                                    error = if (password != confirmPassword && confirmPassword.isNotEmpty()) "Пароли не совпадают" else null
+                                ) {
+                                    PasswordFieldWithToggle(
                                     value = confirmPassword,
                                     placeholder = "Повторите пароль",
                                     onValueChange = { confirmPassword = it },
@@ -199,7 +208,8 @@ fun AuthPage() {
                                     inputFg = inputFg,
                                     inputBorder = inputBorder,
                                     enabled = !isLoading
-                                )
+                                    )
+                                }
                             }
 
                             Button(
