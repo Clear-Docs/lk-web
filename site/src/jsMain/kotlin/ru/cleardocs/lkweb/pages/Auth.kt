@@ -25,11 +25,12 @@ import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.fontSize
 import com.varabyte.kobweb.compose.ui.modifiers.gap
 import com.varabyte.kobweb.compose.ui.modifiers.margin
-import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.padding
+import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.compose.ui.modifiers.flexGrow
 import ru.cleardocs.lkweb.components.layouts.PageLayout
 import ru.cleardocs.lkweb.components.widgets.AuthInput
+import ru.cleardocs.lkweb.components.widgets.InputLayout
 import ru.cleardocs.lkweb.components.widgets.PasswordFieldWithToggle
 import ru.cleardocs.lkweb.components.widgets.cardSurface
 import com.varabyte.kobweb.core.Page
@@ -46,7 +47,6 @@ import org.jetbrains.compose.web.attributes.*
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Input
-import ru.cleardocs.lkweb.components.layouts.PageContentStyle
 import ru.cleardocs.lkweb.toSitePalette
 import ru.cleardocs.lkweb.utils.requireGuestRedirect
 
@@ -113,32 +113,28 @@ fun AuthPage() {
     }
 
     PageLayout("Вход в аккаунт") {
-        Column(
-            PageContentStyle.toModifier(),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Box(
+            Modifier
+                .fillMaxSize()
+                .padding(leftRight = 1.cssRem, top = 4.cssRem),
+            contentAlignment = Alignment.Center
         ) {
-            Box(
+            Column(
                 Modifier
-                    .fillMaxSize(),
-                contentAlignment = Alignment.Center
+                    .width(32.cssRem)
+                    .gap(1.25.cssRem)
+                    .cardSurface(palette),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                Column(
-                    Modifier
-                        .fillMaxWidth()
-                        .maxWidth(32.cssRem)
-                        .gap(1.25.cssRem)
-                        .cardSurface(palette),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    SpanText("Вход в аккаунт", Modifier.fontSize(1.5.cssRem))
+                SpanText("Вход в аккаунт", Modifier.fontSize(1.5.cssRem))
 
-                    if (authState != AuthState.Authenticated) {
-                        if (authState == AuthState.Loading) {
-                            SpanText("Проверяем сессию...")
-                            return@Column
-                        }
-                        Column(Modifier.fillMaxWidth().gap(1.cssRem)) {
-                            Row(
+                if (authState != AuthState.Authenticated) {
+                    if (authState == AuthState.Loading) {
+                        SpanText("Проверяем сессию...")
+                        return@Column
+                    }
+                    Column(Modifier.fillMaxWidth().gap(1.cssRem)) {
+                        Row(
                                 Modifier.fillMaxWidth().gap(0.5.cssRem).margin(bottom = 0.25.cssRem),
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
@@ -170,18 +166,21 @@ fun AuthPage() {
                                 }
                             }
 
-                            AuthInput(
-                                type = InputType.Email,
-                                value = email,
-                                placeholder = "Email",
-                                onValueChange = { email = it },
-                                inputBg = inputBg,
-                                inputFg = inputFg,
-                                inputBorder = inputBorder,
-                                enabled = !isLoading
-                            )
+                            InputLayout(label = "Email") {
+                                AuthInput(
+                                    type = InputType.Email,
+                                    value = email,
+                                    placeholder = "Email",
+                                    onValueChange = { email = it },
+                                    inputBg = inputBg,
+                                    inputFg = inputFg,
+                                    inputBorder = inputBorder,
+                                    enabled = !isLoading
+                                )
+                            }
 
-                            PasswordFieldWithToggle(
+                            InputLayout(label = "Пароль") {
+                                PasswordFieldWithToggle(
                                 value = password,
                                 placeholder = "Пароль",
                                 onValueChange = { password = it },
@@ -191,10 +190,15 @@ fun AuthPage() {
                                 inputFg = inputFg,
                                 inputBorder = inputBorder,
                                 enabled = !isLoading
-                            )
+                                )
+                            }
 
                             if (mode == AuthMode.SIGN_UP) {
-                                PasswordFieldWithToggle(
+                                InputLayout(
+                                    label = "Повторите пароль",
+                                    error = if (password != confirmPassword && confirmPassword.isNotEmpty()) "Пароли не совпадают" else null
+                                ) {
+                                    PasswordFieldWithToggle(
                                     value = confirmPassword,
                                     placeholder = "Повторите пароль",
                                     onValueChange = { confirmPassword = it },
@@ -204,7 +208,8 @@ fun AuthPage() {
                                     inputFg = inputFg,
                                     inputBorder = inputBorder,
                                     enabled = !isLoading
-                                )
+                                    )
+                                }
                             }
 
                             Button(
@@ -355,7 +360,6 @@ fun AuthPage() {
                         SpanText("Перенаправляем в профиль...")
                     }
                 }
-            }
         }
     }
 }

@@ -1,8 +1,15 @@
 package ru.cleardocs.lkweb.pages.demo
 
+import ru.cleardocs.lkweb.api.dto.LimitDto
 import ru.cleardocs.lkweb.firebase.FirebaseProfile
+import ru.cleardocs.lkweb.pages.MainViewState
+import ru.cleardocs.lkweb.plans.Plan
 
 object FakeData {
+    val profileMenuEntries = listOf(
+        MainViewState.Profile to "Профиль"
+    )
+
     val profileWithPhoto = FirebaseProfile(
         displayName = "Иван Петров",
         email = "ivan.petrov@example.com",
@@ -19,5 +26,32 @@ object FakeData {
         displayName = null,
         email = "user@example.com",
         photoUrl = null
+    )
+
+    val plans = listOf(
+        Plan(
+            code = "starter",
+            title = "Стартовый",
+            isActive = false,
+            priceRub = 990,
+            periodDays = 30,
+            limit = LimitDto(maxConnectors = 5),
+        ),
+        Plan(
+            code = "pro",
+            title = "Профессиональный",
+            isActive = true,
+            priceRub = 2990,
+            periodDays = 30,
+            limit = LimitDto(maxConnectors = 25),
+        ),
+        Plan(
+            code = "enterprise",
+            title = "Корпоративный",
+            isActive = false,
+            priceRub = 9990,
+            periodDays = 365,
+            limit = LimitDto(maxConnectors = 100),
+        ),
     )
 }

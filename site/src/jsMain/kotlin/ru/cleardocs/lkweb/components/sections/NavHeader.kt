@@ -144,23 +144,8 @@ fun NavHeader() {
                 SpanText("ClearDocs")
             }
             Spacer()
-            Row(Modifier.gap(1.5.cssRem).displayIfAtLeast(Breakpoint.MD), verticalAlignment = Alignment.CenterVertically) {
-                Link(
-                    "/profile",
-                    modifier = Modifier,
-                    variant = UndecoratedLinkVariant.then(UncoloredLinkVariant)
-                ) {
-                    SpanText("Профиль")
-                }
-                Button(
-                    onClick = { onSignOut() },
-                    modifier = Modifier,
-                    variant = UncoloredButtonVariant
-                ) {
-                    Text("Выйти")
-                }
-                ColorModeButton()
-            }
+
+            ColorModeButton()
 
             Row(
                 Modifier.gap(1.cssRem).displayUntil(Breakpoint.MD),
@@ -174,7 +159,6 @@ fun NavHeader() {
                     BurgerIcon()
                 }
                 Tooltip(ElementTarget.PreviousSibling, "Меню", placement = PopupPlacement.BottomRight)
-                ColorModeButton()
             }
         }
 
@@ -199,6 +183,7 @@ fun NavHeader() {
                         SpanText("×", Modifier.fontSize(1.5.cssRem))
                     }
                     ProfileMenu(
+                        modifier = Modifier.fillMaxWidth(),
                         onSignOut = onSignOut,
                         onEntrySelected = {
                             drawerOpen = false

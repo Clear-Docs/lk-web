@@ -22,11 +22,11 @@ fun ProfileMenu(
 ) {
     val menuViewModel by kodein.instance<MenuViewModel>()
     val menuEntries = menuViewModel.menuEntries
-    val currentState by menuViewModel.stateFlow.collectAsState()
+    val selected by menuViewModel.stateFlow.collectAsState()
 
     ProfileMenuCard(
         menuEntries = menuEntries,
-        currentState = currentState,
+        selected = selected,
         onEntrySelected = { state ->
             menuViewModel.selectState(state)
             onEntrySelected?.invoke(state)

@@ -36,11 +36,11 @@ fun PageLayout(
             .fillMaxWidth()
             .minHeight(100.vh)
             .flexDirection(FlexDirection.Column),
-        horizontalAlignment = Alignment.CenterHorizontally,
+        horizontalAlignment = Alignment.Start,
     ) {
         Column(
             Modifier.flexGrow(1).fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
+            horizontalAlignment = Alignment.Start, // Start allows children with fillMaxWidth to stretch; Center shrinks them
         ) {
             NavHeader()
             content()

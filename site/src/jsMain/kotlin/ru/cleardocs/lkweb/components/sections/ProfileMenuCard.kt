@@ -21,7 +21,7 @@ import ru.cleardocs.lkweb.toSitePalette
 @Composable
 fun ProfileMenuCard(
     menuEntries: List<Pair<MainViewState, String>>,
-    currentState: MainViewState,
+    selected: MainViewState,
     onEntrySelected: (MainViewState) -> Unit,
     onSignOut: () -> Unit,
     modifier: Modifier = Modifier,
@@ -35,7 +35,7 @@ fun ProfileMenuCard(
     Column(columnModifier) {
         SpanText("Меню", Modifier.fontSize(1.05.cssRem))
         for ((state, label) in menuEntries) {
-            val highlighted = state == currentState
+            val highlighted = state == selected
             val entryModifier = Modifier
                 .fillMaxWidth()
                 .padding(0.65.cssRem)
@@ -48,7 +48,7 @@ fun ProfileMenuCard(
             }
         }
         Button(
-            onClick = { onSignOut },
+            onClick = { onSignOut() },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Выйти")
