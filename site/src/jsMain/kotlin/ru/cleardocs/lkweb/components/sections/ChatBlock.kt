@@ -33,6 +33,7 @@ import com.varabyte.kobweb.silk.components.overlay.Tooltip
 import com.varabyte.kobweb.silk.components.overlay.PopupPlacement
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import org.jetbrains.compose.web.attributes.InputType
+import org.jetbrains.compose.web.dom.Img
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.dom.Text
@@ -88,7 +89,12 @@ fun ChatBlock(
                 onClick = { viewModel.resetConversation() },
                 modifier = Modifier.padding(0.25.cssRem)
             ) {
-                SpanText("↻", Modifier.color(Colors.White))
+                Img(src = "/reset.svg", alt = "Сброс") {
+                    style {
+                        property("width", "1.25rem")
+                        property("height", "1.25rem")
+                    }
+                }
             }
             Tooltip(ElementTarget.PreviousSibling, "Сброс", placement = PopupPlacement.Bottom)
         }
@@ -164,8 +170,14 @@ fun ChatBlock(
                 modifier = Modifier.padding(0.5.cssRem),
                 enabled = !loading
             ) {
-                Text("Отправить")
+                Img(src = "/send.svg", alt = "Отправить") {
+                    style {
+                        property("width", "1.25rem")
+                        property("height", "1.25rem")
+                    }
+                }
             }
+            Tooltip(ElementTarget.PreviousSibling, "Отправить", placement = PopupPlacement.Bottom)
         }
     }
 }
