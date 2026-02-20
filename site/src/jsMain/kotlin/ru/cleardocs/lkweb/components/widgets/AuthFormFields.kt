@@ -78,6 +78,7 @@ fun ExpandableChatInput(
     inputBorder: String,
     enabled: Boolean = true,
     marginBottom: String? = null,
+    onEnterSubmit: (() -> Unit)? = null,
 ) {
     val elementRef = remember { mutableStateOf<HTMLTextAreaElement?>(null) }
     SideEffect {
@@ -98,6 +99,12 @@ fun ExpandableChatInput(
                 val target = e.target.unsafeCast<HTMLTextAreaElement>()
                 onValueChange(target.value)
                 resizeTextarea(target)
+            }
+            onKeyDown { e ->
+                if (e.key == "Enter" && !e.shiftKey) {
+                    e.preventDefault()
+                    onEnterSubmit?.invoke()
+                }
             }
             style(expandableInputStyle(inputBg, inputFg, inputBorder, marginBottom))
         }

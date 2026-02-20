@@ -20,6 +20,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.gap
 import com.varabyte.kobweb.compose.ui.modifiers.borderRadius
 import com.varabyte.kobweb.compose.ui.modifiers.color
 import com.varabyte.kobweb.compose.ui.modifiers.height
+import com.varabyte.kobweb.compose.ui.modifiers.minHeight
 import com.varabyte.kobweb.compose.ui.modifiers.overflow
 import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.compose.ui.modifiers.fontSize
@@ -39,8 +40,12 @@ import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.components.overlay.Tooltip
 import com.varabyte.kobweb.silk.components.overlay.PopupPlacement
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
+import com.varabyte.kobweb.compose.ui.toAttrs
+import org.jetbrains.compose.web.dom.Div
+import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Img
 import org.jetbrains.compose.web.css.cssRem
+import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.dom.Text
 import ru.cleardocs.lkweb.chat.ChatMessage
@@ -78,14 +83,35 @@ fun ChatBlock(
             .fillMaxWidth()
             .height(24.cssRem)
     ) {
-        // Список сообщений
-        Box(
-            modifier = Modifier
+        // Список сообщений — MutationObserver для автоскролла при изменении контента
+        val scrollRef = remember { mutableStateOf<org.w3c.dom.HTMLElement?>(null) }
+        Div(
+            Modifier
                 .flexGrow(1)
                 .fillMaxWidth()
+                .minHeight(0.px)
                 .padding(0.5.cssRem)
                 .backgroundColor(palette.nearBackground)
                 .overflow(Overflow.Auto)
+                .toAttrs {
+                    ref { el ->
+                        val element = el.unsafeCast<org.w3c.dom.HTMLElement>()
+                        scrollRef.value = element
+                        val observer = org.w3c.dom.MutationObserver { _, _ ->
+                            kotlinx.browser.window.requestAnimationFrame {
+                                element.scrollTop = element.scrollHeight.toDouble()
+                            }
+                        }
+                        observer.observe(
+                            element,
+                            js("({ childList: true, subtree: true, characterData: true })")
+                        )
+                        onDispose {
+                            observer.disconnect()
+                            scrollRef.value = null
+                        }
+                    }
+                }
         ) {
             Column(
                 modifier = Modifier.fillMaxSize().gap(0.75.cssRem),
@@ -132,7 +158,13 @@ fun ChatBlock(
                         inputFg = inputFg,
                         inputBorder = inputBorder,
                         enabled = !loading,
-                        marginBottom = null
+                        marginBottom = null,
+                        onEnterSubmit = {
+                            if (inputText.isNotBlank() && !loading) {
+                                viewModel.sendMessage(inputText)
+                                inputText = ""
+                            }
+                        }
                     )
                 }
                 val canSend = inputText.isNotBlank() && !loading
@@ -182,12 +214,34 @@ fun ChatBlock(
     }
 }
 
+private val citationPattern = Regex("""\[\[(\d+)\]\]\(?\)?""")
+
+private fun parseContentWithCitations(content: String): List<Pair<String, Int?>> {
+    if (content.isEmpty()) return emptyList()
+    val segments = mutableListOf<Pair<String, Int?>>()
+    var lastEnd = 0
+    citationPattern.findAll(content).forEach { match ->
+        if (match.range.first > lastEnd) {
+            segments.add(content.substring(lastEnd, match.range.first) to null)
+        }
+        segments.add("" to match.groupValues[1].toInt())
+        lastEnd = match.range.last + 1
+    }
+    if (lastEnd < content.length) {
+        segments.add(content.substring(lastEnd) to null)
+    }
+    return segments
+}
+
 @Composable
 private fun ChatBubble(
     message: ChatMessage,
     palette: ru.cleardocs.lkweb.SitePalette,
     isUser: Boolean,
 ) {
+    val displayContent = if (message.content.isNotEmpty()) message.content else if (message.isLoading) "..." else ""
+    val segments = parseContentWithCitations(displayContent)
+
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
@@ -199,11 +253,45 @@ private fun ChatBubble(
                 .padding(0.75.cssRem)
                 .borderRadius(0.6.cssRem)
         ) {
-            Column {
-                SpanText(
-                    if (message.content.isNotEmpty()) message.content else if (message.isLoading) "..." else "",
-                    Modifier.fillMaxWidth()
-                )
+            if (segments.isEmpty()) {
+                SpanText(displayContent, Modifier.fillMaxWidth())
+            } else {
+                // Div (block) + inline children: текст и иконки образуют единый inline-поток
+                Div(Modifier.fillMaxWidth().toAttrs()) {
+                    segments.forEach { (text, citationNum) ->
+                        if (text.isNotEmpty()) {
+                            SpanText(text)
+                        }
+                        if (citationNum != null) {
+                            val title = message.citations[citationNum] ?: "Источник"
+                            Span(
+                                Modifier
+                                    .padding(0.1.cssRem)
+                                    .toAttrs {
+                                        attr("role", "img")
+                                        attr("aria-label", title)
+                                        style {
+                                            property("display", "inline-block")
+                                            property("vertical-align", "middle")
+                                            property("width", "1em")
+                                            property("height", "1em")
+                                            property("background-color", palette.brand.primary.toString())
+                                            property("-webkit-mask-image", "url(/citation.svg)")
+                                            property("mask-image", "url(/citation.svg)")
+                                            property("-webkit-mask-size", "contain")
+                                            property("mask-size", "contain")
+                                            property("-webkit-mask-repeat", "no-repeat")
+                                            property("mask-repeat", "no-repeat")
+                                            property("-webkit-mask-position", "center")
+                                            property("mask-position", "center")
+                                        }
+                                    }
+                            ) {
+                                Tooltip(ElementTarget.PreviousSibling, title, placement = PopupPlacement.Top)
+                            }
+                        }
+                    }
+                }
             }
         }
     }
