@@ -22,12 +22,19 @@ import com.varabyte.kobweb.compose.ui.modifiers.color
 import com.varabyte.kobweb.compose.ui.modifiers.height
 import com.varabyte.kobweb.compose.ui.modifiers.overflow
 import com.varabyte.kobweb.compose.ui.modifiers.width
+import com.varabyte.kobweb.compose.ui.modifiers.fontSize
 import com.varabyte.kobweb.compose.ui.modifiers.padding
+import com.varabyte.kobweb.compose.ui.modifiers.setVariable
+import com.varabyte.kobweb.compose.ui.modifiers.onClick
 import com.varabyte.kobweb.compose.ui.graphics.Color
 import com.varabyte.kobweb.compose.ui.graphics.Colors
 import com.varabyte.kobweb.compose.css.Overflow
 import com.varabyte.kobweb.compose.dom.ElementTarget
 import com.varabyte.kobweb.silk.components.forms.Button
+import com.varabyte.kobweb.silk.components.forms.ButtonVars
+import com.varabyte.kobweb.silk.components.navigation.Link
+import com.varabyte.kobweb.silk.components.navigation.UncoloredLinkVariant
+import com.varabyte.kobweb.silk.components.navigation.UndecoratedLinkVariant
 import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.components.overlay.Tooltip
 import com.varabyte.kobweb.silk.components.overlay.PopupPlacement
@@ -72,33 +79,6 @@ fun ChatBlock(
             .fillMaxWidth()
             .height(24.cssRem)
     ) {
-        // Шапка
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(0.75.cssRem)
-                .backgroundColor(palette.brand.primary),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween,
-        ) {
-            SpanText(
-                "Чат (persona $personaId)",
-                Modifier.color(Colors.White)
-            )
-            Button(
-                onClick = { viewModel.resetConversation() },
-                modifier = Modifier.padding(0.25.cssRem)
-            ) {
-                Img(src = "/reset.svg", alt = "Сброс") {
-                    style {
-                        property("width", "1.25rem")
-                        property("height", "1.25rem")
-                    }
-                }
-            }
-            Tooltip(ElementTarget.PreviousSibling, "Сброс", placement = PopupPlacement.Bottom)
-        }
-
         // Список сообщений
         Box(
             modifier = Modifier
@@ -112,12 +92,6 @@ fun ChatBlock(
                 modifier = Modifier.fillMaxSize().gap(0.75.cssRem),
                 verticalArrangement = Arrangement.Top
             ) {
-                if (messages.isEmpty()) {
-                    SpanText(
-                        "Введите сообщение ниже...",
-                        Modifier.padding(0.5.cssRem).color(palette.cobweb)
-                    )
-                } else {
                     messages.forEach { msg ->
                         ChatBubble(
                             message = msg,
@@ -126,7 +100,6 @@ fun ChatBlock(
                         )
                     }
                 }
-            }
         }
 
         // Ошибка
@@ -141,36 +114,51 @@ fun ChatBlock(
         }
 
         // Поле ввода и кнопка
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(0.5.cssRem)
-                .gap(0.5.cssRem)
-                .backgroundColor(palette.nearBackground),
-            verticalAlignment = Alignment.Bottom,
+                .gap(0.25.cssRem)
+                .backgroundColor(palette.nearBackground)
         ) {
-            Box(Modifier.flexGrow(1)) {
-                AuthInput(
-                    type = InputType.Text,
-                    value = inputText,
-                    placeholder = "Введите сообщение...",
-                    onValueChange = { inputText = it },
-                    inputBg = inputBg,
-                    inputFg = inputFg,
-                    inputBorder = inputBorder,
-                    enabled = !loading,
-                    marginBottom = null
-                )
-            }
-            Button(
-                onClick = {
-                    viewModel.sendMessage(inputText)
-                    inputText = ""
-                },
-                modifier = Modifier.padding(0.5.cssRem),
-                enabled = !loading
+            Row(
+                modifier = Modifier.fillMaxWidth().gap(0.5.cssRem),
+                verticalAlignment = Alignment.Bottom,
             ) {
-                Img(src = "/send.svg", alt = "Отправить") {
+                Box(Modifier.flexGrow(1)) {
+                    AuthInput(
+                        type = InputType.Text,
+                        value = inputText,
+                        placeholder = "Введите сообщение...",
+                        onValueChange = { inputText = it },
+                        inputBg = inputBg,
+                        inputFg = inputFg,
+                        inputBorder = inputBorder,
+                        enabled = !loading,
+                        marginBottom = null
+                    )
+                }
+                val canSend = inputText.isNotBlank() && !loading
+                Button(
+                    onClick = {
+                        viewModel.sendMessage(inputText)
+                        inputText = ""
+                    },
+                    modifier = Modifier
+                    .padding(0.5.cssRem)
+                    .then(
+                        if (canSend) Modifier
+                            .setVariable(ButtonVars.BackgroundDefaultColor, palette.brand.primary)
+                            .color(Colors.White)
+                        else Modifier
+                            .setVariable(ButtonVars.BackgroundDefaultColor, palette.cobweb)
+                    ),
+                enabled = canSend
+            ) {
+                Img(
+                    src = if (canSend) "/send-active.svg" else "/send.svg",
+                    alt = "Отправить"
+                ) {
                     style {
                         property("width", "1.25rem")
                         property("height", "1.25rem")
@@ -178,6 +166,21 @@ fun ChatBlock(
                 }
             }
             Tooltip(ElementTarget.PreviousSibling, "Отправить", placement = PopupPlacement.Bottom)
+            }
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(top =0.5.cssRem),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Link(
+                    "#",
+                    modifier = Modifier
+                        .fontSize(0.85.cssRem)
+                        .onClick { it.preventDefault(); viewModel.resetConversation() },
+                    variant = UndecoratedLinkVariant.then(UncoloredLinkVariant)
+                ) {
+                    SpanText("Сбросить")
+                }
+            }
         }
     }
 }
