@@ -39,7 +39,6 @@ import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.components.overlay.Tooltip
 import com.varabyte.kobweb.silk.components.overlay.PopupPlacement
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
-import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.dom.Img
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.percent
@@ -47,7 +46,7 @@ import org.jetbrains.compose.web.dom.Text
 import ru.cleardocs.lkweb.chat.ChatMessage
 import ru.cleardocs.lkweb.chat.ChatRole
 import ru.cleardocs.lkweb.chat.ChatViewModel
-import ru.cleardocs.lkweb.components.widgets.AuthInput
+import ru.cleardocs.lkweb.components.widgets.ExpandableChatInput
 import ru.cleardocs.lkweb.toSitePalette
 
 /**
@@ -92,14 +91,14 @@ fun ChatBlock(
                 modifier = Modifier.fillMaxSize().gap(0.75.cssRem),
                 verticalArrangement = Arrangement.Top
             ) {
-                    messages.forEach { msg ->
-                        ChatBubble(
-                            message = msg,
-                            palette = palette,
-                            isUser = msg.role == ChatRole.USER,
-                        )
-                    }
+                messages.forEach { msg ->
+                    ChatBubble(
+                        message = msg,
+                        palette = palette,
+                        isUser = msg.role == ChatRole.USER,
+                    )
                 }
+            }
         }
 
         // Ошибка
@@ -117,8 +116,7 @@ fun ChatBlock(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(0.5.cssRem)
-                .gap(0.25.cssRem)
+                .gap(0.5.cssRem)
                 .backgroundColor(palette.nearBackground)
         ) {
             Row(
@@ -126,8 +124,7 @@ fun ChatBlock(
                 verticalAlignment = Alignment.Bottom,
             ) {
                 Box(Modifier.flexGrow(1)) {
-                    AuthInput(
-                        type = InputType.Text,
+                    ExpandableChatInput(
                         value = inputText,
                         placeholder = "Введите сообщение...",
                         onValueChange = { inputText = it },
@@ -145,27 +142,27 @@ fun ChatBlock(
                         inputText = ""
                     },
                     modifier = Modifier
-                    .padding(0.5.cssRem)
-                    .then(
-                        if (canSend) Modifier
-                            .setVariable(ButtonVars.BackgroundDefaultColor, palette.brand.primary)
-                            .color(Colors.White)
-                        else Modifier
-                            .setVariable(ButtonVars.BackgroundDefaultColor, palette.cobweb)
-                    ),
-                enabled = canSend
-            ) {
-                Img(
-                    src = if (canSend) "/send-active.svg" else "/send.svg",
-                    alt = "Отправить"
+                        .padding(0.5.cssRem)
+                        .then(
+                            if (canSend) Modifier
+                                .setVariable(ButtonVars.BackgroundDefaultColor, palette.brand.primary)
+                                .color(Colors.White)
+                            else Modifier
+                                .setVariable(ButtonVars.BackgroundDefaultColor, palette.cobweb)
+                        ),
+                    enabled = canSend
                 ) {
-                    style {
-                        property("width", "1.25rem")
-                        property("height", "1.25rem")
+                    Img(
+                        src = if (canSend) "/send-active.svg" else "/send.svg",
+                        alt = "Отправить"
+                    ) {
+                        style {
+                            property("width", "1.25rem")
+                            property("height", "1.25rem")
+                        }
                     }
                 }
-            }
-            Tooltip(ElementTarget.PreviousSibling, "Отправить", placement = PopupPlacement.Bottom)
+                Tooltip(ElementTarget.PreviousSibling, "Отправить", placement = PopupPlacement.Bottom)
             }
             Row(
                 modifier = Modifier.fillMaxWidth().padding(top =0.5.cssRem),
