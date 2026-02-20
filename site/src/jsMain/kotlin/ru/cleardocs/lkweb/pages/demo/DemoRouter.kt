@@ -38,7 +38,7 @@ fun DemoRouterPage() {
         "profile" -> "Demo — ProfileBlock"
         "profile-menu" -> "Demo — ProfileMenu"
         "layout" -> "Demo — Layout"
-        "chat" -> "Demo — DisabledChatBlock"
+        "chat" -> "Demo — ChatBlock"
         else -> "Demo"
     }
     PageLayout(title = pageTitle) {

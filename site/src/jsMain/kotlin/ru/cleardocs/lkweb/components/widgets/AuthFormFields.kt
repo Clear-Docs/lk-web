@@ -1,6 +1,9 @@
 package ru.cleardocs.lkweb.components.widgets
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.mutableStateOf
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Alignment
@@ -16,7 +19,14 @@ import com.varabyte.kobweb.silk.components.text.SpanText
 import org.jetbrains.compose.web.attributes.*
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.dom.Input
+import org.jetbrains.compose.web.dom.TextArea
+import org.w3c.dom.HTMLTextAreaElement
 import ru.cleardocs.lkweb.AuthToggleButtonVariant
+
+private fun resizeTextarea(ta: HTMLTextAreaElement) {
+    ta.style.height = "0px"
+    ta.style.height = (ta.scrollHeight.coerceAtLeast(40)).toString() + "px"
+}
 
 /**
  * Shared input style for auth forms (border, padding, background, color).
@@ -35,6 +45,70 @@ internal fun authInputStyle(
     property("outline", "none")
     property("background", inputBg)
     property("color", inputFg)
+}
+
+internal fun expandableInputStyle(
+    inputBg: String,
+    inputFg: String,
+    inputBorder: String,
+    marginBottom: String? = null
+): org.jetbrains.compose.web.css.StyleScope.() -> Unit = {
+    property("width", "100%")
+    property("min-height", "2.5rem")
+    property("max-height", "12rem")
+    property("overflow", "hidden")
+    property("padding", "0.7rem")
+    property("resize", "none")
+    marginBottom?.let { property("margin-bottom", it) }
+    property("border-radius", "0.6rem")
+    property("border", "1px solid $inputBorder")
+    property("outline", "none")
+    property("background", inputBg)
+    property("color", inputFg)
+}
+
+
+@Composable
+fun ExpandableChatInput(
+    value: String,
+    placeholder: String,
+    onValueChange: (String) -> Unit,
+    inputBg: String,
+    inputFg: String,
+    inputBorder: String,
+    enabled: Boolean = true,
+    marginBottom: String? = null,
+    onEnterSubmit: (() -> Unit)? = null,
+) {
+    val elementRef = remember { mutableStateOf<HTMLTextAreaElement?>(null) }
+    SideEffect {
+        elementRef.value?.let { resizeTextarea(it) }
+    }
+    TextArea(
+        attrs = {
+            value(value)
+            placeholder(placeholder)
+            if (!enabled) disabled()
+            rows(1)
+            ref { el ->
+                elementRef.value = el.unsafeCast<HTMLTextAreaElement>()
+                resizeTextarea(el.unsafeCast<HTMLTextAreaElement>())
+                onDispose { elementRef.value = null }
+            }
+            onInput { e ->
+                val target = e.target.unsafeCast<HTMLTextAreaElement>()
+                onValueChange(target.value)
+                resizeTextarea(target)
+            }
+            onKeyDown { e ->
+                if (e.key == "Enter" && !e.shiftKey) {
+                    e.preventDefault()
+                    onEnterSubmit?.invoke()
+                }
+            }
+            style(expandableInputStyle(inputBg, inputFg, inputBorder, marginBottom))
+        }
+    )
 }
 
 @Composable
