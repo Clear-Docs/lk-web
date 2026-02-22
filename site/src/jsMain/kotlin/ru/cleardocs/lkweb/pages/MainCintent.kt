@@ -23,6 +23,7 @@ import ru.cleardocs.lkweb.components.sections.ProfileMenu
 import ru.cleardocs.lkweb.firebase.AuthState
 import ru.cleardocs.lkweb.firebase.FirebaseProvider
 import ru.cleardocs.lkweb.firebase.signOut
+import ru.cleardocs.lkweb.profile.MeViewModel
 import ru.cleardocs.lkweb.toSitePalette
 import ru.cleardocs.lkweb.utils.requireAuthRedirect
 import ru.cleardocs.lkweb.di.kodein
@@ -40,7 +41,20 @@ private fun ProfileContent() {
     val repository = FirebaseProvider.repository
     val authState by repository.authStateFlow.collectAsState()
     val profile by repository.profileFlow.collectAsState()
+    val meViewModel = remember { MeViewModel() }
+    val me by meViewModel.me.collectAsState()
+    val meLoading by meViewModel.loading.collectAsState()
+    val meError by meViewModel.error.collectAsState()
     val palette = ColorMode.current.toSitePalette()
+
+    if (authState == AuthState.Authenticated) {
+        val user = repository.auth.currentUser
+        if (user != null) {
+            LaunchedEffect(Unit) {
+                meViewModel.loadMe(user)
+            }
+        }
+    }
 
     Column(
         Modifier
@@ -55,7 +69,11 @@ private fun ProfileContent() {
         if (authState == AuthState.Loading) {
             SpanText("Проверяем авторизацию...")
         } else if (authState == AuthState.Authenticated) {
-            ProfileBlock(profile = profile)
+            when {
+                meLoading -> SpanText("Загрузка профиля...")
+                meError != null -> SpanText("Ошибка: $meError")
+                else -> ProfileBlock(profile = profile, meDto = me)
+            }
         } else {
             SpanText("Перенаправляем на авторизацию...")
         }

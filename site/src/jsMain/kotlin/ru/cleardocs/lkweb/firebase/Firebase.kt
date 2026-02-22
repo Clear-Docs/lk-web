@@ -193,6 +193,16 @@ suspend fun sendEmailVerification(user: dynamic): dynamic {
     return promiseToSuspend<dynamic>(FirebaseAuth.sendEmailVerification(user))
 }
 
+/**
+ * Возвращает Firebase idToken текущего пользователя для авторизации запросов к бэкенду.
+ * @param forceRefresh при true принудительно обновляет токен
+ */
+suspend fun getIdToken(user: dynamic, forceRefresh: Boolean = false): String {
+    if (user == null) error("Cannot get idToken: user is null")
+    val promise = user.getIdToken(forceRefresh)
+    return promiseToSuspend<String>(promise)
+}
+
 suspend fun signInWithGoogle(auth: dynamic): dynamic {
     val providerCtor = FirebaseAuth.asDynamic().GoogleAuthProvider
     val provider = js("new providerCtor()")

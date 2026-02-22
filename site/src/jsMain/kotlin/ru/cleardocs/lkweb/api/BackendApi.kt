@@ -3,9 +3,13 @@ package ru.cleardocs.lkweb.api
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.statement.bodyAsText
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.isSuccess
 import ru.cleardocs.lkweb.ApiConfig
 import ru.cleardocs.lkweb.api.dto.GetPlansDto
 import ru.cleardocs.lkweb.api.dto.MeDto
+import ru.cleardocs.lkweb.api.dto.MeResponseDto
 
 /**
  * API-клиент для бэкенда ClearDocs.
@@ -24,12 +28,25 @@ object BackendApi {
 
     /**
      * Возвращает данные текущего пользователя.
-     * GET /api/v1/me с заголовком Authorization: Bearer &lt;token&gt;.
+     * GET /api/v1/users/me с заголовком Authorization: Bearer &lt;token&gt;.
      * Токен следует получать из Firebase Auth (idToken текущего пользователя).
-     * Пока бэкенд возвращает 401 без проверки токена.
      */
-    suspend fun me(token: String): MeDto =
-        client.get("api/v1/me") {
+    suspend fun me(token: String): MeDto {
+        val response = client.get("api/v1/users/me") {
             header("Authorization", "Bearer $token")
-        }.body()
+        }
+        if (!response.status.isSuccess()) {
+            val body = try { response.bodyAsText() } catch (_: Throwable) { "" }
+            throw BackendError(response.status.value, body)
+        }
+        val resp = response.body<MeResponseDto>()
+        return MeDto(
+            id = resp.user.email ?: "",
+            email = resp.user.email,
+            name = resp.user.name,
+        )
+    }
 }
+
+/** Ошибка бэкенда с кодом и телом ответа. */
+class BackendError(val code: Int, val body: String) : Exception("$code: ${body.ifBlank { "no body" }}")

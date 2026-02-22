@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class MeDto(
-    val id: String,
+    val id: String = "",
     val email: String? = null,
+    val name: String? = null,
 )

@@ -1,6 +1,7 @@
 package ru.cleardocs.lkweb.components.sections
 
 import androidx.compose.runtime.Composable
+import ru.cleardocs.lkweb.api.dto.MeDto
 import ru.cleardocs.lkweb.firebase.FirebaseProfile
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.ui.Alignment
@@ -12,7 +13,11 @@ import org.jetbrains.compose.web.css.*
 import org.jetbrains.compose.web.dom.Img
 
 @Composable
-fun ProfileBlock(profile: FirebaseProfile?) {
+fun ProfileBlock(
+    profile: FirebaseProfile?,
+    meDto: MeDto? = null,
+) {
+    val displayEmail = meDto?.email ?: profile?.email
     Column(
         Modifier.fillMaxWidth().gap(1.cssRem),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -29,6 +34,9 @@ fun ProfileBlock(profile: FirebaseProfile?) {
             }
         }
         SpanText(profile?.displayName ?: "Без имени")
-        profile?.email?.let { SpanText(it, Modifier.color(Colors.Gray)) }
+        displayEmail?.let { SpanText(it, Modifier.color(Colors.Gray)) }
+        meDto?.let { dto ->
+            if (dto.id.isNotEmpty()) SpanText("ID: ${dto.id}", Modifier.fontSize(0.9.cssRem).color(Colors.Gray))
+        }
     }
 }
