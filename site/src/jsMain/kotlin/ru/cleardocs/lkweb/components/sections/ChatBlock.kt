@@ -50,6 +50,7 @@ import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.percent
 import ru.cleardocs.lkweb.chat.ChatMessage
+import ru.cleardocs.lkweb.chat.ChatMessageRenderer
 import ru.cleardocs.lkweb.chat.ChatRole
 import ru.cleardocs.lkweb.chat.ChatViewModel
 import ru.cleardocs.lkweb.components.widgets.ExpandableChatInput
@@ -252,7 +253,12 @@ private fun ChatBubble(
         ) {
             Column {
                 if (message.content.isNotEmpty()) {
-                    SpanText(message.content, Modifier.fillMaxWidth())
+                    ChatMessageRenderer(
+                        content = message.content,
+                        citations = message.citations,
+                        palette = palette,
+                        modifier = Modifier.fillMaxWidth()
+                    )
                 } else if (message.isLoading) {
                     Span(
                         Modifier.fillMaxWidth().toAttrs {
