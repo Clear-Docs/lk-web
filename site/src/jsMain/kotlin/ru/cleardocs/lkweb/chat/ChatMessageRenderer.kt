@@ -39,8 +39,6 @@ private fun parseContent(content: String): List<ContentSegment> {
     return segments.ifEmpty { listOf(ContentSegment.Text(content)) }
 }
 
-private const val MAX_CITATION_LABEL = 40
-
 private fun escapeHtml(s: String): String = s
     .replace("&", "&amp;")
     .replace("<", "&lt;")
@@ -49,12 +47,13 @@ private fun escapeHtml(s: String): String = s
     .replace("'", "&#39;")
 
 private fun buildCitationBadgeHtml(displayName: String, palette: SitePalette, isDark: Boolean): String {
-    val raw = displayName.ifBlank { "File" }
-    val label = if (raw.length > MAX_CITATION_LABEL) raw.take(MAX_CITATION_LABEL) + "..." else raw
-    val fullTitle = escapeHtml(raw)
-    val textColor = if (isDark) "#E2E8F0" else "#334155"
-    val bgColor = palette.cobweb.toString()
-    return """<span class="chat-citation-badge" style="display:inline-flex;align-items:center;margin-left:0.25rem;border-radius:0.4rem;padding:0.2rem 0.5rem;font-size:0.8rem;color:$textColor;background:$bgColor" title="$fullTitle"><img src="/citation.svg" alt="" style="width:0.9rem;height:0.9rem;flex-shrink:0;margin-right:0.25rem"><span>${escapeHtml(label)}</span></span>"""
+    // Как в Onyx: для file-источников показываем "File", полное имя — в tooltip
+    val label = "File"
+    val fullTitle = escapeHtml(displayName.ifBlank { "File" })
+    val textColor = if (isDark) "#E5E7EB" else "#374151"
+    val bgColor = if (isDark) "#374151" else "#E5E7EB"
+    val shadow = if (isDark) "0 0 0 1px rgba(255,255,255,0.08)" else "0 0 0 1px rgba(0,0,0,0.06)"
+    return """<span class="chat-citation-badge" style="display:inline-flex;align-items:center;margin-left:0.25rem;margin-right:0.15rem;border-radius:0.5rem;padding:0.15rem 0.5rem;font-size:0.75rem;font-weight:500;color:$textColor;background:$bgColor;box-shadow:$shadow;vertical-align:middle" title="$fullTitle">$label</span>"""
 }
 
 private fun buildFullHtml(content: String, citations: Map<Int, String>, palette: SitePalette, isDark: Boolean): String {
