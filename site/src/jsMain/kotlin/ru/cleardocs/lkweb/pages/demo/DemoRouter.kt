@@ -9,6 +9,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.fillMaxSize
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.ui.modifiers.background
+import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.gap
 import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.core.Page
@@ -48,7 +49,10 @@ fun DemoRouterPage() {
         ) {
             when (subRoute) {
                 "" -> DemoIndexPage()
-                "plans", "profile", "profile-menu", "layout", "chat" -> Column(Modifier.gap(1.cssRem)) {
+                "plans", "profile", "profile-menu", "layout", "chat" -> Column(
+                    Modifier.fillMaxWidth().gap(1.cssRem),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
                     Link(
                         "/demo",
                         "← Назад к демо",

@@ -21,7 +21,7 @@ fun ChatDemoContent() {
     Box(
         Modifier
             .fillMaxWidth()
-            .maxWidth(32.cssRem)
+            .maxWidth(62.cssRem)
             .gap(1.25.cssRem)
             .cardSurface(ColorMode.current.toSitePalette()),
     ) {

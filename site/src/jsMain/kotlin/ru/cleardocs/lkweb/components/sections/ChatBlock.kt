@@ -1,6 +1,7 @@
 package ru.cleardocs.lkweb.components.sections
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,14 +44,18 @@ import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import com.varabyte.kobweb.compose.ui.toAttrs
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Img
+import org.jetbrains.compose.web.dom.Span
+import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.percent
 import ru.cleardocs.lkweb.chat.ChatMessage
+import ru.cleardocs.lkweb.chat.ChatMessageRenderer
 import ru.cleardocs.lkweb.chat.ChatRole
 import ru.cleardocs.lkweb.chat.ChatViewModel
 import ru.cleardocs.lkweb.components.widgets.ExpandableChatInput
 import ru.cleardocs.lkweb.toSitePalette
+import kotlinx.browser.document
 
 /**
  * Чат с стриминговой подпиской через Flow.
@@ -75,6 +80,23 @@ fun ChatBlock(
     val inputBorder = palette.cobweb.toString()
 
     var inputText by remember { mutableStateOf("") }
+
+    DisposableEffect(Unit) {
+        if (document.getElementById("chat-loading-keyframes") == null) {
+            val style = document.createElement("style").unsafeCast<org.w3c.dom.HTMLStyleElement>()
+            style.id = "chat-loading-keyframes"
+            style.appendChild(
+                document.createTextNode("""
+                    @keyframes chat-dots-pulse {
+                        0%, 100% { opacity: 0.35; }
+                        50% { opacity: 1; }
+                    }
+                """.trimIndent())
+            )
+            document.head?.appendChild(style)
+        }
+        onDispose { }
+    }
 
     Column(
         modifier = modifier
@@ -230,10 +252,22 @@ private fun ChatBubble(
                 .borderRadius(0.6.cssRem)
         ) {
             Column {
-                SpanText(
-                    if (message.content.isNotEmpty()) message.content else if (message.isLoading) "..." else "",
-                    Modifier.fillMaxWidth()
-                )
+                if (message.content.isNotEmpty()) {
+                    ChatMessageRenderer(
+                        content = message.content,
+                        citations = message.citations,
+                        palette = palette,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                } else if (message.isLoading) {
+                    Span(
+                        Modifier.fillMaxWidth().toAttrs {
+                            style { property("animation", "chat-dots-pulse 1.2s ease-in-out infinite") }
+                        }
+                    ) {
+                        Text("...")
+                    }
+                }
             }
         }
     }
