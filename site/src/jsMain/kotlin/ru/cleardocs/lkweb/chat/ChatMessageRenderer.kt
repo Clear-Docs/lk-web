@@ -19,6 +19,9 @@ private sealed class ContentSegment {
     data class Citation(val number: Int) : ContentSegment()
 }
 
+private const val CITATION_PLACEHOLDER_PREFIX = "___CIT_"
+private const val CITATION_PLACEHOLDER_SUFFIX = "___"
+
 private fun parseContent(content: String): List<ContentSegment> {
     if (content.isEmpty()) return listOf(ContentSegment.Text(""))
 
@@ -53,17 +56,28 @@ private fun buildCitationBadgeHtml(displayName: String, palette: SitePalette, is
     val bgColor = palette.brand.primary.toString()
     val textColor = "#FFFFFF"
     val shadow = if (isDark) "0 0 0 1px rgba(255,255,255,0.15)" else "0 0 0 1px rgba(59,130,246,0.25)"
-    return """<span class="chat-citation-badge" style="display:inline-flex;align-items:center;margin-left:0.25rem;margin-right:0.15rem;border-radius:0.5rem;padding:0.15rem 0.5rem;font-size:0.75rem;font-weight:500;color:$textColor;background:$bgColor;box-shadow:$shadow;vertical-align:middle" title="$fullTitle">$label</span>"""
+    return """<span class="chat-citation-badge" style="display:inline-flex;align-items:center;margin-left:0.25rem;margin-right:0.15rem;border-radius:0.5rem;padding:0.15rem 0.5rem;font-size:0.75rem;font-weight:500;color:$textColor;background:$bgColor;box-shadow:$shadow;vertical-align:middle;white-space:nowrap" title="$fullTitle">$label</span>"""
 }
 
 private fun buildFullHtml(content: String, citations: Map<Int, String>, palette: SitePalette, isDark: Boolean): String {
     val segments = parseContent(content)
-    return segments.joinToString("") { segment ->
+    val placeholderToBadge = mutableMapOf<String, String>()
+    val sb = StringBuilder()
+    for (segment in segments) {
         when (segment) {
-            is ContentSegment.Text -> parseSimpleMarkdown(segment.value)
-            is ContentSegment.Citation -> buildCitationBadgeHtml(citations[segment.number] ?: "File", palette, isDark)
+            is ContentSegment.Text -> sb.append(segment.value)
+            is ContentSegment.Citation -> {
+                val placeholder = "$CITATION_PLACEHOLDER_PREFIX${segment.number}$CITATION_PLACEHOLDER_SUFFIX"
+                placeholderToBadge[placeholder] = buildCitationBadgeHtml(citations[segment.number] ?: "File", palette, isDark)
+                sb.append(placeholder)
+            }
         }
     }
+    var html = parseSimpleMarkdown(sb.toString())
+    for ((placeholder, badge) in placeholderToBadge) {
+        html = html.replace(placeholder, badge)
+    }
+    return html
 }
 
 /**
