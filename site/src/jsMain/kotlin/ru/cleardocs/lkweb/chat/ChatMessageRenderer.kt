@@ -50,9 +50,9 @@ private fun buildCitationBadgeHtml(displayName: String, palette: SitePalette, is
     // Как в Onyx: для file-источников показываем "File", полное имя — в tooltip
     val label = "File"
     val fullTitle = escapeHtml(displayName.ifBlank { "File" })
-    val textColor = if (isDark) "#E5E7EB" else "#374151"
-    val bgColor = if (isDark) "#374151" else "#E5E7EB"
-    val shadow = if (isDark) "0 0 0 1px rgba(255,255,255,0.08)" else "0 0 0 1px rgba(0,0,0,0.06)"
+    val bgColor = palette.brand.primary.toString()
+    val textColor = "#FFFFFF"
+    val shadow = if (isDark) "0 0 0 1px rgba(255,255,255,0.15)" else "0 0 0 1px rgba(59,130,246,0.25)"
     return """<span class="chat-citation-badge" style="display:inline-flex;align-items:center;margin-left:0.25rem;margin-right:0.15rem;border-radius:0.5rem;padding:0.15rem 0.5rem;font-size:0.75rem;font-weight:500;color:$textColor;background:$bgColor;box-shadow:$shadow;vertical-align:middle" title="$fullTitle">$label</span>"""
 }
 
