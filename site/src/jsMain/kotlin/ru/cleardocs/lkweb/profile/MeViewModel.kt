@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import ru.cleardocs.lkweb.api.BackendApi
 import ru.cleardocs.lkweb.api.dto.MeDto
-import ru.cleardocs.lkweb.firebase.getIdToken
 
 class MeViewModel {
 
@@ -20,14 +19,13 @@ class MeViewModel {
 
     /**
      * Загружает данные текущего пользователя из REST GET /api/v1/users/me.
-     * Требуется Firebase user для получения idToken.
+     * Токен получается в BackendApi из Firebase Auth.
      */
-    suspend fun loadMe(user: dynamic) {
+    suspend fun loadMe() {
         _loading.value = true
         _error.value = null
         try {
-            val token = getIdToken(user)
-            val response = BackendApi.me(token)
+            val response = BackendApi.me()
             _me.value = response
         } catch (e: Throwable) {
             val errorMsg = when {

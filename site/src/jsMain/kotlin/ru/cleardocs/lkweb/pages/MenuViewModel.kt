@@ -10,7 +10,8 @@ class MenuViewModel {
     val stateFlow: StateFlow<MainViewState> = _state.asStateFlow()
 
     val menuEntries: List<Pair<MainViewState, String>> = listOf(
-        MainViewState.Profile to "Профиль"
+        MainViewState.Profile to "Профиль",
+        MainViewState.Connectors to "Коннекторы"
     )
 
     fun selectState(state: MainViewState) {

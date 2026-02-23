@@ -23,6 +23,7 @@ import ru.cleardocs.lkweb.components.sections.ProfileMenu
 import ru.cleardocs.lkweb.firebase.AuthState
 import ru.cleardocs.lkweb.firebase.FirebaseProvider
 import ru.cleardocs.lkweb.firebase.signOut
+import ru.cleardocs.lkweb.connectors.ConnectorsViewModel
 import ru.cleardocs.lkweb.profile.MeViewModel
 import ru.cleardocs.lkweb.toSitePalette
 import ru.cleardocs.lkweb.utils.requireAuthRedirect
@@ -33,6 +34,7 @@ import org.kodein.di.instance
 private fun MainContent(mainState: MainViewState) {
     when (mainState) {
         MainViewState.Profile -> ProfileContent()
+        MainViewState.Connectors -> ConnectorsContent()
     }
 }
 
@@ -51,7 +53,7 @@ private fun ProfileContent() {
         val user = repository.auth.currentUser
         if (user != null) {
             LaunchedEffect(Unit) {
-                meViewModel.loadMe(user)
+                meViewModel.loadMe()
             }
         }
     }
@@ -76,6 +78,48 @@ private fun ProfileContent() {
             }
         } else {
             SpanText("Перенаправляем на авторизацию...")
+        }
+    }
+}
+
+@Composable
+private fun ConnectorsContent() {
+    val repository = FirebaseProvider.repository
+    val authState by repository.authStateFlow.collectAsState()
+    val connectorsViewModel = remember { ConnectorsViewModel() }
+    val connectors by connectorsViewModel.connectors.collectAsState()
+    val loading by connectorsViewModel.loading.collectAsState()
+    val error by connectorsViewModel.error.collectAsState()
+    val palette = ColorMode.current.toSitePalette()
+
+    if (authState == AuthState.Authenticated) {
+        val user = repository.auth.currentUser
+        if (user != null) {
+            LaunchedEffect(Unit) {
+                connectorsViewModel.loadConnectors()
+            }
+        }
+    }
+
+    Column(
+        Modifier
+            .flexGrow(1)
+            .fillMaxSize()
+            .gap(1.25.cssRem)
+            .cardSurface(palette),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        SpanText("Коннекторы", Modifier.fontSize(1.5.cssRem))
+
+        when {
+            authState == AuthState.Loading -> SpanText("Проверяем авторизацию...")
+            authState != AuthState.Authenticated -> SpanText("Перенаправляем на авторизацию...")
+            loading -> SpanText("Загрузка коннекторов...")
+            error != null -> SpanText("Ошибка: $error")
+            connectors.isEmpty() -> SpanText("Нет коннекторов.")
+            else -> Column(Modifier.fillMaxWidth().gap(0.5.cssRem)) {
+                connectors.forEach { c -> SpanText("${c.name} (${c.type})") }
+            }
         }
     }
 }
