@@ -1,6 +1,7 @@
 package ru.cleardocs.lkweb
 
 import kotlinx.browser.window
+import kotlinx.serialization.json.Json
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.js.Js
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -39,7 +40,7 @@ object ApiConfig {
      */
     fun createHttpClient(): HttpClient = HttpClient(Js) {
         install(ContentNegotiation) {
-            json()
+            json(Json { ignoreUnknownKeys = true })
         }
         defaultRequest {
             url(baseUrl)
@@ -52,7 +53,7 @@ object ApiConfig {
      */
     fun createOnyxHttpClient(): HttpClient = HttpClient(Js) {
         install(ContentNegotiation) {
-            json()
+            json(Json { ignoreUnknownKeys = true })
         }
         defaultRequest {
             url(onyxBaseUrl)
