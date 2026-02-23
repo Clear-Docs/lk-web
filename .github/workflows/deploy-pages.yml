@@ -21,6 +21,9 @@ jobs:
     defaults:
       run:
         shell: bash
+    env:
+      KOBWEB_CLI_VERSION: "0.9.15"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -48,26 +51,31 @@ jobs:
           path: ~/.cache/ms-playwright
           key: ${{ runner.os }}-playwright-${{ steps.browser-cache-id.outputs.value }}
 
+      - name: Fetch Kobweb CLI
+        uses: robinraju/release-downloader@v1.10
+        with:
+          repository: "varabyte/kobweb-cli"
+          tag: "v${{ env.KOBWEB_CLI_VERSION }}"
+          fileName: "kobweb-${{ env.KOBWEB_CLI_VERSION }}.zip"
+          tarBall: false
+          zipBall: false
+
+      - name: Unzip Kobweb CLI
+        run: unzip -o kobweb-${{ env.KOBWEB_CLI_VERSION }}.zip
+
       - name: Run export
-        run: ./gradlew :site:kobwebExport
+        run: |
+          cd site
+          ../kobweb-${{ env.KOBWEB_CLI_VERSION }}/bin/kobweb export --notty --layout static
 
       - name: Add CNAME for custom domain
         run: |
           mkdir -p site/.kobweb/site
           echo "lk.cleardocs.ru" > site/.kobweb/site/CNAME
 
-      - name: Ensure root index.html for GitHub Pages
-        run: |
-          if [ -f site/.kobweb/site/pages/index.html ] && [ ! -f site/.kobweb/site/index.html ]; then
-            cp site/.kobweb/site/pages/index.html site/.kobweb/site/index.html
-            echo "Copied pages/index.html to root index.html"
-          fi
-
       - name: Validate export artifact directory
         run: |
-          echo "Export structure:"
-          find site/.kobweb/site -type f -name "*.html" 2>/dev/null || true
-          test -f site/.kobweb/site/index.html || test -f site/.kobweb/site/pages/index.html || test -f site/.kobweb/site/system/index.html || {
+          test -f site/.kobweb/site/index.html || test -f site/.kobweb/site/pages/index.html || {
             echo "ERROR: Export produced no index.html -- build is broken"
             ls -laR site/.kobweb/site/ 2>/dev/null || true
             exit 1
@@ -88,4 +96,3 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
-
