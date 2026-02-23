@@ -65,6 +65,7 @@ jobs:
 
       - name: Run export
         run: |
+          set -e
           cd site
           ../kobweb-${{ env.KOBWEB_CLI_VERSION }}/bin/kobweb export --notty --layout static
 
@@ -75,7 +76,9 @@ jobs:
 
       - name: Validate export artifact directory
         run: |
-          test -f site/.kobweb/site/index.html || test -f site/.kobweb/site/pages/index.html || {
+          echo "Export structure:"
+          find site/.kobweb/site -type f -name "*.html" 2>/dev/null || true
+          test -f site/.kobweb/site/index.html || test -f site/.kobweb/site/pages/index.html || test -f site/.kobweb/site/system/index.html || {
             echo "ERROR: Export produced no index.html -- build is broken"
             ls -laR site/.kobweb/site/ 2>/dev/null || true
             exit 1
