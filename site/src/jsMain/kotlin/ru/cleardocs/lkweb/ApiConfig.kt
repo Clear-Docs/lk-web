@@ -13,13 +13,13 @@ import io.ktor.serialization.kotlinx.json.json
  * Настройки Ktor: базовый URL сервера API.
  */
 object ApiConfig {
-    /** Базовый URL ClearDocs API. На localhost — CORS-прокси 9082 -> 155.212.162.11:8080, иначе бэкенд напрямую. */
+    /** Базовый URL ClearDocs API. На localhost — CORS-прокси 9082, иначе api.cleardocs.ru (nginx → backend:8080). */
     val baseUrl: String
         get() {
             val h = window.location.hostname
             return when {
                 h == "localhost" || h == "127.0.0.1" -> "http://localhost:9082"
-                else -> "http://155.212.162.11:8080"
+                else -> "https://api.cleardocs.ru"
             }
         }
 

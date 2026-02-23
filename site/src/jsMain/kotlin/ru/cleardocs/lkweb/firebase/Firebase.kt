@@ -181,6 +181,18 @@ fun signOut(auth: dynamic) {
     }
 }
 
+/** Suspend-версия signOut — ждёт завершения Promise. Используется при редиректе по 401, чтобы избежать цикла auth↔profile. */
+suspend fun signOutAwait(auth: dynamic) {
+    try {
+        val promise = FirebaseAuth.signOut(auth)
+        if (promise != null && jsTypeOf(promise.asDynamic().then) == "function") {
+            promiseToSuspend<Unit>(promise)
+        }
+    } catch (e: dynamic) {
+        console.error("Firebase: signOutAwait error", e)
+    }
+}
+
 suspend fun signInWithEmailAndPassword(auth: dynamic, email: String, password: String): dynamic {
     return promiseToSuspend<dynamic>(FirebaseAuth.signInWithEmailAndPassword(auth, email, password))
 }
