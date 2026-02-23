@@ -56,6 +56,13 @@ jobs:
           mkdir -p site/.kobweb/site
           echo "lk.cleardocs.ru" > site/.kobweb/site/CNAME
 
+      - name: Ensure root index.html for GitHub Pages
+        run: |
+          if [ -f site/.kobweb/site/pages/index.html ] && [ ! -f site/.kobweb/site/index.html ]; then
+            cp site/.kobweb/site/pages/index.html site/.kobweb/site/index.html
+            echo "Copied pages/index.html to root index.html"
+          fi
+
       - name: Validate export artifact directory
         run: |
           echo "Export structure:"
