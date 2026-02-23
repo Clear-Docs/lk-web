@@ -17,8 +17,11 @@
 - **IP сервера:** 155.212.162.11  
 - **URL API:** https://155.212.162.11  
 - **Swagger (Onyx Backend):** http://155.212.162.11:3000/api/docs  
+- **Swager backend http://155.212.162.11:8080/swagger-ui/index.html
+- **Код сервера:** https://github.com/Clear-Docs/backend.git
 
 Базовый URL задаётся в настройках Ktor (см. `ApiConfig` в коде).
+
 
 ## Экспорт статики
 

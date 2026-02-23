@@ -26,11 +26,11 @@ fun ProfileDemoContent() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         SpanText("ProfileBlock (фейковые данные)", Modifier.padding(bottom = 0.5.cssRem))
-        SpanText("С аватаром:", Modifier.fillMaxWidth())
-        ProfileBlock(profile = FakeData.profileWithPhoto)
-        SpanText("Без аватара:", Modifier.fillMaxWidth().padding(top = 1.5.cssRem))
-        ProfileBlock(profile = FakeData.profileWithoutPhoto)
+        SpanText("Полный профиль с тарифом:", Modifier.fillMaxWidth())
+        ProfileBlock(meDto = FakeData.meFull)
+        SpanText("Без тарифа:", Modifier.fillMaxWidth().padding(top = 1.5.cssRem))
+        ProfileBlock(meDto = FakeData.meWithoutPlan)
         SpanText("Минимальные данные:", Modifier.fillMaxWidth().padding(top = 1.5.cssRem))
-        ProfileBlock(profile = FakeData.profileMinimal)
+        ProfileBlock(meDto = FakeData.meMinimal)
     }
 }

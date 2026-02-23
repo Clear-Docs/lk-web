@@ -16,9 +16,6 @@ class FirebaseRepository(
     private val _authStateFlow = MutableStateFlow<AuthState>(AuthState.Loading)
     val authStateFlow: StateFlow<AuthState> = _authStateFlow.asStateFlow()
 
-    private val _profileFlow = MutableStateFlow<FirebaseProfile?>(null)
-    val profileFlow: StateFlow<FirebaseProfile?> = _profileFlow.asStateFlow()
-
     val auth: dynamic
         get() = firebase.auth
 
@@ -26,7 +23,6 @@ class FirebaseRepository(
         onAuthStateChanged(firebase.auth) { user ->
             _authStateFlow.value =
                 if (user == null) AuthState.Unauthenticated else AuthState.Authenticated
-            _profileFlow.value = firebaseUserProfile(user)
         }
 
     fun dispose() {
