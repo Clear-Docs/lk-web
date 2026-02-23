@@ -10,6 +10,7 @@ data class MeResponseDto(
 
 @Serializable
 data class UserMeDto(
+    val id: String? = null,
     val email: String? = null,
     val name: String? = null,
     val plan: PlanDto? = null,

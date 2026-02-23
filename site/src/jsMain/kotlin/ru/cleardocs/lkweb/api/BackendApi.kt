@@ -8,8 +8,10 @@ import io.ktor.http.HttpStatusCode
 import io.ktor.http.isSuccess
 import ru.cleardocs.lkweb.ApiConfig
 import ru.cleardocs.lkweb.api.dto.GetConnectorsDto
+import ru.cleardocs.lkweb.api.dto.LimitDto
 import ru.cleardocs.lkweb.api.dto.GetPlansDto
 import ru.cleardocs.lkweb.api.dto.MeDto
+import ru.cleardocs.lkweb.api.dto.PlanDto
 import ru.cleardocs.lkweb.api.dto.MeResponseDto
 import ru.cleardocs.lkweb.firebase.FirebaseProvider
 import ru.cleardocs.lkweb.firebase.getIdToken
@@ -51,11 +53,18 @@ object BackendApi {
             throw BackendError(response.status.value, body)
         }
         val resp = response.body<MeResponseDto>()
+        val u = resp.user
         return MeDto(
-            id = resp.user.email ?: "",
-            email = resp.user.email,
-            name = resp.user.name,
-            plan = resp.user.plan,
+            id = u.id ?: u.email ?: "",
+            email = u.email ?: "",
+            name = u.name ?: "",
+            plan = u.plan ?: PlanDto(
+                code = "free",
+                title = "Бесплатный",
+                priceRub = 0,
+                periodDays = 0,
+                limit = LimitDto(maxConnectors = 0),
+            ),
         )
     }
 

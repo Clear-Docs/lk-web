@@ -24,18 +24,26 @@ object FakeData {
         ),
     )
 
+    val defaultPlan = PlanDto(
+        code = "free",
+        title = "Бесплатный",
+        priceRub = 0,
+        periodDays = 0,
+        limit = LimitDto(maxConnectors = 0),
+    )
+
     val meWithoutPlan = MeDto(
         id = "usr_002",
         email = "maria@example.com",
         name = "Мария Сидорова",
-        plan = null,
+        plan = defaultPlan,
     )
 
     val meMinimal = MeDto(
         id = "usr_003",
         email = "user@example.com",
-        name = null,
-        plan = null,
+        name = "",
+        plan = defaultPlan,
     )
 
     val plans = listOf(

@@ -18,11 +18,9 @@ fun ProfileBlock(meDto: MeDto?) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         SpanText("Вы вошли", Modifier.fontSize(1.1.cssRem))
-        SpanText(meDto.name ?: "Без имени")
-        meDto.email?.let { SpanText(it, Modifier.color(Colors.Gray)) }
+        SpanText(if (meDto.name.isEmpty()) "Без имени" else meDto.name)
+        SpanText(meDto.email, Modifier.color(Colors.Gray))
         if (meDto.id.isNotEmpty()) SpanText("ID: ${meDto.id}", Modifier.fontSize(0.9.cssRem).color(Colors.Gray))
-        meDto.plan?.let { plan ->
-            SpanText("Тариф: ${plan.title}", Modifier.fontSize(0.9.cssRem).color(Colors.Gray))
-        }
+        SpanText("Тариф: ${meDto.plan.title}", Modifier.fontSize(0.9.cssRem).color(Colors.Gray))
     }
 }
