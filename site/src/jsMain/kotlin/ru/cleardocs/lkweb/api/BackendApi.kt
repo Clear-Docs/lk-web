@@ -3,10 +3,15 @@ package ru.cleardocs.lkweb.api
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import io.ktor.client.request.forms.formData
+import io.ktor.client.request.forms.submitFormWithBinaryData
 import io.ktor.client.statement.bodyAsText
-import io.ktor.http.HttpStatusCode
+import io.ktor.http.HttpHeaders
+import io.ktor.http.Headers
+import io.ktor.http.appendPathSegments
 import io.ktor.http.isSuccess
 import ru.cleardocs.lkweb.ApiConfig
+import ru.cleardocs.lkweb.api.dto.CreateConnectorResponseDto
 import ru.cleardocs.lkweb.api.dto.GetConnectorsDto
 import ru.cleardocs.lkweb.api.dto.LimitDto
 import ru.cleardocs.lkweb.api.dto.GetPlansDto
@@ -76,6 +81,39 @@ object BackendApi {
     suspend fun connectors(): GetConnectorsDto {
         val token = requireToken()
         val response = client.get("api/v1/connectors") {
+            header("Authorization", "Bearer $token")
+        }
+        if (!response.status.isSuccess()) {
+            val body = try { response.bodyAsText() } catch (_: Throwable) { "" }
+            throw BackendError(response.status.value, body)
+        }
+        return response.body()
+    }
+
+    /**
+     * Создаёт file-коннектор.
+     * POST /api/v1/connectors multipart/form-data: name, files.
+     * Ответ: CreateConnectorResponseDto.
+     */
+    suspend fun createFileConnector(
+        name: String,
+        files: List<ByteArray>,
+        filenames: List<String>,
+    ): CreateConnectorResponseDto {
+        val token = requireToken()
+        val form = formData {
+            append("name", name)
+            files.forEachIndexed { i, bytes ->
+                val filename = filenames.getOrElse(i) { "file$i" }
+                append("files", bytes, Headers.build {
+                    append(HttpHeaders.ContentDisposition, "filename=\"$filename\"")
+                })
+            }
+        }
+        val response = client.submitFormWithBinaryData(form) {
+            url {
+                appendPathSegments("api", "v1", "connectors")
+            }
             header("Authorization", "Bearer $token")
         }
         if (!response.status.isSuccess()) {

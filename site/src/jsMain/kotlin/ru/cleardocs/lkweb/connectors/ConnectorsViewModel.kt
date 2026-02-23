@@ -61,4 +61,40 @@ class ConnectorsViewModel(
             }
         }
     }
+
+    /**
+     * Создаёт file-коннектор через POST /api/v1/connectors.
+     * При успехе обновляет список, при ошибке — обновляет [state].
+     */
+    suspend fun addConnector(
+        name: String,
+        files: List<ByteArray>,
+        filenames: List<String>,
+    ) {
+        if (files.isEmpty()) {
+            _state.value = ConnectorsViewState.Error("Выберите хотя бы один файл")
+            return
+        }
+        try {
+            BackendApi.createFileConnector(name, files, filenames)
+            loadConnectors()
+        } catch (e: Throwable) {
+            val errorMsg = when {
+                e is ru.cleardocs.lkweb.api.BackendError -> when (e.code) {
+                    401 -> "Сессия истекла"
+                    403 -> "Доступ запрещён"
+                    else -> e.message ?: "Ошибка ${e.code}"
+                }
+                e.message?.contains("401") == true -> "Сессия истекла"
+                e.message?.contains("403") == true -> "Доступ запрещён"
+                e.message?.contains("Backend unreachable") == true -> "Сервер недоступен"
+                else -> e.message ?: "Ошибка при добавлении коннектора"
+            }
+            _state.value = if (isUnauthError(errorMsg)) {
+                ConnectorsViewState.GotoAuth
+            } else {
+                ConnectorsViewState.Error(errorMsg)
+            }
+        }
+    }
 }
