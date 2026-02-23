@@ -20,43 +20,31 @@ import ru.cleardocs.lkweb.components.layouts.PageLayout
 import ru.cleardocs.lkweb.components.widgets.cardSurface
 import ru.cleardocs.lkweb.components.sections.ProfileBlock
 import ru.cleardocs.lkweb.components.sections.ProfileMenu
-import ru.cleardocs.lkweb.firebase.AuthState
-import ru.cleardocs.lkweb.firebase.FirebaseProvider
 import ru.cleardocs.lkweb.firebase.signOut
+import ru.cleardocs.lkweb.connectors.ConnectorsViewState
 import ru.cleardocs.lkweb.connectors.ConnectorsViewModel
 import ru.cleardocs.lkweb.profile.MeViewModel
+import ru.cleardocs.lkweb.profile.ProfileAuthState
 import ru.cleardocs.lkweb.toSitePalette
-import ru.cleardocs.lkweb.utils.requireAuthRedirect
+import ru.cleardocs.lkweb.utils.requireProfileAuthRedirect
 import ru.cleardocs.lkweb.di.kodein
 import org.kodein.di.instance
 
 @Composable
-private fun MainContent(mainState: MainViewState) {
+private fun MainContent(mainState: MainViewState, meViewModel: MeViewModel) {
     when (mainState) {
-        MainViewState.Profile -> ProfileContent()
+        MainViewState.Profile -> ProfileContent(meViewModel = meViewModel)
         MainViewState.Connectors -> ConnectorsContent()
     }
 }
 
 @Composable
-private fun ProfileContent() {
-    val repository = FirebaseProvider.repository
-    val authState by repository.authStateFlow.collectAsState()
-    val profile by repository.profileFlow.collectAsState()
-    val meViewModel = remember { MeViewModel() }
+private fun ProfileContent(meViewModel: MeViewModel) {
+    val authState by meViewModel.authState.collectAsState()
     val me by meViewModel.me.collectAsState()
     val meLoading by meViewModel.loading.collectAsState()
     val meError by meViewModel.error.collectAsState()
     val palette = ColorMode.current.toSitePalette()
-
-    if (authState == AuthState.Authenticated) {
-        val user = repository.auth.currentUser
-        if (user != null) {
-            LaunchedEffect(Unit) {
-                meViewModel.loadMe()
-            }
-        }
-    }
 
     Column(
         Modifier
@@ -68,38 +56,23 @@ private fun ProfileContent() {
     ) {
         SpanText("Профиль", Modifier.fontSize(1.5.cssRem))
 
-        if (authState == AuthState.Loading) {
-            SpanText("Проверяем авторизацию...")
-        } else if (authState == AuthState.Authenticated) {
-            when {
+        when (authState) {
+            ProfileAuthState.Loading -> SpanText("Проверяем авторизацию...")
+            ProfileAuthState.Unauthenticated -> SpanText("Перенаправляем на авторизацию...")
+            ProfileAuthState.Authenticated -> when {
                 meLoading -> SpanText("Загрузка профиля...")
                 meError != null -> SpanText("Ошибка: $meError")
-                else -> ProfileBlock(profile = profile, meDto = me)
+                else -> ProfileBlock(meDto = me)
             }
-        } else {
-            SpanText("Перенаправляем на авторизацию...")
         }
     }
 }
 
 @Composable
 private fun ConnectorsContent() {
-    val repository = FirebaseProvider.repository
-    val authState by repository.authStateFlow.collectAsState()
     val connectorsViewModel = remember { ConnectorsViewModel() }
-    val connectors by connectorsViewModel.connectors.collectAsState()
-    val loading by connectorsViewModel.loading.collectAsState()
-    val error by connectorsViewModel.error.collectAsState()
+    val state by connectorsViewModel.state.collectAsState()
     val palette = ColorMode.current.toSitePalette()
-
-    if (authState == AuthState.Authenticated) {
-        val user = repository.auth.currentUser
-        if (user != null) {
-            LaunchedEffect(Unit) {
-                connectorsViewModel.loadConnectors()
-            }
-        }
-    }
 
     Column(
         Modifier
@@ -111,14 +84,21 @@ private fun ConnectorsContent() {
     ) {
         SpanText("Коннекторы", Modifier.fontSize(1.5.cssRem))
 
-        when {
-            authState == AuthState.Loading -> SpanText("Проверяем авторизацию...")
-            authState != AuthState.Authenticated -> SpanText("Перенаправляем на авторизацию...")
-            loading -> SpanText("Загрузка коннекторов...")
-            error != null -> SpanText("Ошибка: $error")
-            connectors.isEmpty() -> SpanText("Нет коннекторов.")
-            else -> Column(Modifier.fillMaxWidth().gap(0.5.cssRem)) {
-                connectors.forEach { c -> SpanText("${c.name} (${c.type})") }
+        when (val s = state) {
+            is ConnectorsViewState.Loading -> {}
+            is ConnectorsViewState.GotoAuth ->
+                SpanText("Перенаправляем на авторизацию...")
+            is ConnectorsViewState.Error ->
+                SpanText("Ошибка: ${s.message}")
+            is ConnectorsViewState.ConnectorsData -> {
+                val connectors = s.connectors
+                if (connectors.isEmpty()) {
+                    SpanText("Нет коннекторов.")
+                } else {
+                    Column(Modifier.fillMaxWidth().gap(0.5.cssRem)) {
+                        connectors.forEach { c -> SpanText("${c.name} (${c.type})") }
+                    }
+                }
             }
         }
     }
@@ -127,16 +107,16 @@ private fun ConnectorsContent() {
 @Page("/profile")
 @Composable
 fun ProfilePage() {
-    val repository = FirebaseProvider.repository
-    val authState by repository.authStateFlow.collectAsState()
+    val meViewModel = remember { MeViewModel() }
+    val authState by meViewModel.authState.collectAsState()
     val scope = rememberCoroutineScope()
     val ctx = rememberPageContext()
 
-    requireAuthRedirect(authState, ctx.router::tryRoutingTo)
+    requireProfileAuthRedirect(authState, ctx.router::tryRoutingTo)
 
     val onSignOut: () -> Unit = {
         scope.launch {
-            signOut(repository.auth)
+            signOut(meViewModel.repository.auth)
             ctx.router.tryRoutingTo("/auth")
         }
         Unit
@@ -176,7 +156,7 @@ fun ProfilePage() {
                         onSignOut = onSignOut
                     )
 
-                    MainContent(mainState = mainState)
+                    MainContent(mainState = mainState, meViewModel = meViewModel)
                 }
             }
         }

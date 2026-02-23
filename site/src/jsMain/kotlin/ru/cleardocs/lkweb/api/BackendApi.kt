@@ -55,6 +55,7 @@ object BackendApi {
             id = resp.user.email ?: "",
             email = resp.user.email,
             name = resp.user.name,
+            plan = resp.user.plan,
         )
     }
 
