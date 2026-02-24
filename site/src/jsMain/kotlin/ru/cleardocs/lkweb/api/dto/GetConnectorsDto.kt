@@ -5,4 +5,5 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class GetConnectorsDto(
     val connectors: List<ConnectorDto>,
+    val canAdd: Boolean = true,
 )

@@ -17,6 +17,7 @@ class ConnectorsViewModel(
     val state: StateFlow<ConnectorsViewState> = _state.asStateFlow()
 
     private var lastConnectors: List<Connector> = emptyList()
+    private var lastCanAdd: Boolean = true
 
     init {
         scope.launch { loadConnectors() }
@@ -26,12 +27,13 @@ class ConnectorsViewModel(
         val current = _state.value
         if (current is ConnectorsViewState.ConnectorsData.Connectors) {
             lastConnectors = current.connectors
+            lastCanAdd = current.canAdd
             _state.value = ConnectorsViewState.ConnectorsData.AddFile
         }
     }
 
     fun backToConnectors() {
-        _state.value = ConnectorsViewState.ConnectorsData.Connectors(lastConnectors)
+        _state.value = ConnectorsViewState.ConnectorsData.Connectors(lastConnectors, lastCanAdd)
     }
 
     private fun isUnauthError(error: String): Boolean =
@@ -55,7 +57,7 @@ class ConnectorsViewModel(
                     type = dto.type,
                 )
             }
-            _state.value = ConnectorsViewState.ConnectorsData.Connectors(connectors)
+            _state.value = ConnectorsViewState.ConnectorsData.Connectors(connectors, response.canAdd)
         } catch (e: Throwable) {
             val errorMsg = when {
                 e is ru.cleardocs.lkweb.api.BackendError -> when (e.code) {
@@ -72,6 +74,39 @@ class ConnectorsViewModel(
                 ConnectorsViewState.GotoAuth
             } else {
                 ConnectorsViewState.Error(errorMsg)
+            }
+        }
+    }
+
+    /**
+     * Удаляет коннектор по id через DELETE /api/v1/connectors/{id}.
+     * При успехе обновляет список, при ошибке — обновляет [state].
+     * Запускается в scope ViewModel.
+     */
+    fun deleteConnector(id: String) {
+        scope.launch {
+            val current = _state.value
+            if (current !is ConnectorsViewState.ConnectorsData.Connectors) return@launch
+            try {
+                BackendApi.deleteConnector(id)
+                loadConnectors()
+            } catch (e: Throwable) {
+                val errorMsg = when {
+                    e is ru.cleardocs.lkweb.api.BackendError -> when (e.code) {
+                        401 -> "Сессия истекла"
+                        403 -> "Доступ запрещён"
+                        else -> e.message ?: "Ошибка ${e.code}"
+                    }
+                    e.message?.contains("401") == true -> "Сессия истекла"
+                    e.message?.contains("403") == true -> "Доступ запрещён"
+                    e.message?.contains("Backend unreachable") == true -> "Сервер недоступен"
+                    else -> e.message ?: "Ошибка при удалении коннектора"
+                }
+                _state.value = if (isUnauthError(errorMsg)) {
+                    ConnectorsViewState.GotoAuth
+                } else {
+                    ConnectorsViewState.Error(errorMsg)
+                }
             }
         }
     }

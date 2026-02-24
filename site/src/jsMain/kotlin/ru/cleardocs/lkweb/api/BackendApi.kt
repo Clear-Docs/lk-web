@@ -1,6 +1,7 @@
 package ru.cleardocs.lkweb.api
 
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.forms.formData
@@ -88,6 +89,21 @@ object BackendApi {
             throw BackendError(response.status.value, body)
         }
         return response.body()
+    }
+
+    /**
+     * Удаляет коннектор по id.
+     * DELETE /api/v1/connectors/{id} с заголовком Authorization: Bearer &lt;token&gt;.
+     */
+    suspend fun deleteConnector(id: String) {
+        val token = requireToken()
+        val response = client.delete("api/v1/connectors/$id") {
+            header("Authorization", "Bearer $token")
+        }
+        if (!response.status.isSuccess()) {
+            val body = try { response.bodyAsText() } catch (_: Throwable) { "" }
+            throw BackendError(response.status.value, body)
+        }
     }
 
     /**

@@ -24,6 +24,7 @@ import org.jetbrains.compose.web.dom.Div
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.components.layout.breakpoint.displayIfAtLeast
+import com.varabyte.kobweb.silk.components.forms.Button
 import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
@@ -102,7 +103,11 @@ private fun ProfileContent(meViewModel: MeViewModel) {
 }
 
 @Composable
-private fun ConnectorItem(connector: Connector, palette: ru.cleardocs.lkweb.SitePalette) {
+private fun ConnectorItem(
+    connector: Connector,
+    palette: ru.cleardocs.lkweb.SitePalette,
+    onDelete: (String) -> Unit,
+) {
     val textColor = ColorMode.current.toPalette().color
     Row(
         Modifier
@@ -126,12 +131,21 @@ private fun ConnectorItem(connector: Connector, palette: ru.cleardocs.lkweb.Site
                 }
             }
         )
-        SpanText(connector.name)
+        SpanText(connector.name, Modifier.flexGrow(1))
+        Button(
+            onClick = { onDelete(connector.id) },
+            modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
+        ) {
+            SpanText("Удалить")
+        }
     }
 }
 
 @Composable
-private fun ConnectorsList(connectors: List<Connector>) {
+private fun ConnectorsList(
+    connectors: List<Connector>,
+    onDelete: (String) -> Unit,
+) {
     val palette = ColorMode.current.toSitePalette()
     Div(
         Modifier
@@ -144,7 +158,7 @@ private fun ConnectorsList(connectors: List<Connector>) {
                 }
             }
     ) {
-        connectors.forEach { c -> ConnectorItem(c, palette) }
+        connectors.forEach { c -> ConnectorItem(c, palette, onDelete) }
     }
 }
 
@@ -273,12 +287,17 @@ private fun ConnectorsContent() {
                 if (s.connectors.isEmpty()) {
                     NoConnectorsMessage()
                 } else {
-                    ConnectorsList(s.connectors)
+                    ConnectorsList(
+                        connectors = s.connectors,
+                        onDelete = { id -> connectorsViewModel.deleteConnector(id) }
+                    )
                 }
-                ActionButton(
-                    text = "Добавить коннектор",
-                    onClick = { connectorsViewModel.goToAddFile() },
-                )
+                if (s.canAdd) {
+                    ActionButton(
+                        text = "Добавить коннектор",
+                        onClick = { connectorsViewModel.goToAddFile() },
+                    )
+                }
             }
             is ConnectorsData.AddFile -> Column(
                 Modifier
