@@ -45,6 +45,7 @@ import ru.cleardocs.lkweb.connectors.toByteArray
 import ru.cleardocs.lkweb.components.sections.ProfileBlock
 import ru.cleardocs.lkweb.components.sections.ProfileMenu
 import ru.cleardocs.lkweb.firebase.signOut
+import ru.cleardocs.lkweb.connectors.Connector
 import ru.cleardocs.lkweb.connectors.ConnectorsViewState
 import ru.cleardocs.lkweb.connectors.ConnectorsViewModel
 import ru.cleardocs.lkweb.profile.MeViewModel
@@ -93,6 +94,18 @@ private fun ProfileContent(meViewModel: MeViewModel) {
 }
 
 @Composable
+private fun ConnectorsList(connectors: List<Connector>) {
+    Column(Modifier.fillMaxWidth().gap(0.5.cssRem)) {
+        connectors.forEach { c -> SpanText("${c.name} (${c.type})") }
+    }
+}
+
+@Composable
+private fun NoConnectorsMessage() {
+    SpanText("Нет коннекторов.")
+}
+
+@Composable
 private fun ConnectorsContent() {
     val connectorsViewModel = remember { ConnectorsViewModel() }
     val state by connectorsViewModel.state.collectAsState()
@@ -126,11 +139,9 @@ private fun ConnectorsContent() {
             is ConnectorsViewState.ConnectorsData -> {
                 val connectors = s.connectors
                 if (connectors.isEmpty()) {
-                    SpanText("Нет коннекторов.")
+                    NoConnectorsMessage()
                 } else {
-                    Column(Modifier.fillMaxWidth().gap(0.5.cssRem)) {
-                        connectors.forEach { c -> SpanText("${c.name} (${c.type})") }
-                    }
+                    ConnectorsList(connectors)
                 }
             }
         }
