@@ -203,12 +203,12 @@ private fun ConnectorItem(
             ) {
                 SpanText("Возобновить")
             }
-        }
-        Button(
-            onClick = { onDelete(connector.id) },
-            modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
-        ) {
-            SpanText("Удалить")
+            Button(
+                onClick = { onDelete(connector.id) },
+                modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
+            ) {
+                SpanText("Удалить")
+            }
         }
     }
 }
