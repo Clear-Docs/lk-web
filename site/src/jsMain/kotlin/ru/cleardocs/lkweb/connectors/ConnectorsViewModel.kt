@@ -16,8 +16,22 @@ class ConnectorsViewModel(
     private val _state = MutableStateFlow<ConnectorsViewState>(ConnectorsViewState.Loading)
     val state: StateFlow<ConnectorsViewState> = _state.asStateFlow()
 
+    private var lastConnectors: List<Connector> = emptyList()
+
     init {
         scope.launch { loadConnectors() }
+    }
+
+    fun goToAddFile() {
+        val current = _state.value
+        if (current is ConnectorsViewState.ConnectorsData.Connectors) {
+            lastConnectors = current.connectors
+            _state.value = ConnectorsViewState.ConnectorsData.AddFile
+        }
+    }
+
+    fun backToConnectors() {
+        _state.value = ConnectorsViewState.ConnectorsData.Connectors(lastConnectors)
     }
 
     private fun isUnauthError(error: String): Boolean =
@@ -41,7 +55,7 @@ class ConnectorsViewModel(
                     type = dto.type,
                 )
             }
-            _state.value = ConnectorsViewState.ConnectorsData(connectors)
+            _state.value = ConnectorsViewState.ConnectorsData.Connectors(connectors)
         } catch (e: Throwable) {
             val errorMsg = when {
                 e is ru.cleardocs.lkweb.api.BackendError -> when (e.code) {

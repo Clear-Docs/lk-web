@@ -54,6 +54,7 @@ import ru.cleardocs.lkweb.components.sections.ProfileMenu
 import ru.cleardocs.lkweb.firebase.signOut
 import ru.cleardocs.lkweb.connectors.Connector
 import ru.cleardocs.lkweb.connectors.ConnectorsViewState
+import ru.cleardocs.lkweb.connectors.ConnectorsViewState.ConnectorsData
 import ru.cleardocs.lkweb.connectors.ConnectorsViewModel
 import ru.cleardocs.lkweb.profile.MeViewModel
 import ru.cleardocs.lkweb.profile.ProfileAuthState
@@ -152,19 +153,104 @@ private fun NoConnectorsMessage() {
 }
 
 @Composable
-private fun ConnectorsContent() {
-    val connectorsViewModel = remember { ConnectorsViewModel() }
-    val state by connectorsViewModel.state.collectAsState()
-    val scope = rememberCoroutineScope()
-    val palette = ColorMode.current.toSitePalette()
-    val colorPalette = ColorMode.current.toPalette()
-
+private fun AddFileConnectorBlock(
+    connectorsViewModel: ConnectorsViewModel,
+    onBack: () -> Unit,
+    palette: ru.cleardocs.lkweb.SitePalette
+) {
     var connectorName by remember { mutableStateOf("") }
     var isAdding by remember { mutableStateOf(false) }
-
+    val scope = rememberCoroutineScope()
+    val colorPalette = ColorMode.current.toPalette()
     val inputBg = colorPalette.background.toString()
     val inputFg = colorPalette.color.toString()
     val inputBorder = palette.cobweb.toString()
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .gap(1.cssRem)
+    ) {
+        Row(
+            Modifier.fillMaxWidth().gap(0.5.cssRem),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Button(onClick = { onBack() }, modifier = Modifier.padding(bottom = 0.25.cssRem), enabled = !isAdding) {
+                SpanText("Назад")
+            }
+        }
+
+        SpanText("Добавить файловый коннектор", Modifier.fontSize(1.1.cssRem))
+
+        InputLayout(label = "Название") {
+            AuthInput(
+                type = InputType.Text,
+                value = connectorName,
+                placeholder = "Введите название коннектора",
+                onValueChange = { connectorName = it },
+                inputBg = inputBg,
+                inputFg = inputFg,
+                inputBorder = inputBorder,
+                enabled = !isAdding,
+                marginBottom = null
+            )
+        }
+
+        InputLayout(label = "Файлы") {
+            Input(
+                type = InputType.File,
+                attrs = {
+                    id("connector-file-input")
+                    accept(".txt,.docx,.pptx,.xlsx,.csv,.eml,.epub,.zip,.pdf")
+                    multiple()
+                    if (isAdding) disabled()
+                    style(authInputStyle(inputBg, inputFg, inputBorder, null))
+                }
+            )
+        }
+
+        Button(
+            onClick = {
+                val name = connectorName.trim()
+                if (name.isEmpty()) return@Button
+                val input = document.getElementById("connector-file-input")
+                    ?.unsafeCast<org.w3c.dom.HTMLInputElement>()
+                val files = input?.files
+                if (files == null || files.length == 0) return@Button
+
+                isAdding = true
+                scope.launch {
+                    try {
+                        val byteArrays = mutableListOf<ByteArray>()
+                        val filenames = mutableListOf<String>()
+                        for (i in 0 until files.length) {
+                            val file = files.item(i) as? org.w3c.files.File ?: continue
+                            byteArrays.add(file.toByteArray())
+                            filenames.add(file.name)
+                        }
+                        if (byteArrays.isNotEmpty()) {
+                            connectorsViewModel.addConnector(name, byteArrays, filenames)
+                            connectorName = ""
+                            input?.let { it.value = "" }
+                        }
+                    } finally {
+                        isAdding = false
+                    }
+                }
+            },
+            modifier = Modifier.padding(top = 0.25.cssRem),
+            enabled = !isAdding
+        ) {
+            SpanText(if (isAdding) "Добавление..." else "Добавить")
+        }
+    }
+}
+
+@Composable
+private fun ConnectorsContent() {
+    val connectorsViewModel = remember { ConnectorsViewModel() }
+    val state by connectorsViewModel.state.collectAsState()
+    val palette = ColorMode.current.toSitePalette()
 
     Column(
         Modifier
@@ -182,89 +268,32 @@ private fun ConnectorsContent() {
                 SpanText("Перенаправляем на авторизацию...")
             is ConnectorsViewState.Error ->
                 SpanText("Ошибка: ${s.message}")
-            is ConnectorsViewState.ConnectorsData -> {
-                val connectors = s.connectors
-                if (connectors.isEmpty()) {
+            is ConnectorsData.Connectors -> {
+                if (s.connectors.isEmpty()) {
                     NoConnectorsMessage()
                 } else {
-                    ConnectorsList(connectors)
+                    ConnectorsList(s.connectors)
+                }
+                Button(
+                    onClick = { connectorsViewModel.goToAddFile() },
+                    modifier = Modifier.padding(top = 1.cssRem)
+                ) {
+                    SpanText("Добавить коннектор")
                 }
             }
-        }
-
-        if (state is ConnectorsViewState.ConnectorsData || state is ConnectorsViewState.Error) {
-            Column(
+            is ConnectorsData.AddFile -> Column(
                 Modifier
                     .fillMaxWidth()
-                    .gap(1.cssRem)
                     .padding(top = 1.5.cssRem)
                     .borderRadius(0.6.cssRem)
                     .padding(1.cssRem)
                     .backgroundColor(palette.nearBackground)
             ) {
-                SpanText("Добавить файловый коннектор", Modifier.fontSize(1.1.cssRem))
-
-                InputLayout(label = "Название") {
-                    AuthInput(
-                        type = InputType.Text,
-                        value = connectorName,
-                        placeholder = "Введите название коннектора",
-                        onValueChange = { connectorName = it },
-                        inputBg = inputBg,
-                        inputFg = inputFg,
-                        inputBorder = inputBorder,
-                        enabled = !isAdding,
-                        marginBottom = null
-                    )
-                }
-
-                InputLayout(label = "Файлы") {
-                    Input(
-                        type = InputType.File,
-                        attrs = {
-                            id("connector-file-input")
-                            accept(".txt,.docx,.pptx,.xlsx,.csv,.eml,.epub,.zip,.pdf")
-                            multiple()
-                            if (isAdding) disabled()
-                            style(authInputStyle(inputBg, inputFg, inputBorder, null))
-                        }
-                    )
-                }
-
-                Button(
-                    onClick = {
-                        val name = connectorName.trim()
-                        if (name.isEmpty()) return@Button
-                        val input = document.getElementById("connector-file-input")
-                            ?.unsafeCast<org.w3c.dom.HTMLInputElement>()
-                        val files = input?.files
-                        if (files == null || files.length == 0) return@Button
-
-                        isAdding = true
-                        scope.launch {
-                            try {
-                                val byteArrays = mutableListOf<ByteArray>()
-                                val filenames = mutableListOf<String>()
-                                for (i in 0 until files.length) {
-                                    val file = files.item(i) as? org.w3c.files.File ?: continue
-                                    byteArrays.add(file.toByteArray())
-                                    filenames.add(file.name)
-                                }
-                                if (byteArrays.isNotEmpty()) {
-                                    connectorsViewModel.addConnector(name, byteArrays, filenames)
-                                    connectorName = ""
-                                    input?.let { it.value = "" }
-                                }
-                            } finally {
-                                isAdding = false
-                            }
-                        }
-                    },
-                    modifier = Modifier.padding(top = 0.25.cssRem),
-                    enabled = !isAdding
-                ) {
-                    SpanText(if (isAdding) "Добавление..." else "Добавить")
-                }
+                AddFileConnectorBlock(
+                    connectorsViewModel = connectorsViewModel,
+                    onBack = { connectorsViewModel.backToConnectors() },
+                    palette = palette
+                )
             }
         }
     }
