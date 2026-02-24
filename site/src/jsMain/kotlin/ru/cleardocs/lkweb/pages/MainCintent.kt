@@ -35,6 +35,7 @@ import org.jetbrains.compose.web.attributes.disabled
 import org.jetbrains.compose.web.attributes.multiple
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.percent
+import org.jetbrains.compose.web.dom.Img
 import org.jetbrains.compose.web.dom.Input
 import ru.cleardocs.lkweb.components.layouts.PageLayout
 import ru.cleardocs.lkweb.components.widgets.AuthInput
@@ -94,9 +95,36 @@ private fun ProfileContent(meViewModel: MeViewModel) {
 }
 
 @Composable
+private fun ConnectorItem(connector: Connector, palette: ru.cleardocs.lkweb.SitePalette) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(topBottom = 0.5.cssRem, leftRight = 0.75.cssRem)
+            .borderRadius(0.5.cssRem)
+            .backgroundColor(palette.nearBackground)
+            .gap(0.5.cssRem),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Img(
+            src = "/file.svg",
+            alt = "",
+            attrs = {
+                style {
+                    property("width", "1.125rem")
+                    property("height", "1.125rem")
+                    property("flex-shrink", "0")
+                }
+            }
+        )
+        SpanText(connector.name)
+    }
+}
+
+@Composable
 private fun ConnectorsList(connectors: List<Connector>) {
+    val palette = ColorMode.current.toSitePalette()
     Column(Modifier.fillMaxWidth().gap(0.5.cssRem)) {
-        connectors.forEach { c -> SpanText("${c.name} (${c.type})") }
+        connectors.forEach { c -> ConnectorItem(c, palette) }
     }
 }
 
