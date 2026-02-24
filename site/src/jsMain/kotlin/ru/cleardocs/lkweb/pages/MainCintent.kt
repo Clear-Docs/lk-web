@@ -7,6 +7,8 @@ import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.backgroundColor
+import com.varabyte.kobweb.compose.ui.modifiers.border
+import com.varabyte.kobweb.compose.ui.modifiers.color
 import com.varabyte.kobweb.compose.ui.modifiers.borderRadius
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxHeight
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxSize
@@ -17,6 +19,8 @@ import com.varabyte.kobweb.compose.ui.modifiers.fontSize
 import com.varabyte.kobweb.compose.ui.modifiers.gap
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.width
+import com.varabyte.kobweb.compose.ui.toAttrs
+import org.jetbrains.compose.web.dom.Div
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.components.forms.Button
@@ -33,7 +37,9 @@ import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.attributes.accept
 import org.jetbrains.compose.web.attributes.disabled
 import org.jetbrains.compose.web.attributes.multiple
+import org.jetbrains.compose.web.css.LineStyle
 import org.jetbrains.compose.web.css.cssRem
+import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.dom.Img
 import org.jetbrains.compose.web.dom.Input
@@ -96,12 +102,14 @@ private fun ProfileContent(meViewModel: MeViewModel) {
 
 @Composable
 private fun ConnectorItem(connector: Connector, palette: ru.cleardocs.lkweb.SitePalette) {
+    val textColor = ColorMode.current.toPalette().color
     Row(
         Modifier
-            .fillMaxWidth()
             .padding(topBottom = 0.5.cssRem, leftRight = 0.75.cssRem)
             .borderRadius(0.5.cssRem)
+            .border(1.px, LineStyle.Solid, palette.brand.primary)
             .backgroundColor(palette.nearBackground)
+            .color(textColor)
             .gap(0.5.cssRem),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -123,7 +131,17 @@ private fun ConnectorItem(connector: Connector, palette: ru.cleardocs.lkweb.Site
 @Composable
 private fun ConnectorsList(connectors: List<Connector>) {
     val palette = ColorMode.current.toSitePalette()
-    Column(Modifier.fillMaxWidth().gap(0.5.cssRem)) {
+    Div(
+        Modifier
+            .fillMaxWidth()
+            .toAttrs {
+                style {
+                    property("display", "flex")
+                    property("flex-wrap", "wrap")
+                    property("gap", "0.5rem")
+                }
+            }
+    ) {
         connectors.forEach { c -> ConnectorItem(c, palette) }
     }
 }
