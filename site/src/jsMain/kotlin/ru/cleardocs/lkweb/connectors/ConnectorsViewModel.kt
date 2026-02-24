@@ -36,7 +36,7 @@ class ConnectorsViewModel(
             val response = BackendApi.connectors()
             val connectors = response.connectors.map { dto ->
                 Connector(
-                    id = dto.id,
+                    id = dto.id.toString(),
                     name = dto.name,
                     type = dto.type,
                 )
