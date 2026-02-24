@@ -106,6 +106,7 @@ private fun ConnectorItem(connector: Connector, palette: ru.cleardocs.lkweb.Site
     val textColor = ColorMode.current.toPalette().color
     Row(
         Modifier
+            .fillMaxWidth()
             .padding(topBottom = 0.5.cssRem, leftRight = 0.75.cssRem)
             .borderRadius(0.5.cssRem)
             .border(1.px, LineStyle.Solid, palette.brand.primary)
@@ -231,7 +232,7 @@ private fun AddFileConnectorBlock(
                         if (byteArrays.isNotEmpty()) {
                             connectorsViewModel.addConnector(name, byteArrays, filenames)
                             connectorName = ""
-                            input?.let { it.value = "" }
+                            input.let { it.value = "" }
                         }
                     } finally {
                         isAdding = false
