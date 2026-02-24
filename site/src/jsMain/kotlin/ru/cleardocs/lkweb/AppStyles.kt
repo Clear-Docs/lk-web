@@ -20,6 +20,8 @@ import com.varabyte.kobweb.silk.theme.colors.palette.color
 import com.varabyte.kobweb.silk.theme.colors.palette.toPalette
 import ru.cleardocs.lkweb.toSitePalette
 import com.varabyte.kobweb.silk.theme.modifyComponentStyleBase
+import org.jetbrains.compose.web.css.AlignItems
+import org.jetbrains.compose.web.css.DisplayStyle
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.css.px
@@ -110,4 +112,11 @@ val AuthToggleButtonVariant by ButtonStyle.addVariantBase {
     Modifier
         .setVariable(ButtonVars.BackgroundDefaultColor, palette.background)
         .color(palette.color)
+}
+
+val ActionButtonVariant by ButtonStyle.addVariantBase {
+    Modifier
+        .padding(topBottom = 0.5.cssRem, leftRight = 1.cssRem)
+        .display(DisplayStyle.Flex)
+        .alignItems(AlignItems.Center)
 }

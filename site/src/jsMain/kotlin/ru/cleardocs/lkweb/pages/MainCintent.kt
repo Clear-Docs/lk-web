@@ -7,6 +7,8 @@ import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.backgroundColor
+import com.varabyte.kobweb.compose.ui.modifiers.border
+import com.varabyte.kobweb.compose.ui.modifiers.color
 import com.varabyte.kobweb.compose.ui.modifiers.borderRadius
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxHeight
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxSize
@@ -17,9 +19,10 @@ import com.varabyte.kobweb.compose.ui.modifiers.fontSize
 import com.varabyte.kobweb.compose.ui.modifiers.gap
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.width
+import com.varabyte.kobweb.compose.ui.toAttrs
+import org.jetbrains.compose.web.dom.Div
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
-import com.varabyte.kobweb.silk.components.forms.Button
 import com.varabyte.kobweb.silk.components.layout.breakpoint.displayIfAtLeast
 import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
@@ -33,10 +36,14 @@ import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.attributes.accept
 import org.jetbrains.compose.web.attributes.disabled
 import org.jetbrains.compose.web.attributes.multiple
+import org.jetbrains.compose.web.css.LineStyle
 import org.jetbrains.compose.web.css.cssRem
+import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.percent
+import org.jetbrains.compose.web.dom.Img
 import org.jetbrains.compose.web.dom.Input
 import ru.cleardocs.lkweb.components.layouts.PageLayout
+import ru.cleardocs.lkweb.components.widgets.ActionButton
 import ru.cleardocs.lkweb.components.widgets.AuthInput
 import ru.cleardocs.lkweb.components.widgets.InputLayout
 import ru.cleardocs.lkweb.components.widgets.authInputStyle
@@ -45,7 +52,9 @@ import ru.cleardocs.lkweb.connectors.toByteArray
 import ru.cleardocs.lkweb.components.sections.ProfileBlock
 import ru.cleardocs.lkweb.components.sections.ProfileMenu
 import ru.cleardocs.lkweb.firebase.signOut
+import ru.cleardocs.lkweb.connectors.Connector
 import ru.cleardocs.lkweb.connectors.ConnectorsViewState
+import ru.cleardocs.lkweb.connectors.ConnectorsViewState.ConnectorsData
 import ru.cleardocs.lkweb.connectors.ConnectorsViewModel
 import ru.cleardocs.lkweb.profile.MeViewModel
 import ru.cleardocs.lkweb.profile.ProfileAuthState
@@ -93,19 +102,156 @@ private fun ProfileContent(meViewModel: MeViewModel) {
 }
 
 @Composable
-private fun ConnectorsContent() {
-    val connectorsViewModel = remember { ConnectorsViewModel() }
-    val state by connectorsViewModel.state.collectAsState()
-    val scope = rememberCoroutineScope()
-    val palette = ColorMode.current.toSitePalette()
-    val colorPalette = ColorMode.current.toPalette()
+private fun ConnectorItem(connector: Connector, palette: ru.cleardocs.lkweb.SitePalette) {
+    val textColor = ColorMode.current.toPalette().color
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .padding(topBottom = 0.5.cssRem, leftRight = 0.75.cssRem)
+            .borderRadius(0.5.cssRem)
+            .border(1.px, LineStyle.Solid, palette.brand.primary)
+            .backgroundColor(palette.nearBackground)
+            .color(textColor)
+            .gap(0.5.cssRem),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Img(
+            src = "/file.svg",
+            alt = "",
+            attrs = {
+                style {
+                    property("width", "1.125rem")
+                    property("height", "1.125rem")
+                    property("flex-shrink", "0")
+                }
+            }
+        )
+        SpanText(connector.name)
+    }
+}
 
+@Composable
+private fun ConnectorsList(connectors: List<Connector>) {
+    val palette = ColorMode.current.toSitePalette()
+    Div(
+        Modifier
+            .fillMaxWidth()
+            .toAttrs {
+                style {
+                    property("display", "flex")
+                    property("flex-wrap", "wrap")
+                    property("gap", "0.5rem")
+                }
+            }
+    ) {
+        connectors.forEach { c -> ConnectorItem(c, palette) }
+    }
+}
+
+@Composable
+private fun NoConnectorsMessage() {
+    SpanText("Нет коннекторов.")
+}
+
+@Composable
+private fun AddFileConnectorBlock(
+    connectorsViewModel: ConnectorsViewModel,
+    onBack: () -> Unit,
+    palette: ru.cleardocs.lkweb.SitePalette
+) {
     var connectorName by remember { mutableStateOf("") }
     var isAdding by remember { mutableStateOf(false) }
-
+    val scope = rememberCoroutineScope()
+    val colorPalette = ColorMode.current.toPalette()
     val inputBg = colorPalette.background.toString()
     val inputFg = colorPalette.color.toString()
     val inputBorder = palette.cobweb.toString()
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .gap(1.cssRem)
+    ) {
+        Row(
+            Modifier.fillMaxWidth().gap(0.5.cssRem),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ActionButton(
+                text = "Назад",
+                onClick = onBack,
+                enabled = !isAdding
+            )
+        }
+
+        SpanText("Добавить файловый коннектор", Modifier.fontSize(1.1.cssRem))
+
+        InputLayout(label = "Название") {
+            AuthInput(
+                type = InputType.Text,
+                value = connectorName,
+                placeholder = "Введите название коннектора",
+                onValueChange = { connectorName = it },
+                inputBg = inputBg,
+                inputFg = inputFg,
+                inputBorder = inputBorder,
+                enabled = !isAdding,
+                marginBottom = null
+            )
+        }
+
+        InputLayout(label = "Файлы") {
+            Input(
+                type = InputType.File,
+                attrs = {
+                    id("connector-file-input")
+                    accept(".txt,.docx,.pptx,.xlsx,.csv,.eml,.epub,.zip,.pdf")
+                    multiple()
+                    if (isAdding) disabled()
+                    style(authInputStyle(inputBg, inputFg, inputBorder, null))
+                }
+            )
+        }
+
+        ActionButton(
+            text = if (isAdding) "Добавление..." else "Добавить",
+            onClick = {
+                val name = connectorName.trim()
+                if (name.isEmpty()) return@ActionButton
+                val input = document.getElementById("connector-file-input")
+                    ?.unsafeCast<org.w3c.dom.HTMLInputElement>()
+                val files = input?.files
+                if (files == null || files.length == 0) return@ActionButton
+
+                isAdding = true
+                scope.launch {
+                    try {
+                        val byteArrays = mutableListOf<ByteArray>()
+                        val filenames = mutableListOf<String>()
+                        for (i in 0 until files.length) {
+                            val file = files.item(i) as? org.w3c.files.File ?: continue
+                            byteArrays.add(file.toByteArray())
+                            filenames.add(file.name)
+                        }
+                        if (byteArrays.isNotEmpty()) {
+                            connectorsViewModel.addConnector(name, byteArrays, filenames)
+                            connectorName = ""
+                            input.let { it.value = "" }
+                        }
+                    } finally {
+                        isAdding = false
+                    }
+                }
+            },
+            enabled = !isAdding
+        )
+    }
+}
+
+@Composable
+private fun ConnectorsContent() {
+    val connectorsViewModel = remember { ConnectorsViewModel() }
+    val state by connectorsViewModel.state.collectAsState()
+    val palette = ColorMode.current.toSitePalette()
 
     Column(
         Modifier
@@ -123,91 +269,30 @@ private fun ConnectorsContent() {
                 SpanText("Перенаправляем на авторизацию...")
             is ConnectorsViewState.Error ->
                 SpanText("Ошибка: ${s.message}")
-            is ConnectorsViewState.ConnectorsData -> {
-                val connectors = s.connectors
-                if (connectors.isEmpty()) {
-                    SpanText("Нет коннекторов.")
+            is ConnectorsData.Connectors -> {
+                if (s.connectors.isEmpty()) {
+                    NoConnectorsMessage()
                 } else {
-                    Column(Modifier.fillMaxWidth().gap(0.5.cssRem)) {
-                        connectors.forEach { c -> SpanText("${c.name} (${c.type})") }
-                    }
+                    ConnectorsList(s.connectors)
                 }
+                ActionButton(
+                    text = "Добавить коннектор",
+                    onClick = { connectorsViewModel.goToAddFile() },
+                )
             }
-        }
-
-        if (state is ConnectorsViewState.ConnectorsData || state is ConnectorsViewState.Error) {
-            Column(
+            is ConnectorsData.AddFile -> Column(
                 Modifier
                     .fillMaxWidth()
-                    .gap(1.cssRem)
                     .padding(top = 1.5.cssRem)
                     .borderRadius(0.6.cssRem)
                     .padding(1.cssRem)
                     .backgroundColor(palette.nearBackground)
             ) {
-                SpanText("Добавить файловый коннектор", Modifier.fontSize(1.1.cssRem))
-
-                InputLayout(label = "Название") {
-                    AuthInput(
-                        type = InputType.Text,
-                        value = connectorName,
-                        placeholder = "Введите название коннектора",
-                        onValueChange = { connectorName = it },
-                        inputBg = inputBg,
-                        inputFg = inputFg,
-                        inputBorder = inputBorder,
-                        enabled = !isAdding,
-                        marginBottom = null
-                    )
-                }
-
-                InputLayout(label = "Файлы") {
-                    Input(
-                        type = InputType.File,
-                        attrs = {
-                            id("connector-file-input")
-                            accept(".txt,.docx,.pptx,.xlsx,.csv,.eml,.epub,.zip,.pdf")
-                            multiple()
-                            if (isAdding) disabled()
-                            style(authInputStyle(inputBg, inputFg, inputBorder, null))
-                        }
-                    )
-                }
-
-                Button(
-                    onClick = {
-                        val name = connectorName.trim()
-                        if (name.isEmpty()) return@Button
-                        val input = document.getElementById("connector-file-input")
-                            ?.unsafeCast<org.w3c.dom.HTMLInputElement>()
-                        val files = input?.files
-                        if (files == null || files.length == 0) return@Button
-
-                        isAdding = true
-                        scope.launch {
-                            try {
-                                val byteArrays = mutableListOf<ByteArray>()
-                                val filenames = mutableListOf<String>()
-                                for (i in 0 until files.length) {
-                                    val file = files.item(i) as? org.w3c.files.File ?: continue
-                                    byteArrays.add(file.toByteArray())
-                                    filenames.add(file.name)
-                                }
-                                if (byteArrays.isNotEmpty()) {
-                                    connectorsViewModel.addConnector(name, byteArrays, filenames)
-                                    connectorName = ""
-                                    input?.let { it.value = "" }
-                                }
-                            } finally {
-                                isAdding = false
-                            }
-                        }
-                    },
-                    modifier = Modifier.padding(top = 0.25.cssRem),
-                    enabled = !isAdding
-                ) {
-                    SpanText(if (isAdding) "Добавление..." else "Добавить")
-                }
+                AddFileConnectorBlock(
+                    connectorsViewModel = connectorsViewModel,
+                    onBack = { connectorsViewModel.backToConnectors() },
+                    palette = palette
+                )
             }
         }
     }
