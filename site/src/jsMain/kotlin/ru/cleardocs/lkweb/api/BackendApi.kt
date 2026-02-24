@@ -1,7 +1,12 @@
 package ru.cleardocs.lkweb.api
 
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
+import io.ktor.client.request.patch
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.contentType
 import io.ktor.client.request.header
 import io.ktor.client.request.forms.formData
 import io.ktor.client.request.forms.submitFormWithBinaryData
@@ -12,6 +17,7 @@ import io.ktor.http.appendPathSegments
 import io.ktor.http.isSuccess
 import ru.cleardocs.lkweb.ApiConfig
 import ru.cleardocs.lkweb.api.dto.CreateConnectorResponseDto
+import ru.cleardocs.lkweb.api.dto.UpdateConnectorRequestDto
 import ru.cleardocs.lkweb.api.dto.GetConnectorsDto
 import ru.cleardocs.lkweb.api.dto.LimitDto
 import ru.cleardocs.lkweb.api.dto.GetPlansDto
@@ -88,6 +94,38 @@ object BackendApi {
             throw BackendError(response.status.value, body)
         }
         return response.body()
+    }
+
+    /**
+     * Обновляет коннектор. PATCH /api/v1/connectors/{id}.
+     * Для паузы: status = "PAUSED", для возобновления: status = "ACTIVE".
+     */
+    suspend fun updateConnectorStatus(id: String, status: String) {
+        val token = requireToken()
+        val response = client.patch("api/v1/connectors/$id") {
+            header("Authorization", "Bearer $token")
+            contentType(ContentType.Application.Json)
+            setBody(UpdateConnectorRequestDto(status = status))
+        }
+        if (!response.status.isSuccess()) {
+            val body = try { response.bodyAsText() } catch (_: Throwable) { "" }
+            throw BackendError(response.status.value, body)
+        }
+    }
+
+    /**
+     * Удаляет коннектор по id.
+     * DELETE /api/v1/connectors/{id} с заголовком Authorization: Bearer &lt;token&gt;.
+     */
+    suspend fun deleteConnector(id: String) {
+        val token = requireToken()
+        val response = client.delete("api/v1/connectors/$id") {
+            header("Authorization", "Bearer $token")
+        }
+        if (!response.status.isSuccess()) {
+            val body = try { response.bodyAsText() } catch (_: Throwable) { "" }
+            throw BackendError(response.status.value, body)
+        }
     }
 
     /**
