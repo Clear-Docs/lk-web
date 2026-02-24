@@ -23,7 +23,6 @@ import com.varabyte.kobweb.compose.ui.toAttrs
 import org.jetbrains.compose.web.dom.Div
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
-import com.varabyte.kobweb.silk.components.forms.Button
 import com.varabyte.kobweb.silk.components.layout.breakpoint.displayIfAtLeast
 import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
@@ -44,6 +43,7 @@ import org.jetbrains.compose.web.css.percent
 import org.jetbrains.compose.web.dom.Img
 import org.jetbrains.compose.web.dom.Input
 import ru.cleardocs.lkweb.components.layouts.PageLayout
+import ru.cleardocs.lkweb.components.widgets.ActionButton
 import ru.cleardocs.lkweb.components.widgets.AuthInput
 import ru.cleardocs.lkweb.components.widgets.InputLayout
 import ru.cleardocs.lkweb.components.widgets.authInputStyle
@@ -176,9 +176,11 @@ private fun AddFileConnectorBlock(
             Modifier.fillMaxWidth().gap(0.5.cssRem),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Button(onClick = { onBack() }, modifier = Modifier.padding(bottom = 0.25.cssRem), enabled = !isAdding) {
-                SpanText("Назад")
-            }
+            ActionButton(
+                text = "Назад",
+                onClick = onBack,
+                enabled = !isAdding
+            )
         }
 
         SpanText("Добавить файловый коннектор", Modifier.fontSize(1.1.cssRem))
@@ -210,14 +212,15 @@ private fun AddFileConnectorBlock(
             )
         }
 
-        Button(
+        ActionButton(
+            text = if (isAdding) "Добавление..." else "Добавить",
             onClick = {
                 val name = connectorName.trim()
-                if (name.isEmpty()) return@Button
+                if (name.isEmpty()) return@ActionButton
                 val input = document.getElementById("connector-file-input")
                     ?.unsafeCast<org.w3c.dom.HTMLInputElement>()
                 val files = input?.files
-                if (files == null || files.length == 0) return@Button
+                if (files == null || files.length == 0) return@ActionButton
 
                 isAdding = true
                 scope.launch {
@@ -239,11 +242,8 @@ private fun AddFileConnectorBlock(
                     }
                 }
             },
-            modifier = Modifier.padding(top = 0.25.cssRem),
             enabled = !isAdding
-        ) {
-            SpanText(if (isAdding) "Добавление..." else "Добавить")
-        }
+        )
     }
 }
 
@@ -275,12 +275,10 @@ private fun ConnectorsContent() {
                 } else {
                     ConnectorsList(s.connectors)
                 }
-                Button(
+                ActionButton(
+                    text = "Добавить коннектор",
                     onClick = { connectorsViewModel.goToAddFile() },
-                    modifier = Modifier.padding(top = 1.cssRem)
-                ) {
-                    SpanText("Добавить коннектор")
-                }
+                )
             }
             is ConnectorsData.AddFile -> Column(
                 Modifier

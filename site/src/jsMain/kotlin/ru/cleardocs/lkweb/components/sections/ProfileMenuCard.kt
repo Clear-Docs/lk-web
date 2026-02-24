@@ -5,11 +5,10 @@ import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.*
-import com.varabyte.kobweb.silk.components.forms.Button
 import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import org.jetbrains.compose.web.css.cssRem
-import org.jetbrains.compose.web.dom.Text
+import ru.cleardocs.lkweb.components.widgets.ActionButton
 import ru.cleardocs.lkweb.components.widgets.cardSurface
 import ru.cleardocs.lkweb.pages.MainViewState
 import ru.cleardocs.lkweb.toSitePalette
@@ -47,11 +46,10 @@ fun ProfileMenuCard(
                 SpanText(label)
             }
         }
-        Button(
-            onClick = { onSignOut() },
+        ActionButton(
+            text = "Выйти",
+            onClick = onSignOut,
             modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Выйти")
-        }
+        )
     }
 }
