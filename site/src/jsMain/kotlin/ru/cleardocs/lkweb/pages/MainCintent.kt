@@ -157,8 +157,13 @@ private fun ConnectorItem(
     connector: Connector,
     palette: ru.cleardocs.lkweb.SitePalette,
     onDelete: (String) -> Unit,
+    onPause: (String) -> Unit,
+    onResume: (String) -> Unit,
 ) {
     val textColor = ColorMode.current.toPalette().color
+    val statusUpper = connector.status?.uppercase()
+    val isActive = statusUpper == "ACTIVE"
+    val isPaused = statusUpper == "PAUSED"
     Row(
         Modifier
             .fillMaxWidth()
@@ -183,6 +188,22 @@ private fun ConnectorItem(
         )
         SpanText(connector.name, Modifier.flexGrow(1))
         ConnectorStatusBadge(connector.status, Modifier.flexShrink(0))
+        if (isActive) {
+            Button(
+                onClick = { onPause(connector.id) },
+                modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
+            ) {
+                SpanText("Пауза")
+            }
+        }
+        if (isPaused) {
+            Button(
+                onClick = { onResume(connector.id) },
+                modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
+            ) {
+                SpanText("Возобновить")
+            }
+        }
         Button(
             onClick = { onDelete(connector.id) },
             modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
@@ -196,6 +217,8 @@ private fun ConnectorItem(
 private fun ConnectorsList(
     connectors: List<Connector>,
     onDelete: (String) -> Unit,
+    onPause: (String) -> Unit,
+    onResume: (String) -> Unit,
 ) {
     val palette = ColorMode.current.toSitePalette()
     Div(
@@ -209,7 +232,15 @@ private fun ConnectorsList(
                 }
             }
     ) {
-        connectors.forEach { c -> ConnectorItem(c, palette, onDelete) }
+        connectors.forEach { c ->
+            ConnectorItem(
+                connector = c,
+                palette = palette,
+                onDelete = onDelete,
+                onPause = onPause,
+                onResume = onResume,
+            )
+        }
     }
 }
 
@@ -343,7 +374,9 @@ private fun ConnectorsContent() {
                 } else {
                     ConnectorsList(
                         connectors = s.connectors,
-                        onDelete = { id -> connectorsViewModel.deleteConnector(id) }
+                        onDelete = { id -> connectorsViewModel.deleteConnector(id) },
+                        onPause = { id -> connectorsViewModel.setConnectorStatus(id, "PAUSED") },
+                        onResume = { id -> connectorsViewModel.setConnectorStatus(id, "ACTIVE") },
                     )
                 }
                 if (s.canAdd) {

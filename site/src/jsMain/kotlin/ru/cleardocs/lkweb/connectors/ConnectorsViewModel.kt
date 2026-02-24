@@ -125,6 +125,37 @@ class ConnectorsViewModel(
     }
 
     /**
+     * Ставит коннектор на паузу (PATCH status = PAUSED) или возобновляет (status = ACTIVE).
+     */
+    fun setConnectorStatus(id: String, status: String) {
+        scope.launch {
+            val current = _state.value
+            if (current !is ConnectorsViewState.ConnectorsData.Connectors) return@launch
+            try {
+                BackendApi.updateConnectorStatus(id, status)
+                loadConnectors()
+            } catch (e: Throwable) {
+                val errorMsg = when {
+                    e is ru.cleardocs.lkweb.api.BackendError -> when (e.code) {
+                        401 -> "Сессия истекла"
+                        403 -> "Доступ запрещён"
+                        else -> e.message ?: "Ошибка ${e.code}"
+                    }
+                    e.message?.contains("401") == true -> "Сессия истекла"
+                    e.message?.contains("403") == true -> "Доступ запрещён"
+                    e.message?.contains("Backend unreachable") == true -> "Сервер недоступен"
+                    else -> e.message ?: "Ошибка при изменении статуса коннектора"
+                }
+                _state.value = if (isUnauthError(errorMsg)) {
+                    ConnectorsViewState.GotoAuth
+                } else {
+                    ConnectorsViewState.Error(errorMsg)
+                }
+            }
+        }
+    }
+
+    /**
      * Удаляет коннектор по id через DELETE /api/v1/connectors/{id}.
      * При успехе обновляет список, при ошибке — обновляет [state].
      * Запускается в scope ViewModel.
