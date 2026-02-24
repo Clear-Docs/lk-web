@@ -34,6 +34,7 @@ import com.varabyte.kobweb.silk.theme.colors.palette.background
 import com.varabyte.kobweb.silk.theme.colors.palette.color
 import com.varabyte.kobweb.silk.theme.colors.palette.toPalette
 import kotlinx.browser.document
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.attributes.InputType
 import org.jetbrains.compose.web.attributes.accept
@@ -297,11 +298,14 @@ private fun AddFileConnectorBlock(
                             filenames.add(file.name)
                         }
                         if (byteArrays.isNotEmpty()) {
-                            connectorsViewModel.addConnector(name, byteArrays, filenames)
+                            connectorsViewModel.addConnector(name, byteArrays, filenames) { isAdding = false }
                             connectorName = ""
                             input.let { it.value = "" }
+                        } else {
+                            isAdding = false
                         }
-                    } finally {
+                    } catch (e: Throwable) {
+                        if (e is kotlinx.coroutines.CancellationException) throw e
                         isAdding = false
                     }
                 }

@@ -1,13 +1,21 @@
 package ru.cleardocs.lkweb.connectors
 
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import ru.cleardocs.lkweb.api.BackendApi
+
+private const val POLL_INTERVAL_MS = 10_000L
+
+private fun List<Connector>.allActive(): Boolean =
+    isEmpty() || all { it.status?.uppercase() == "ACTIVE" }
 
 class ConnectorsViewModel(
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main),
@@ -18,6 +26,8 @@ class ConnectorsViewModel(
 
     private var lastConnectors: List<Connector> = emptyList()
     private var lastCanAdd: Boolean = true
+
+    private var pollJob: Job? = null
 
     init {
         scope.launch { loadConnectors() }
@@ -44,9 +54,10 @@ class ConnectorsViewModel(
 
     /**
      * Загружает список коннекторов из REST GET /api/v1/connectors.
-     * Токен получается в BackendApi из Firebase Auth.
+     * При успехе: если не все ACTIVE — запускает пуллинг раз в 10 сек; когда все ACTIVE — останавливает.
      */
     suspend fun loadConnectors() {
+        pollJob?.cancel()
         _state.value = ConnectorsViewState.Loading
         try {
             val response = BackendApi.connectors()
@@ -58,7 +69,7 @@ class ConnectorsViewModel(
                     status = dto.status,
                 )
             }
-            _state.value = ConnectorsViewState.ConnectorsData.Connectors(connectors, response.canAdd)
+            onConnectorsLoaded(connectors, response.canAdd)
         } catch (e: Throwable) {
             val errorMsg = when {
                 e is ru.cleardocs.lkweb.api.BackendError -> when (e.code) {
@@ -75,6 +86,40 @@ class ConnectorsViewModel(
                 ConnectorsViewState.GotoAuth
             } else {
                 ConnectorsViewState.Error(errorMsg)
+            }
+        }
+    }
+
+    private fun onConnectorsLoaded(connectors: List<Connector>, canAdd: Boolean) {
+        _state.value = ConnectorsViewState.ConnectorsData.Connectors(connectors, canAdd)
+        if (connectors.allActive()) {
+            pollJob?.cancel()
+            pollJob = null
+        } else {
+            startPolling()
+        }
+    }
+
+    private fun startPolling() {
+        if (pollJob?.isActive == true) return
+        pollJob = scope.launch {
+            while (isActive) {
+                delay(POLL_INTERVAL_MS)
+                try {
+                    val response = BackendApi.connectors()
+                    val connectors = response.connectors.map { dto ->
+                        Connector(
+                            id = dto.id.toString(),
+                            name = dto.name,
+                            type = dto.type,
+                            status = dto.status,
+                        )
+                    }
+                    onConnectorsLoaded(connectors, response.canAdd)
+                    if (connectors.allActive()) return@launch
+                } catch (_: Throwable) {
+                    // Продолжаем пуллинг при временных ошибках
+                }
             }
         }
     }
@@ -114,17 +159,32 @@ class ConnectorsViewModel(
 
     /**
      * Создаёт file-коннектор через POST /api/v1/connectors.
-     * При успехе обновляет список, при ошибке — обновляет [state].
+     * Запускается в scope ViewModel, чтобы не отменяться при уходе AddFile-блока из композиции.
      */
-    suspend fun addConnector(
+    fun addConnector(
         name: String,
         files: List<ByteArray>,
         filenames: List<String>,
+        onComplete: () -> Unit = {},
     ) {
         if (files.isEmpty()) {
             _state.value = ConnectorsViewState.Error("Выберите хотя бы один файл")
             return
         }
+        scope.launch {
+            try {
+                addConnectorSuspend(name, files, filenames)
+            } finally {
+                onComplete()
+            }
+        }
+    }
+
+    private suspend fun addConnectorSuspend(
+        name: String,
+        files: List<ByteArray>,
+        filenames: List<String>,
+    ) {
         try {
             BackendApi.createFileConnector(name, files, filenames)
             loadConnectors()
