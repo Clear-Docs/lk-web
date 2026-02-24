@@ -55,6 +55,7 @@ class ConnectorsViewModel(
                     id = dto.id.toString(),
                     name = dto.name,
                     type = dto.type,
+                    status = dto.status,
                 )
             }
             _state.value = ConnectorsViewState.ConnectorsData.Connectors(connectors, response.canAdd)

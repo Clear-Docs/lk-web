@@ -7,4 +7,5 @@ data class ConnectorDto(
     val id: Int,
     val name: String,
     val type: String,
+    val status: String? = null,
 )
