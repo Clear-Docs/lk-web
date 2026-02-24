@@ -6,12 +6,12 @@ import kotlinx.coroutines.flow.asStateFlow
 
 class MenuViewModel {
 
-    private val _state = MutableStateFlow<MainViewState>(MainViewState.Profile)
+    private val _state = MutableStateFlow<MainViewState>(MainViewState.Connectors)
     val stateFlow: StateFlow<MainViewState> = _state.asStateFlow()
 
     val menuEntries: List<Pair<MainViewState, String>> = listOf(
-        MainViewState.Profile to "Профиль",
-        MainViewState.Connectors to "Коннекторы"
+        MainViewState.Connectors to "Коннекторы",
+        MainViewState.Profile to "Профиль"
     )
 
     fun selectState(state: MainViewState) {
