@@ -452,7 +452,7 @@ private fun ConnectorsContent() {
                             text = "Поделиться",
                             onClick = {
                                 val url =
-                                    "https://www.lk.cleardocs.ru?apiKey=${it.apiKey}&personaId=${it.personaId}"
+                                    "https://www.lk.cleardocs.ru/chat?apiKey=${it.apiKey}&personaId=${it.personaId}"
                                 window.navigator.clipboard.writeText(url)
                                     .then {
                                         toastMessage = "Скопировано в буфер обмена"
