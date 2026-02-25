@@ -20,10 +20,6 @@ import com.varabyte.kobweb.compose.ui.modifiers.fontSize
 import com.varabyte.kobweb.compose.ui.modifiers.gap
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.width
-import com.varabyte.kobweb.compose.ui.modifiers.zIndex
-import com.varabyte.kobweb.compose.ui.modifiers.position
-import com.varabyte.kobweb.compose.ui.modifiers.left
-import com.varabyte.kobweb.compose.ui.modifiers.bottom
 import com.varabyte.kobweb.compose.ui.graphics.Color
 import com.varabyte.kobweb.compose.ui.graphics.Colors
 import com.varabyte.kobweb.compose.ui.modifiers.background
@@ -47,7 +43,6 @@ import org.jetbrains.compose.web.attributes.accept
 import org.jetbrains.compose.web.attributes.disabled
 import org.jetbrains.compose.web.attributes.multiple
 import org.jetbrains.compose.web.css.LineStyle
-import org.jetbrains.compose.web.css.Position
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.percent
@@ -58,6 +53,7 @@ import ru.cleardocs.lkweb.components.layouts.PageLayout
 import ru.cleardocs.lkweb.components.widgets.ActionButton
 import ru.cleardocs.lkweb.components.widgets.AuthInput
 import ru.cleardocs.lkweb.components.widgets.InputLayout
+import ru.cleardocs.lkweb.components.widgets.Toast
 import ru.cleardocs.lkweb.components.widgets.authInputStyle
 import ru.cleardocs.lkweb.components.widgets.cardSurface
 import ru.cleardocs.lkweb.connectors.toByteArray
@@ -470,23 +466,7 @@ private fun ConnectorsContent() {
                     }
                 }
                 toastMessage?.let { msg ->
-                    Div(
-                        Modifier
-                            .position(Position.Fixed)
-                            .bottom(2.cssRem)
-                            .left(50.percent)
-                            .padding(topBottom = 0.6.cssRem, leftRight = 1.2.cssRem)
-                            .backgroundColor(Colors.Black.toRgb().copyf(alpha = 0.8f))
-                            .color(Colors.White)
-                            .borderRadius(0.5.cssRem)
-                            .fontSize(0.9.cssRem)
-                            .zIndex(1000)
-                            .toAttrs {
-                                style { property("transform", "translateX(-50%)") }
-                            }
-                    ) {
-                        SpanText(msg)
-                    }
+                    Toast(message = msg)
                 }
                 val loading by chatCredsViewModel.loading.collectAsState()
                 val error by chatCredsViewModel.error.collectAsState()
