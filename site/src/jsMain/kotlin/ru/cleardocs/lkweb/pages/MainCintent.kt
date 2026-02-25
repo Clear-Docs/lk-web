@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
+import com.varabyte.kobweb.compose.foundation.layout.Spacer
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.backgroundColor
@@ -69,7 +70,10 @@ import ru.cleardocs.lkweb.profile.ProfileAuthState
 import ru.cleardocs.lkweb.toSitePalette
 import ru.cleardocs.lkweb.utils.requireProfileAuthRedirect
 import ru.cleardocs.lkweb.di.kodein
+import ru.cleardocs.lkweb.pages.MenuViewModel
 import org.kodein.di.instance
+import kotlinx.browser.window
+import kotlinx.coroutines.flow.filterNotNull
 
 @Composable
 private fun MainContent(mainState: MainViewState, meViewModel: MeViewModel) {
@@ -431,6 +435,8 @@ private fun ConnectorsContent() {
                     .padding(1.cssRem)
                     .backgroundColor(palette.nearBackground)
             ) {
+                val chatCredsViewModel = remember { ChatCredentialsViewModel() }
+                val credentials by chatCredsViewModel.credentials.collectAsState()
                 Row(
                     Modifier.fillMaxWidth().gap(0.5.cssRem),
                     verticalAlignment = Alignment.CenterVertically
@@ -439,13 +445,20 @@ private fun ConnectorsContent() {
                         text = "Назад",
                         onClick = { connectorsViewModel.backFromChat() },
                     )
-
-                  //  ActionButton(
-
-                  //  )
+                    Box(Modifier.flexGrow(1))
+                    credentials?.let {
+                        ActionButton(
+                            text = "Поделиться",
+                            onClick = {
+                                val url =
+                                    "https://www.lk.cleardocs.ru?apiKey=${it.apiKey}&personaId=${it.personaId}"
+                                window.navigator.clipboard.writeText(url).catch {
+                                    console.error("Не удалось скопировать в буфер обмена", it)
+                                }
+                            }
+                        )
+                    }
                 }
-                val chatCredsViewModel = remember { ChatCredentialsViewModel() }
-                val credentials by chatCredsViewModel.credentials.collectAsState()
                 val loading by chatCredsViewModel.loading.collectAsState()
                 val error by chatCredsViewModel.error.collectAsState()
                 when {
