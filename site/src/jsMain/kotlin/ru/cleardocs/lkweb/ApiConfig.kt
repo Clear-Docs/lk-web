@@ -23,17 +23,6 @@ object ApiConfig {
             }
         }
 
-    /** Базовый URL Onyx Chat API. На localhost/127.0.0.1 — CORS-прокси 9081, иначе бэкенд. */
-    val onyxBaseUrl: String
-        get() {
-            val h = window.location.hostname
-            return if (h == "localhost" || h == "127.0.0.1") {
-                "http://localhost:9081/api/"
-            } else {
-                "http://155.212.162.11:3000/api/"
-            }
-        }
-
     /**
      * HttpClient с предустановленным [baseUrl] в defaultRequest.
      * Все относительные пути (например, `get("api/users")`) будут идти на этот хост.
@@ -45,18 +34,6 @@ object ApiConfig {
         defaultRequest {
             url(baseUrl)
             header("Accept", "application/json")
-        }
-    }
-
-    /**
-     * HttpClient для Onyx Chat API ([onyxBaseUrl]).
-     */
-    fun createOnyxHttpClient(): HttpClient = HttpClient(Js) {
-        install(ContentNegotiation) {
-            json(Json { ignoreUnknownKeys = true })
-        }
-        defaultRequest {
-            url(onyxBaseUrl)
         }
     }
 }
