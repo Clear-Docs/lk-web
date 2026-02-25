@@ -28,7 +28,7 @@ object ChatApi {
 
     /**
      * Создаёт сессию чата.
-     * POST /chat/create-session
+     * POST /api/v1/chat/create-chat-session
      */
     suspend fun createChatSession(
         personaId: Int,
@@ -36,7 +36,7 @@ object ChatApi {
         apiKey: String? = null,
     ): String {
         val req = CreateChatSessionRequest(personaId = personaId, description = description)
-        val res = client.post("chat/create-session") {
+        val res = client.post("api/v1/chat/create-chat-session") {
             contentType(ContentType.Application.Json)
             setBody(req)
             apiKey?.let { header("Authorization", "Bearer $it") }
@@ -47,7 +47,7 @@ object ChatApi {
 
     /**
      * Отправляет сообщение с потоковым ответом.
-     * POST /chat/send-chat-message
+     * POST /api/v1/chat/send-chat-message
      *
      * @return Flow событий: Content (текст), Citation, Document (метаданные источников)
      */
@@ -72,7 +72,7 @@ object ChatApi {
         val headers = mutableMapOf<String, String>("Content-Type" to "application/json")
         apiKey?.let { headers["Authorization"] = "Bearer $it" }
         return fetchStream(
-            url = "${ApiConfig.baseUrl}/chat/send-chat-message",
+            url = "${ApiConfig.baseUrl}/api/v1/chat/send-chat-message",
             headers = headers,
             body = body,
         ).flatMapConcat { line ->

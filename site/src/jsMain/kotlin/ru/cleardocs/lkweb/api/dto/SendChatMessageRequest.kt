@@ -20,7 +20,7 @@ data class InternalSearchFilters(
     @SerialName("source_type") val sourceType: List<String> = emptyList(),
 )
 
-/** POST /chat/send-chat-message */
+/** POST /api/v1/chat/send-chat-message */
 @Serializable
 data class SendChatMessageRequest(
     val message: String,
