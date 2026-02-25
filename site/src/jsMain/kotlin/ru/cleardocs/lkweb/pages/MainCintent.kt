@@ -21,6 +21,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.compose.ui.graphics.Color
 import com.varabyte.kobweb.compose.ui.graphics.Colors
+import com.varabyte.kobweb.compose.ui.modifiers.background
 import com.varabyte.kobweb.compose.ui.toAttrs
 import org.jetbrains.compose.web.dom.Div
 import com.varabyte.kobweb.core.Page
@@ -439,9 +440,9 @@ private fun ConnectorsContent() {
                         onClick = { connectorsViewModel.backFromChat() },
                     )
 
-                    ActionButton(
+                  //  ActionButton(
 
-                    )
+                  //  )
                 }
                 val chatCredsViewModel = remember { ChatCredentialsViewModel() }
                 val credentials by chatCredsViewModel.credentials.collectAsState()
