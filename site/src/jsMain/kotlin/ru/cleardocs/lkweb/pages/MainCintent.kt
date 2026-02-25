@@ -155,6 +155,38 @@ private fun ConnectorStatusBadge(status: String?, modifier: Modifier = Modifier)
 }
 
 @Composable
+private fun ConnectorStatusButtons(
+    connectorId: String,
+    statusUpper: String?,
+    onPause: (String) -> Unit,
+    onResume: (String) -> Unit,
+    onDelete: (String) -> Unit,
+) {
+    if (statusUpper == "ACTIVE") {
+        Button(
+            onClick = { onPause(connectorId) },
+            modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
+        ) {
+            SpanText("Пауза")
+        }
+    }
+    if (statusUpper == "PAUSED") {
+        Button(
+            onClick = { onResume(connectorId) },
+            modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
+        ) {
+            SpanText("Возобновить")
+        }
+        Button(
+            onClick = { onDelete(connectorId) },
+            modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
+        ) {
+            SpanText("Удалить")
+        }
+    }
+}
+
+@Composable
 private fun ConnectorItem(
     connector: Connector,
     palette: ru.cleardocs.lkweb.SitePalette,
@@ -164,8 +196,6 @@ private fun ConnectorItem(
 ) {
     val textColor = ColorMode.current.toPalette().color
     val statusUpper = connector.status?.uppercase()
-    val isActive = statusUpper == "ACTIVE"
-    val isPaused = statusUpper == "PAUSED"
     Row(
         Modifier
             .fillMaxWidth()
@@ -190,28 +220,13 @@ private fun ConnectorItem(
         )
         SpanText(connector.name, Modifier.flexGrow(1))
         ConnectorStatusBadge(connector.status, Modifier.flexShrink(0))
-        if (isActive) {
-            Button(
-                onClick = { onPause(connector.id) },
-                modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
-            ) {
-                SpanText("Пауза")
-            }
-        }
-        if (isPaused) {
-            Button(
-                onClick = { onResume(connector.id) },
-                modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
-            ) {
-                SpanText("Возобновить")
-            }
-            Button(
-                onClick = { onDelete(connector.id) },
-                modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
-            ) {
-                SpanText("Удалить")
-            }
-        }
+        ConnectorStatusButtons(
+            connectorId = connector.id,
+            statusUpper = statusUpper,
+            onPause = onPause,
+            onResume = onResume,
+            onDelete = onDelete,
+        )
     }
 }
 
@@ -422,6 +437,10 @@ private fun ConnectorsContent() {
                     ActionButton(
                         text = "Назад",
                         onClick = { connectorsViewModel.backFromChat() },
+                    )
+
+                    ActionButton(
+
                     )
                 }
                 val chatCredsViewModel = remember { ChatCredentialsViewModel() }
