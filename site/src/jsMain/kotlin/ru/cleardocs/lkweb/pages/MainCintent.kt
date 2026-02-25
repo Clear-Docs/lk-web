@@ -362,8 +362,6 @@ private fun ConnectorsContent() {
             .cardSurface(palette),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        SpanText("Коннекторы", Modifier.fontSize(1.5.cssRem))
-
         when (val s = state) {
             is ConnectorsViewState.Loading -> {}
             is ConnectorsViewState.GotoAuth ->
@@ -371,6 +369,7 @@ private fun ConnectorsContent() {
             is ConnectorsViewState.Error ->
                 SpanText("Ошибка: ${s.message}")
             is ConnectorsData.Connectors -> {
+                SpanText("Коннекторы", Modifier.fontSize(1.5.cssRem))
                 if (s.connectors.isEmpty()) {
                     NoConnectorsMessage()
                 } else {
