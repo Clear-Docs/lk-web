@@ -4,6 +4,7 @@ import androidx.compose.runtime.*
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
+import com.varabyte.kobweb.compose.foundation.layout.Spacer
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.backgroundColor
@@ -21,6 +22,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.compose.ui.graphics.Color
 import com.varabyte.kobweb.compose.ui.graphics.Colors
+import com.varabyte.kobweb.compose.ui.modifiers.background
 import com.varabyte.kobweb.compose.ui.toAttrs
 import org.jetbrains.compose.web.dom.Div
 import com.varabyte.kobweb.core.Page
@@ -51,6 +53,7 @@ import ru.cleardocs.lkweb.components.layouts.PageLayout
 import ru.cleardocs.lkweb.components.widgets.ActionButton
 import ru.cleardocs.lkweb.components.widgets.AuthInput
 import ru.cleardocs.lkweb.components.widgets.InputLayout
+import ru.cleardocs.lkweb.components.widgets.Toast
 import ru.cleardocs.lkweb.components.widgets.authInputStyle
 import ru.cleardocs.lkweb.components.widgets.cardSurface
 import ru.cleardocs.lkweb.connectors.toByteArray
@@ -68,7 +71,9 @@ import ru.cleardocs.lkweb.profile.ProfileAuthState
 import ru.cleardocs.lkweb.toSitePalette
 import ru.cleardocs.lkweb.utils.requireProfileAuthRedirect
 import ru.cleardocs.lkweb.di.kodein
+import ru.cleardocs.lkweb.pages.MenuViewModel
 import org.kodein.di.instance
+import kotlinx.browser.window
 
 @Composable
 private fun MainContent(mainState: MainViewState, meViewModel: MeViewModel) {
@@ -155,6 +160,38 @@ private fun ConnectorStatusBadge(status: String?, modifier: Modifier = Modifier)
 }
 
 @Composable
+private fun ConnectorStatusButtons(
+    connectorId: String,
+    statusUpper: String?,
+    onPause: (String) -> Unit,
+    onResume: (String) -> Unit,
+    onDelete: (String) -> Unit,
+) {
+    if (statusUpper == "ACTIVE") {
+        Button(
+            onClick = { onPause(connectorId) },
+            modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
+        ) {
+            SpanText("Пауза")
+        }
+    }
+    if (statusUpper == "PAUSED") {
+        Button(
+            onClick = { onResume(connectorId) },
+            modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
+        ) {
+            SpanText("Возобновить")
+        }
+        Button(
+            onClick = { onDelete(connectorId) },
+            modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
+        ) {
+            SpanText("Удалить")
+        }
+    }
+}
+
+@Composable
 private fun ConnectorItem(
     connector: Connector,
     palette: ru.cleardocs.lkweb.SitePalette,
@@ -164,8 +201,6 @@ private fun ConnectorItem(
 ) {
     val textColor = ColorMode.current.toPalette().color
     val statusUpper = connector.status?.uppercase()
-    val isActive = statusUpper == "ACTIVE"
-    val isPaused = statusUpper == "PAUSED"
     Row(
         Modifier
             .fillMaxWidth()
@@ -190,28 +225,13 @@ private fun ConnectorItem(
         )
         SpanText(connector.name, Modifier.flexGrow(1))
         ConnectorStatusBadge(connector.status, Modifier.flexShrink(0))
-        if (isActive) {
-            Button(
-                onClick = { onPause(connector.id) },
-                modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
-            ) {
-                SpanText("Пауза")
-            }
-        }
-        if (isPaused) {
-            Button(
-                onClick = { onResume(connector.id) },
-                modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
-            ) {
-                SpanText("Возобновить")
-            }
-            Button(
-                onClick = { onDelete(connector.id) },
-                modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
-            ) {
-                SpanText("Удалить")
-            }
-        }
+        ConnectorStatusButtons(
+            connectorId = connector.id,
+            statusUpper = statusUpper,
+            onPause = onPause,
+            onResume = onResume,
+            onDelete = onDelete,
+        )
     }
 }
 
@@ -415,6 +435,9 @@ private fun ConnectorsContent() {
                     .padding(1.cssRem)
                     .backgroundColor(palette.nearBackground)
             ) {
+                val chatCredsViewModel = remember { ChatCredentialsViewModel() }
+                val credentials by chatCredsViewModel.credentials.collectAsState()
+                var toastMessage by remember { mutableStateOf<String?>(null) }
                 Row(
                     Modifier.fillMaxWidth().gap(0.5.cssRem),
                     verticalAlignment = Alignment.CenterVertically
@@ -423,9 +446,28 @@ private fun ConnectorsContent() {
                         text = "Назад",
                         onClick = { connectorsViewModel.backFromChat() },
                     )
+                    Box(Modifier.flexGrow(1))
+                    credentials?.let {
+                        ActionButton(
+                            text = "Поделиться",
+                            onClick = {
+                                val url =
+                                    "https://www.lk.cleardocs.ru/chat?apiKey=${it.apiKey}&personaId=${it.personaId}"
+                                window.navigator.clipboard.writeText(url)
+                                    .then {
+                                        toastMessage = "Скопировано в буфер обмена"
+                                        window.setTimeout({ toastMessage = null }, 2500)
+                                    }
+                                    .catch {
+                                        console.error("Не удалось скопировать в буфер обмена", it)
+                                    }
+                            }
+                        )
+                    }
                 }
-                val chatCredsViewModel = remember { ChatCredentialsViewModel() }
-                val credentials by chatCredsViewModel.credentials.collectAsState()
+                toastMessage?.let { msg ->
+                    Toast(message = msg)
+                }
                 val loading by chatCredsViewModel.loading.collectAsState()
                 val error by chatCredsViewModel.error.collectAsState()
                 when {
