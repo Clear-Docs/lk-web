@@ -33,5 +33,7 @@ data class SendChatMessageRequest(
     @SerialName("file_descriptors") val fileDescriptors: List<FileDescriptorRef> = emptyList(),
     @SerialName("search_doc_ids") val searchDocIds: List<String> = emptyList(),
     @SerialName("internal_search_filters") val internalSearchFilters: InternalSearchFilters? = null,
+    @SerialName("allowed_tool_ids") val allowedToolIds: List<Int>? = null,
+    @SerialName("forced_tool_id") val forcedToolId: Int? = null,
     @SerialName("stream") val stream: Boolean = true,
 )
