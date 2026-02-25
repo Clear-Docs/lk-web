@@ -8,10 +8,14 @@ import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxSize
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
+import com.varabyte.kobweb.compose.ui.modifiers.minHeight
 import com.varabyte.kobweb.compose.ui.modifiers.padding
+import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.silk.components.text.SpanText
 import org.jetbrains.compose.web.css.cssRem
+import org.jetbrains.compose.web.css.vh
+import org.jetbrains.compose.web.css.vw
 import ru.cleardocs.lkweb.chat.ChatCredentialsViewModel
 import ru.cleardocs.lkweb.components.sections.ChatBlock
 
@@ -31,20 +35,25 @@ fun ChatPage() {
     val loading by chatCredsViewModel.loading.collectAsState()
     val error by chatCredsViewModel.error.collectAsState()
 
+    val chatModifier = Modifier
+        .fillMaxSize()
+        .width(100.vw)
+        .minHeight(100.vh)
+
     when {
         apiKeyFromUrl != null && personaIdFromUrl != null -> ChatBlock(
-            modifier = Modifier.fillMaxSize(),
+            modifier = chatModifier,
             personaId = personaIdFromUrl,
             apiKey = apiKeyFromUrl,
         )
 
-        loading -> Box(Modifier.fillMaxSize().fillMaxWidth()) {
+        loading -> Box(Modifier.fillMaxSize().fillMaxWidth().width(100.vw)) {
             SpanText("Загрузка чата...", modifier = Modifier.padding(2.cssRem))
         }
     }
     credentials?.let {
         ChatBlock(
-            modifier = Modifier.fillMaxSize(),
+            modifier = chatModifier,
             personaId = it.personaId,
             apiKey = it.apiKey,
         )

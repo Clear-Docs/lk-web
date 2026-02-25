@@ -37,6 +37,7 @@ fun initSiteStyles(ctx: InitSilkContext) {
             )
             .fontSize(18.px)
             .lineHeight(1.5)
+            .fillMaxWidth()
     }
 
     // Silk dividers only extend 90% by default; we want full width dividers in our site
