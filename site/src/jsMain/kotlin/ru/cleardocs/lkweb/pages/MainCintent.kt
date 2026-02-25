@@ -20,6 +20,10 @@ import com.varabyte.kobweb.compose.ui.modifiers.fontSize
 import com.varabyte.kobweb.compose.ui.modifiers.gap
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.width
+import com.varabyte.kobweb.compose.ui.modifiers.zIndex
+import com.varabyte.kobweb.compose.ui.modifiers.position
+import com.varabyte.kobweb.compose.ui.modifiers.left
+import com.varabyte.kobweb.compose.ui.modifiers.bottom
 import com.varabyte.kobweb.compose.ui.graphics.Color
 import com.varabyte.kobweb.compose.ui.graphics.Colors
 import com.varabyte.kobweb.compose.ui.modifiers.background
@@ -43,6 +47,7 @@ import org.jetbrains.compose.web.attributes.accept
 import org.jetbrains.compose.web.attributes.disabled
 import org.jetbrains.compose.web.attributes.multiple
 import org.jetbrains.compose.web.css.LineStyle
+import org.jetbrains.compose.web.css.Position
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.percent
@@ -467,19 +472,17 @@ private fun ConnectorsContent() {
                 toastMessage?.let { msg ->
                     Div(
                         Modifier
+                            .position(Position.Fixed)
+                            .bottom(2.cssRem)
+                            .left(50.percent)
+                            .padding(topBottom = 0.6.cssRem, leftRight = 1.2.cssRem)
+                            .backgroundColor(Colors.Black.toRgb().copyf(alpha = 0.8f))
+                            .color(Colors.White)
+                            .borderRadius(0.5.cssRem)
+                            .fontSize(0.9.cssRem)
+                            .zIndex(1000)
                             .toAttrs {
-                                style {
-                                    property("position", "fixed")
-                                    property("bottom", "2rem")
-                                    property("left", "50%")
-                                    property("transform", "translateX(-50%)")
-                                    property("padding", "0.6rem 1.2rem")
-                                    property("background", "rgba(0,0,0,0.8)")
-                                    property("color", "white")
-                                    property("border-radius", "0.5rem")
-                                    property("font-size", "0.9rem")
-                                    property("z-index", "1000")
-                                }
+                                style { property("transform", "translateX(-50%)") }
                             }
                     ) {
                         SpanText(msg)
