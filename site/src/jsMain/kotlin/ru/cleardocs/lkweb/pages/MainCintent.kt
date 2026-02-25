@@ -54,6 +54,8 @@ import ru.cleardocs.lkweb.components.widgets.InputLayout
 import ru.cleardocs.lkweb.components.widgets.authInputStyle
 import ru.cleardocs.lkweb.components.widgets.cardSurface
 import ru.cleardocs.lkweb.connectors.toByteArray
+import ru.cleardocs.lkweb.chat.ChatCredentialsViewModel
+import ru.cleardocs.lkweb.components.sections.ChatBlock
 import ru.cleardocs.lkweb.components.sections.ProfileBlock
 import ru.cleardocs.lkweb.components.sections.ProfileMenu
 import ru.cleardocs.lkweb.firebase.signOut
@@ -379,6 +381,11 @@ private fun ConnectorsContent() {
                         onResume = { id -> connectorsViewModel.setConnectorStatus(id, "ACTIVE") },
                     )
                 }
+                ActionButton(
+                    text = "Перейти в чат",
+                    onClick = { connectorsViewModel.goToChat() },
+                    enabled = s.connectors.isNotEmpty()
+                )
                 if (s.canAdd) {
                     ActionButton(
                         text = "Добавить коннектор",
@@ -399,6 +406,38 @@ private fun ConnectorsContent() {
                     onBack = { connectorsViewModel.backToConnectors() },
                     palette = palette
                 )
+            }
+            is ConnectorsData.Chat -> Column(
+                Modifier
+                    .fillMaxWidth()
+                    .flexGrow(1)
+                    .padding(top = 1.5.cssRem)
+                    .borderRadius(0.6.cssRem)
+                    .padding(1.cssRem)
+                    .backgroundColor(palette.nearBackground)
+            ) {
+                Row(
+                    Modifier.fillMaxWidth().gap(0.5.cssRem),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    ActionButton(
+                        text = "Назад",
+                        onClick = { connectorsViewModel.backFromChat() },
+                    )
+                }
+                val chatCredsViewModel = remember { ChatCredentialsViewModel() }
+                val credentials by chatCredsViewModel.credentials.collectAsState()
+                val loading by chatCredsViewModel.loading.collectAsState()
+                val error by chatCredsViewModel.error.collectAsState()
+                when {
+                    loading -> SpanText("Загрузка чата...")
+                    credentials != null -> ChatBlock(
+                        modifier = Modifier.flexGrow(1),
+                        personaId = credentials!!.personaId,
+                        apiKey = credentials!!.apiKey,
+                    )
+                    else -> SpanText("Ошибка: ${error ?: "Не удалось загрузить credentials"}")
+                }
             }
         }
     }

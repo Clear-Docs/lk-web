@@ -16,6 +16,7 @@ import io.ktor.http.Headers
 import io.ktor.http.appendPathSegments
 import io.ktor.http.isSuccess
 import ru.cleardocs.lkweb.ApiConfig
+import ru.cleardocs.lkweb.api.dto.ChatResponseDto
 import ru.cleardocs.lkweb.api.dto.CreateConnectorResponseDto
 import ru.cleardocs.lkweb.api.dto.UpdateConnectorRequestDto
 import ru.cleardocs.lkweb.api.dto.GetConnectorsDto
@@ -77,6 +78,22 @@ object BackendApi {
                 limit = LimitDto(maxConnectors = 0),
             ),
         )
+    }
+
+    /**
+     * Возвращает credentials для чата (apiKey, personaId).
+     * GET /api/v1/chat с заголовком Authorization: Bearer &lt;token&gt;.
+     */
+    suspend fun chat(): ChatResponseDto {
+        val token = requireToken()
+        val response = client.get("api/v1/chat") {
+            header("Authorization", "Bearer $token")
+        }
+        if (!response.status.isSuccess()) {
+            val body = try { response.bodyAsText() } catch (_: Throwable) { "" }
+            throw BackendError(response.status.value, body)
+        }
+        return response.body()
     }
 
     /**
