@@ -246,7 +246,6 @@ private fun ChatBubble(
     ) {
         Box(
             modifier = Modifier
-                .width(if (isUser) 70.percent else 80.percent)
                 .backgroundColor(if (isUser) palette.brand.primary.toRgb().copyf(alpha = 0.15f) else palette.cobweb)
                 .padding(0.75.cssRem)
                 .borderRadius(0.6.cssRem)
