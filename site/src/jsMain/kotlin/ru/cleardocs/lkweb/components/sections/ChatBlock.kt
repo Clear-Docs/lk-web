@@ -104,7 +104,8 @@ fun ChatBlock(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .height(24.cssRem)
+            .fillMaxSize()
+            .minHeight(24.cssRem)
     ) {
         // Список сообщений — MutationObserver для автоскролла при изменении контента
         val scrollRef = remember { mutableStateOf<org.w3c.dom.HTMLElement?>(null) }
