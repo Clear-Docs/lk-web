@@ -14,6 +14,12 @@ data class ChatSessionInfo(
     @SerialName("project_id") val projectId: String? = null,
 )
 
+@Serializable
+data class InternalSearchFilters(
+    @SerialName("document_set") val documentSet: String? = null,
+    @SerialName("source_type") val sourceType: List<String> = emptyList(),
+)
+
 /**
  * POST /chat/send-chat-message (Onyx API, Swagger: /api/docs).
  * @see https://docs.onyx.app/developers/guides/chat_new_guide
@@ -26,5 +32,8 @@ data class SendChatMessageRequest(
     @SerialName("parent_message_id") val parentMessageId: Int? = null,
     @SerialName("file_descriptors") val fileDescriptors: List<FileDescriptorRef> = emptyList(),
     @SerialName("search_doc_ids") val searchDocIds: List<String> = emptyList(),
+    @SerialName("internal_search_filters") val internalSearchFilters: InternalSearchFilters? = null,
+    @SerialName("allowed_tool_ids") val allowedToolIds: List<Int>? = null,
+    @SerialName("forced_tool_id") val forcedToolId: Int? = null,
     @SerialName("stream") val stream: Boolean = true,
 )

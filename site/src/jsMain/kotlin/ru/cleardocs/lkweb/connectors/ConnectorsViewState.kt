@@ -7,5 +7,6 @@ sealed interface ConnectorsViewState {
     sealed interface ConnectorsData : ConnectorsViewState {
         data class Connectors(val connectors: List<Connector>, val canAdd: Boolean = true) : ConnectorsData
         data object AddFile : ConnectorsData
+        data object Chat : ConnectorsData
     }
 }

@@ -65,6 +65,9 @@ object ChatApi {
             chatSessionId = chatSessionId,
             chatSessionInfo = if (chatSessionId == null) ru.cleardocs.lkweb.api.dto.ChatSessionInfo(personaId = personaId) else null,
             parentMessageId = parentMessageId,
+            internalSearchFilters = ru.cleardocs.lkweb.api.dto.InternalSearchFilters(sourceType = listOf("file")),
+            allowedToolIds = listOf(1), // todo get tool смотри там приходят тулсы
+            forcedToolId = 1,
             stream = true,
         )
         val body = json.encodeToString(ru.cleardocs.lkweb.api.dto.SendChatMessageRequest.serializer(), req)

@@ -46,6 +46,19 @@ class ConnectorsViewModel(
         _state.value = ConnectorsViewState.ConnectorsData.Connectors(lastConnectors, lastCanAdd)
     }
 
+    fun goToChat() {
+        val current = _state.value
+        if (current is ConnectorsViewState.ConnectorsData.Connectors && current.connectors.isNotEmpty()) {
+            lastConnectors = current.connectors
+            lastCanAdd = current.canAdd
+            _state.value = ConnectorsViewState.ConnectorsData.Chat
+        }
+    }
+
+    fun backFromChat() {
+        _state.value = ConnectorsViewState.ConnectorsData.Connectors(lastConnectors, lastCanAdd)
+    }
+
     private fun isUnauthError(error: String): Boolean =
         error.contains("401") || error.contains("403") ||
             error.contains("Сессия истекла") || error.contains("Доступ запрещён") ||
