@@ -3,6 +3,7 @@ package ru.cleardocs.lkweb
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.SideEffect
 import com.varabyte.kobweb.compose.css.ScrollBehavior
+import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.minHeight
 import com.varabyte.kobweb.compose.ui.modifiers.scrollBehavior
 import com.varabyte.kobweb.core.App
@@ -34,6 +35,7 @@ fun AppEntry(content: @Composable () -> Unit) {
 
         Surface(
             SmoothColorStyle.toModifier()
+                .fillMaxWidth()
                 .minHeight(100.vh)
                 .scrollBehavior(ScrollBehavior.Smooth)
         ) {
