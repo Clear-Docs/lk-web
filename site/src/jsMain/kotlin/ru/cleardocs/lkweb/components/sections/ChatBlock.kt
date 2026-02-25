@@ -32,6 +32,7 @@ import com.varabyte.kobweb.compose.ui.graphics.Color
 import com.varabyte.kobweb.compose.ui.graphics.Colors
 import com.varabyte.kobweb.compose.css.Overflow
 import com.varabyte.kobweb.compose.dom.ElementTarget
+import com.varabyte.kobweb.compose.ui.thenIf
 import com.varabyte.kobweb.silk.components.forms.Button
 import com.varabyte.kobweb.silk.components.forms.ButtonVars
 import com.varabyte.kobweb.silk.components.navigation.Link
@@ -86,12 +87,14 @@ fun ChatBlock(
             val style = document.createElement("style").unsafeCast<org.w3c.dom.HTMLStyleElement>()
             style.id = "chat-loading-keyframes"
             style.appendChild(
-                document.createTextNode("""
+                document.createTextNode(
+                    """
                     @keyframes chat-dots-pulse {
                         0%, 100% { opacity: 0.35; }
                         50% { opacity: 1; }
                     }
-                """.trimIndent())
+                """.trimIndent()
+                )
             )
             document.head?.appendChild(style)
         }
@@ -217,7 +220,7 @@ fun ChatBlock(
                 Tooltip(ElementTarget.PreviousSibling, "Отправить", placement = PopupPlacement.Bottom)
             }
             Row(
-                modifier = Modifier.fillMaxWidth().padding(top =0.5.cssRem),
+                modifier = Modifier.fillMaxWidth().padding(top = 0.5.cssRem),
                 horizontalArrangement = Arrangement.Center
             ) {
                 Link(
@@ -246,8 +249,9 @@ private fun ChatBubble(
     ) {
         Box(
             modifier = Modifier
-                .width(if (isUser) 70.percent else 80.percent)
-                .backgroundColor(if (isUser) palette.brand.primary.toRgb().copyf(alpha = 0.15f) else palette.cobweb)
+                .thenIf(isUser) {
+                    Modifier.backgroundColor(palette.brand.primary.toRgb().copyf(alpha = 0.15f))
+                }
                 .padding(0.75.cssRem)
                 .borderRadius(0.6.cssRem)
         ) {

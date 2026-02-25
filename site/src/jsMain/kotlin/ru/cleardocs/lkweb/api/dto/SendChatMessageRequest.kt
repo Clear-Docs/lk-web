@@ -20,10 +20,7 @@ data class InternalSearchFilters(
     @SerialName("source_type") val sourceType: List<String> = emptyList(),
 )
 
-/**
- * POST /chat/send-chat-message (Onyx API, Swagger: /api/docs).
- * @see https://docs.onyx.app/developers/guides/chat_new_guide
- */
+/** POST /api/v1/chat/send-chat-message */
 @Serializable
 data class SendChatMessageRequest(
     val message: String,

@@ -19,26 +19,24 @@ import ru.cleardocs.lkweb.api.dto.CreateChatSessionResponse
 import ru.cleardocs.lkweb.api.dto.SendChatMessageRequest
 
 /**
- * API-клиент для Onyx Chat Backend (Swagger: /api/docs).
- * Использует [ApiConfig.createOnyxHttpClient] с [ApiConfig.onyxBaseUrl].
- * @see https://docs.onyx.app/developers/guides/chat_new_guide
+ * API-клиент для чата. Использует [ApiConfig.createHttpClient] и [ApiConfig.baseUrl].
  */
 object ChatApi {
 
-    private val client = ApiConfig.createOnyxHttpClient()
+    private val client = ApiConfig.createHttpClient()
     private val json = Json { ignoreUnknownKeys = true }
 
     /**
      * Создаёт сессию чата.
-     * POST /chat/create-chat-session
+     * POST /api/v1/chat/create-chat-session
      */
     suspend fun createChatSession(
         personaId: Int,
-        description: String = "Onyx Widget Session",
+        description: String = "Widget Session",
         apiKey: String? = null,
     ): String {
         val req = CreateChatSessionRequest(personaId = personaId, description = description)
-        val res = client.post("chat/create-chat-session") {
+        val res = client.post("api/v1/chat/create-chat-session") {
             contentType(ContentType.Application.Json)
             setBody(req)
             apiKey?.let { header("Authorization", "Bearer $it") }
@@ -49,7 +47,7 @@ object ChatApi {
 
     /**
      * Отправляет сообщение с потоковым ответом.
-     * POST /chat/send-chat-message (Onyx API)
+     * POST /api/v1/chat/send-chat-message
      *
      * @return Flow событий: Content (текст), Citation, Document (метаданные источников)
      */
@@ -74,7 +72,7 @@ object ChatApi {
         val headers = mutableMapOf<String, String>("Content-Type" to "application/json")
         apiKey?.let { headers["Authorization"] = "Bearer $it" }
         return fetchStream(
-            url = "${ApiConfig.onyxBaseUrl}chat/send-chat-message",
+            url = "${ApiConfig.baseUrl}/api/v1/chat/send-chat-message",
             headers = headers,
             body = body,
         ).flatMapConcat { line ->
