@@ -73,7 +73,6 @@ import ru.cleardocs.lkweb.di.kodein
 import ru.cleardocs.lkweb.pages.MenuViewModel
 import org.kodein.di.instance
 import kotlinx.browser.window
-import kotlinx.coroutines.flow.filterNotNull
 
 @Composable
 private fun MainContent(mainState: MainViewState, meViewModel: MeViewModel) {
@@ -437,6 +436,7 @@ private fun ConnectorsContent() {
             ) {
                 val chatCredsViewModel = remember { ChatCredentialsViewModel() }
                 val credentials by chatCredsViewModel.credentials.collectAsState()
+                var toastMessage by remember { mutableStateOf<String?>(null) }
                 Row(
                     Modifier.fillMaxWidth().gap(0.5.cssRem),
                     verticalAlignment = Alignment.CenterVertically
@@ -452,11 +452,37 @@ private fun ConnectorsContent() {
                             onClick = {
                                 val url =
                                     "https://www.lk.cleardocs.ru?apiKey=${it.apiKey}&personaId=${it.personaId}"
-                                window.navigator.clipboard.writeText(url).catch {
-                                    console.error("Не удалось скопировать в буфер обмена", it)
-                                }
+                                window.navigator.clipboard.writeText(url)
+                                    .then {
+                                        toastMessage = "Скопировано в буфер обмена"
+                                        window.setTimeout({ toastMessage = null }, 2500)
+                                    }
+                                    .catch {
+                                        console.error("Не удалось скопировать в буфер обмена", it)
+                                    }
                             }
                         )
+                    }
+                }
+                toastMessage?.let { msg ->
+                    Div(
+                        Modifier
+                            .toAttrs {
+                                style {
+                                    property("position", "fixed")
+                                    property("bottom", "2rem")
+                                    property("left", "50%")
+                                    property("transform", "translateX(-50%)")
+                                    property("padding", "0.6rem 1.2rem")
+                                    property("background", "rgba(0,0,0,0.8)")
+                                    property("color", "white")
+                                    property("border-radius", "0.5rem")
+                                    property("font-size", "0.9rem")
+                                    property("z-index", "1000")
+                                }
+                            }
+                    ) {
+                        SpanText(msg)
                     }
                 }
                 val loading by chatCredsViewModel.loading.collectAsState()
