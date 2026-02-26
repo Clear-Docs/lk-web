@@ -389,6 +389,9 @@ private fun ConnectorsContent() {
             is ConnectorsViewState.Error ->
                 SpanText("Ошибка: ${s.message}")
             is ConnectorsData.Connectors -> {
+                DisposableEffect(Unit) {
+                    onDispose { connectorsViewModel.stopPolling() }
+                }
                 SpanText("Коннекторы", Modifier.fontSize(1.5.cssRem))
                 if (s.connectors.isEmpty()) {
                     NoConnectorsMessage()
