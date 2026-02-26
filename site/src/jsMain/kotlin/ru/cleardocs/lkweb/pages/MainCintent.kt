@@ -18,6 +18,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.flexGrow
 import com.varabyte.kobweb.compose.ui.modifiers.flexShrink
 import com.varabyte.kobweb.compose.ui.modifiers.fontSize
 import com.varabyte.kobweb.compose.ui.modifiers.gap
+import com.varabyte.kobweb.compose.ui.modifiers.minHeight
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.compose.ui.graphics.Color
@@ -225,6 +226,7 @@ private fun ConnectorItem(
     Row(
         Modifier
             .fillMaxWidth()
+            .minHeight(3.cssRem)
             .padding(topBottom = 0.5.cssRem, leftRight = 0.75.cssRem)
             .borderRadius(0.5.cssRem)
             .border(1.px, LineStyle.Solid, palette.brand.primary)
