@@ -389,6 +389,9 @@ private fun ConnectorsContent() {
             is ConnectorsViewState.Error ->
                 SpanText("Ошибка: ${s.message}")
             is ConnectorsData.Connectors -> {
+                DisposableEffect(Unit) {
+                    onDispose { connectorsViewModel.stopPolling() }
+                }
                 SpanText("Коннекторы", Modifier.fontSize(1.5.cssRem))
                 if (s.connectors.isEmpty()) {
                     NoConnectorsMessage()
@@ -452,7 +455,7 @@ private fun ConnectorsContent() {
                             text = "Поделиться",
                             onClick = {
                                 val url =
-                                    "https://www.lk.cleardocs.ru/chat?apiKey=${it.apiKey}&personaId=${it.personaId}"
+                                    "https://lk.cleardocs.ru/chat?apiKey=${it.apiKey}&personaId=${it.personaId}"
                                 window.navigator.clipboard.writeText(url)
                                     .then {
                                         toastMessage = "Скопировано в буфер обмена"

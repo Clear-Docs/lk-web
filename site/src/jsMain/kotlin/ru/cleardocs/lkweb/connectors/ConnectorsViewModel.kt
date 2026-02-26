@@ -38,12 +38,14 @@ class ConnectorsViewModel(
         if (current is ConnectorsViewState.ConnectorsData.Connectors) {
             lastConnectors = current.connectors
             lastCanAdd = current.canAdd
+            stopPolling()
             _state.value = ConnectorsViewState.ConnectorsData.AddFile
         }
     }
 
     fun backToConnectors() {
         _state.value = ConnectorsViewState.ConnectorsData.Connectors(lastConnectors, lastCanAdd)
+        if (!lastConnectors.allActive()) startPolling()
     }
 
     fun goToChat() {
@@ -51,12 +53,19 @@ class ConnectorsViewModel(
         if (current is ConnectorsViewState.ConnectorsData.Connectors && current.connectors.isNotEmpty()) {
             lastConnectors = current.connectors
             lastCanAdd = current.canAdd
+            stopPolling()
             _state.value = ConnectorsViewState.ConnectorsData.Chat
         }
     }
 
     fun backFromChat() {
         _state.value = ConnectorsViewState.ConnectorsData.Connectors(lastConnectors, lastCanAdd)
+        if (!lastConnectors.allActive()) startPolling()
+    }
+
+    fun stopPolling() {
+        pollJob?.cancel()
+        pollJob = null
     }
 
     private fun isUnauthError(error: String): Boolean =
@@ -104,7 +113,14 @@ class ConnectorsViewModel(
     }
 
     private fun onConnectorsLoaded(connectors: List<Connector>, canAdd: Boolean) {
-        _state.value = ConnectorsViewState.ConnectorsData.Connectors(connectors, canAdd)
+        lastConnectors = connectors
+        lastCanAdd = canAdd
+        val current = _state.value
+        if (current !is ConnectorsViewState.ConnectorsData.Chat &&
+            current !is ConnectorsViewState.ConnectorsData.AddFile
+        ) {
+            _state.value = ConnectorsViewState.ConnectorsData.Connectors(connectors, canAdd)
+        }
         if (connectors.allActive()) {
             pollJob?.cancel()
             pollJob = null
