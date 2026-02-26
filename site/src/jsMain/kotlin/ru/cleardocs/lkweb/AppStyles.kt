@@ -116,7 +116,11 @@ val AuthToggleButtonVariant by ButtonStyle.addVariantBase {
 }
 
 val ActionButtonVariant by ButtonStyle.addVariantBase {
+    val palette = colorMode.toPalette()
     Modifier
+        .setVariable(ButtonVars.BackgroundDefaultColor, Colors.White)
+        .color(palette.color)
+        .border(1.px, LineStyle.Solid, palette.color.toRgb().copyf(alpha = 0.2f))
         .padding(topBottom = 0.5.cssRem, leftRight = 1.cssRem)
         .display(DisplayStyle.Flex)
         .alignItems(AlignItems.Center)
