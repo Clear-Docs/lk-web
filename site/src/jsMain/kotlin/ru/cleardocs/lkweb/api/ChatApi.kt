@@ -81,12 +81,17 @@ object ChatApi {
         }
     }
 
+    /** Извлекает UUID из document_id формата FILE_CONNECTOR__{uuid}. */
+    private val uuidInDocumentId = Regex("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
+
     /**
-     * Загружает файл по Onyx API. GET /api/chat/File/{documentId}
+     * Загружает файл по Onyx API. GET /api/chat/file/{documentId}
+     * document_id из потока: "FILE_CONNECTOR__{uuid}" — endpoint ожидает только UUID.
      * @return Data URL для отображения в iframe/embed (PDF, изображения и др.)
      */
     suspend fun fetchFile(documentId: String, apiKey: String?): String {
-        val url = "${ApiConfig.onyxBaseUrl}/api/chat/File/$documentId"
+        val fileId = uuidInDocumentId.find(documentId)?.value ?: documentId
+        val url = "${ApiConfig.onyxBaseUrl}/api/chat/file/$fileId"
         val response = client.get(url) {
             header("Accept", "*/*")
             apiKey?.let { header("Authorization", "Bearer $it") }
