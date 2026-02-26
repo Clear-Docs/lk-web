@@ -50,6 +50,7 @@ val NavHeaderStyle by ComponentStyle.base {
         .fillMaxWidth()
         .padding(1.cssRem)
         .backgroundColor(palette.nearBackground)
+        .borderBottom(1.px, LineStyle.Solid, palette.cobweb)
 }
 
 val NavLinkStyle by ComponentStyle.base {

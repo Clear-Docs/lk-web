@@ -1,6 +1,7 @@
 package ru.cleardocs.lkweb.api
 
 import io.ktor.client.call.body
+import io.ktor.client.request.get
 import io.ktor.client.request.header
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -78,6 +79,34 @@ object ChatApi {
         ).flatMapConcat { line ->
             flowOf(*parseStreamLine(line).toTypedArray())
         }
+    }
+
+    /**
+     * Загружает файл по Onyx API. GET /api/chat/File/{documentId}
+     * @return Data URL для отображения в iframe/embed (PDF, изображения и др.)
+     */
+    suspend fun fetchFile(documentId: String, apiKey: String?): String {
+        val url = "${ApiConfig.onyxBaseUrl}/api/chat/File/$documentId"
+        val response = client.get(url) {
+            header("Accept", "*/*")
+            apiKey?.let { header("Authorization", "Bearer $it") }
+        }
+        val bytes: ByteArray = response.body()
+        val contentType = response.contentType()?.toString() ?: "application/octet-stream"
+        val base64 = bytesToBase64(bytes)
+        return "data:$contentType;base64,$base64"
+    }
+
+    private fun bytesToBase64(bytes: ByteArray): String {
+        val chunkSize = 8192
+        val sb = StringBuilder()
+        for (i in bytes.indices step chunkSize) {
+            val end = minOf(i + chunkSize, bytes.size)
+            for (j in i until end) {
+                sb.append(bytes[j].toInt().and(0xFF).toChar())
+            }
+        }
+        return js("btoa")(sb.toString()).unsafeCast<String>()
     }
 
     private fun parseStreamLine(line: String): List<StreamEvent> {

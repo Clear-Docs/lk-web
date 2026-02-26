@@ -55,6 +55,7 @@ import ru.cleardocs.lkweb.chat.ChatMessageRenderer
 import ru.cleardocs.lkweb.chat.ChatRole
 import ru.cleardocs.lkweb.chat.ChatViewModel
 import ru.cleardocs.lkweb.components.widgets.ExpandableChatInput
+import ru.cleardocs.lkweb.components.widgets.FilePreviewDialog
 import ru.cleardocs.lkweb.toSitePalette
 import kotlinx.browser.document
 
@@ -81,6 +82,7 @@ fun ChatBlock(
     val inputBorder = palette.cobweb.toString()
 
     var inputText by remember { mutableStateOf("") }
+    var filePreview by remember { mutableStateOf<Pair<String, String>?>(null) }
 
     DisposableEffect(Unit) {
         if (document.getElementById("chat-loading-keyframes") == null) {
@@ -146,6 +148,9 @@ fun ChatBlock(
                         message = msg,
                         palette = palette,
                         isUser = msg.role == ChatRole.USER,
+                        onCitationClick = { docId, displayName ->
+                            filePreview = docId to displayName
+                        },
                     )
                 }
             }
@@ -236,6 +241,15 @@ fun ChatBlock(
             }
         }
     }
+
+    filePreview?.let { (docId, displayName) ->
+        FilePreviewDialog(
+            documentId = docId,
+            displayName = displayName,
+            apiKey = apiKey,
+            onClose = { filePreview = null },
+        )
+    }
 }
 
 @Composable
@@ -243,6 +257,7 @@ private fun ChatBubble(
     message: ChatMessage,
     palette: ru.cleardocs.lkweb.SitePalette,
     isUser: Boolean,
+    onCitationClick: ((documentId: String, displayName: String) -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -261,8 +276,10 @@ private fun ChatBubble(
                     ChatMessageRenderer(
                         content = message.content,
                         citations = message.citations,
+                        citationDocumentIds = message.citationDocumentIds,
                         palette = palette,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        onCitationClick = onCitationClick,
                     )
                 } else if (message.isLoading) {
                     Span(
