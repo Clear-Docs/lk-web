@@ -19,7 +19,7 @@ import ru.cleardocs.lkweb.api.dto.CreateChatSessionResponse
 import ru.cleardocs.lkweb.api.dto.SendChatMessageRequest
 
 /**
- * API-клиент для чата. Использует [ApiConfig.createHttpClient] и [ApiConfig.baseUrl].
+ * API-клиент для чата. createChatSession — ClearDocs, sendMessageStream — Onyx.
  */
 object ChatApi {
 
@@ -47,7 +47,7 @@ object ChatApi {
 
     /**
      * Отправляет сообщение с потоковым ответом.
-     * POST /api/v1/chat/send-chat-message
+     * POST /api/chat/send-chat-message (Onyx)
      *
      * @return Flow событий: Content (текст), Citation, Document (метаданные источников)
      */
@@ -72,7 +72,7 @@ object ChatApi {
         val headers = mutableMapOf<String, String>("Content-Type" to "application/json")
         apiKey?.let { headers["Authorization"] = "Bearer $it" }
         return fetchStream(
-            url = "${ApiConfig.baseUrl}/api/v1/chat/send-chat-message",
+            url = "${ApiConfig.onyxBaseUrl}/api/chat/send-chat-message",
             headers = headers,
             body = body,
         ).flatMapConcat { line ->

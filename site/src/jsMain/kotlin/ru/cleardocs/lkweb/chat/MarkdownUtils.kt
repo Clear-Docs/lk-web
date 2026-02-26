@@ -36,13 +36,14 @@ fun parseSimpleMarkdown(text: String): String {
 
         when {
             orderedMatch != null -> {
+                val num = orderedMatch.groupValues[1].toIntOrNull() ?: 1
                 if (!inOrderedList) {
                     if (inUnorderedList) {
                         sb.append("</ul>")
                         inUnorderedList = false
                     }
                     if (sb.isNotEmpty()) sb.append("<br/>")
-                    sb.append("<ol>")
+                    sb.append("<ol start=\"$num\">")
                     inOrderedList = true
                 }
                 sb.append("<li>").append(orderedMatch.groupValues[2]).append("</li>")
