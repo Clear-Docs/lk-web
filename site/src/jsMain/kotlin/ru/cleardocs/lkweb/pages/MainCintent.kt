@@ -66,6 +66,7 @@ import ru.cleardocs.lkweb.connectors.Connector
 import ru.cleardocs.lkweb.connectors.ConnectorsViewState
 import ru.cleardocs.lkweb.connectors.ConnectorsViewState.ConnectorsData
 import ru.cleardocs.lkweb.connectors.ConnectorsViewModel
+import ru.cleardocs.lkweb.plans.Plans
 import ru.cleardocs.lkweb.profile.MeViewModel
 import ru.cleardocs.lkweb.profile.ProfileAuthState
 import ru.cleardocs.lkweb.toSitePalette
@@ -81,6 +82,25 @@ private fun MainContent(mainState: MainViewState, meViewModel: MeViewModel) {
     when (mainState) {
         MainViewState.Profile -> ProfileContent(meViewModel = meViewModel)
         MainViewState.Connectors -> ConnectorsContent()
+        MainViewState.Plans -> PlansContent(meViewModel = meViewModel)
+    }
+}
+
+@Composable
+private fun PlansContent(meViewModel: MeViewModel) {
+    val me by meViewModel.me.collectAsState()
+    val currentPlanCode = me?.plan?.code
+    val palette = ColorMode.current.toSitePalette()
+
+    Column(
+        Modifier
+            .flexGrow(1)
+            .fillMaxSize()
+            .gap(1.25.cssRem)
+            .cardSurface(palette),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Plans(currentPlanCode = currentPlanCode)
     }
 }
 
@@ -404,7 +424,7 @@ private fun ConnectorsContent() {
                         onResume = { id -> connectorsViewModel.setConnectorStatus(id, "ACTIVE") },
                     )
                 }
-                Row {
+                Row(Modifier.gap(1.cssRem)) {
                     ActionButton(
                         text = "Перейти в чат",
                         onClick = { connectorsViewModel.goToChat() },
