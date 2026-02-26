@@ -404,16 +404,18 @@ private fun ConnectorsContent() {
                         onResume = { id -> connectorsViewModel.setConnectorStatus(id, "ACTIVE") },
                     )
                 }
-                ActionButton(
-                    text = "Перейти в чат",
-                    onClick = { connectorsViewModel.goToChat() },
-                    enabled = s.connectors.isNotEmpty()
-                )
-                if (s.canAdd) {
+                Row {
                     ActionButton(
-                        text = "Добавить коннектор",
-                        onClick = { connectorsViewModel.goToAddFile() },
+                        text = "Перейти в чат",
+                        onClick = { connectorsViewModel.goToChat() },
+                        enabled = s.connectors.isNotEmpty()
                     )
+                    if (s.canAdd) {
+                        ActionButton(
+                            text = "Добавить коннектор",
+                            onClick = { connectorsViewModel.goToAddFile() },
+                        )
+                    }
                 }
             }
             is ConnectorsData.AddFile -> Column(
