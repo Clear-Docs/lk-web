@@ -254,7 +254,7 @@ private fun ChatBubble(
                     Modifier.backgroundColor(palette.brand.primary.toRgb().copyf(alpha = 0.15f))
                 }
                 .padding(0.75.cssRem)
-                .borderRadius(0.6.cssRem)
+                .borderRadius(topLeft = 1.cssRem, bottomLeft = 1.cssRem, topRight = 1.cssRem)
         ) {
             Column {
                 if (message.content.isNotEmpty()) {

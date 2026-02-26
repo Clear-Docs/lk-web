@@ -70,6 +70,7 @@ import ru.cleardocs.lkweb.profile.MeViewModel
 import ru.cleardocs.lkweb.profile.ProfileAuthState
 import ru.cleardocs.lkweb.toSitePalette
 import ru.cleardocs.lkweb.utils.requireProfileAuthRedirect
+import ru.cleardocs.lkweb.ActionButtonVariant
 import ru.cleardocs.lkweb.di.kodein
 import ru.cleardocs.lkweb.pages.MenuViewModel
 import org.kodein.di.instance
@@ -451,12 +452,12 @@ private fun ConnectorsContent() {
                     )
                     Box(Modifier.flexGrow(1))
                     credentials?.let {
+                        val shareUrl =
+                            "https://lk.cleardocs.ru/chat?apiKey=${it.apiKey}&personaId=${it.personaId}"
                         ActionButton(
                             text = "Поделиться",
                             onClick = {
-                                val url =
-                                    "https://lk.cleardocs.ru/chat?apiKey=${it.apiKey}&personaId=${it.personaId}"
-                                window.navigator.clipboard.writeText(url)
+                                window.navigator.clipboard.writeText(shareUrl)
                                     .then {
                                         toastMessage = "Скопировано в буфер обмена"
                                         window.setTimeout({ toastMessage = null }, 2500)
@@ -466,6 +467,20 @@ private fun ConnectorsContent() {
                                     }
                             }
                         )
+                        Button(
+                            onClick = { window.open(shareUrl, "_blank") },
+                            variant = ActionButtonVariant
+                        ) {
+                            Img(
+                                src = "/run-above.svg",
+                                alt = "Открыть в новой вкладке"
+                            ) {
+                                style {
+                                    property("width", "1.25rem")
+                                    property("height", "1.25rem")
+                                }
+                            }
+                        }
                     }
                 }
                 toastMessage?.let { msg ->
