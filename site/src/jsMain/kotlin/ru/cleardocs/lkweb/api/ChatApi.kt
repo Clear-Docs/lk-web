@@ -7,6 +7,7 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import io.ktor.http.isSuccess
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapConcat
 import kotlinx.coroutines.flow.flowOf
@@ -27,6 +28,7 @@ import ru.cleardocs.lkweb.api.dto.SendChatMessageRequest
 object ChatApi {
 
     private val client = ApiConfig.createHttpClient()
+    private val onyxClient = ApiConfig.createOnyxHttpClient()
     private val json = Json { ignoreUnknownKeys = true }
 
     /**
@@ -87,15 +89,28 @@ object ChatApi {
     private val uuidInDocumentId = Regex("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
 
     /**
+     * Ссылка для прямого открытия файла (как в Onyx).
+     * localhost: прокси 9081 поддерживает ?token= — добавляет Authorization при проксировании.
+     * production: api.cleardocs.ru — авторизация через cookie/сессию.
+     */
+    fun fileUrl(documentId: String, apiKey: String?): String {
+        val fileId = uuidInDocumentId.find(documentId)?.value ?: documentId
+        val base = "${ApiConfig.onyxBaseUrl}/api/chat/file/$fileId"
+        return if (apiKey != null) "$base?token=${js("encodeURIComponent")(apiKey).unsafeCast<String>()}" else base
+    }
+
+    /**
      * Загружает байты файла по Onyx API. GET /api/chat/file/{documentId}
      * document_id из потока: "FILE_CONNECTOR__{uuid}" — endpoint ожидает только UUID.
      */
     private suspend fun fetchFileBytes(documentId: String, apiKey: String?): Pair<ByteArray, String> {
         val fileId = uuidInDocumentId.find(documentId)?.value ?: documentId
-        val url = "${ApiConfig.onyxBaseUrl}/api/chat/file/$fileId"
-        val response = client.get(url) {
+        val response = onyxClient.get("api/chat/file/$fileId") {
             header("Accept", "*/*")
             apiKey?.let { header("Authorization", "Bearer $it") }
+        }
+        if (!response.status.isSuccess()) {
+            throw Exception("Файл не загружен: ${response.status}")
         }
         val bytes: ByteArray = response.body()
         val contentType = response.contentType()?.toString() ?: "application/octet-stream"
@@ -113,15 +128,41 @@ object ChatApi {
     }
 
     /**
-     * Загружает файл и открывает в новой вкладке браузера.
-     * Пользователь может сохранить файл или открыть системным приложением.
+     * Создаёт blob URL из ByteArray через чистый Kotlin/JS.
+     * js("new Uint8Array") выдаёт "(intermediate value) is not a function" — используем wrapper.
      */
-    suspend fun openFileInNewTab(documentId: String, displayName: String, apiKey: String?) {
+    private fun bytesToBlobUrl(bytes: ByteArray, contentType: String): String {
+        val createUrl = js(
+            """
+            (function(bytes, type) {
+                var len = bytes.length;
+                var arr = new Uint8Array(len);
+                for (var i = 0; i < len; i++) arr[i] = bytes[i] & 0xFF;
+                var blob = new Blob([arr], { type: type });
+                return URL.createObjectURL(blob);
+            })
+            """
+        ).unsafeCast<(ByteArray, String) -> String>()
+        return createUrl(bytes, contentType)
+    }
+
+    /**
+     * Загружает файл и открывает в переданном окне (открытом синхронно при клике).
+     * Браузер блокирует window.open после async — окно должно быть открыто заранее.
+     */
+    suspend fun openFileInWindow(
+        documentId: String,
+        displayName: String,
+        apiKey: String?,
+        targetWindow: dynamic,
+    ) {
         val (bytes, contentType) = fetchFileBytes(documentId, apiKey)
-        val blob = js("new Blob")(arrayOf(bytes.asDynamic()), json("type" to contentType))
-        val blobUrl = js("URL.createObjectURL")(blob).unsafeCast<String>()
-        window.open(blobUrl)
-        window.setTimeout({ js("URL.revokeObjectURL")(blobUrl) }, 2000)
+        val blobUrl = bytesToBlobUrl(bytes, contentType)
+        val w = targetWindow
+        if (w != null && jsTypeOf(w.location) != "undefined") {
+            w.location.href = blobUrl
+        }
+        window.setTimeout(js("(function(url){ return function(){ URL.revokeObjectURL(url); }; })")(blobUrl), 5000)
     }
 
     private fun bytesToBase64(bytes: ByteArray): String {
