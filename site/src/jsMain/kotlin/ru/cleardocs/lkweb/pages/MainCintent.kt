@@ -1,6 +1,7 @@
 package ru.cleardocs.lkweb.pages
 
 import androidx.compose.runtime.*
+import com.varabyte.kobweb.compose.foundation.layout.Arrangement
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
@@ -17,8 +18,10 @@ import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.flexGrow
 import com.varabyte.kobweb.compose.ui.modifiers.flexShrink
 import com.varabyte.kobweb.compose.ui.modifiers.fontSize
+import com.varabyte.kobweb.compose.ui.modifiers.boxShadow
 import com.varabyte.kobweb.compose.ui.modifiers.gap
 import com.varabyte.kobweb.compose.ui.modifiers.minHeight
+import com.varabyte.kobweb.compose.ui.modifiers.onClick
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.compose.ui.graphics.Color
@@ -296,6 +299,53 @@ private fun NoConnectorsMessage() {
 }
 
 @Composable
+private fun ConnectorTypeCard(
+    iconSrc: String,
+    label: String,
+    palette: ru.cleardocs.lkweb.SitePalette,
+    onClick: () -> Unit
+) {
+    val textColor = ColorMode.current.toPalette().color
+    val cardBg = when (ColorMode.current) {
+        ColorMode.LIGHT -> "white"
+        ColorMode.DARK -> palette.nearBackground.toString()
+    }
+    Div(
+        attrs = {
+            style {
+                property("cursor", "pointer")
+                property("display", "flex")
+                property("flex-direction", "column")
+                property("align-items", "center")
+                property("justify-content", "center")
+                property("gap", "0.75rem")
+                property("padding", "1.25rem")
+                property("width", "7rem")
+                property("min-height", "6rem")
+                property("border-radius", "0.75rem")
+                property("background", cardBg)
+                property("box-shadow", "2px 2px 8px rgba(0,0,0,0.1)")
+                property("transition", "box-shadow 0.2s ease")
+            }
+            onClick { onClick() }
+        }
+    ) {
+        Img(
+            src = iconSrc,
+            alt = label,
+            attrs = {
+                style {
+                    property("width", "2rem")
+                    property("height", "2rem")
+                    property("object-fit", "contain")
+                }
+            }
+        )
+        SpanText(label, Modifier.color(textColor).fontSize(1.cssRem))
+    }
+}
+
+@Composable
 private fun AddConnectorBlock(
     connectorsViewModel: ConnectorsViewModel,
     onBack: () -> Unit,
@@ -328,9 +378,23 @@ private fun AddConnectorBlock(
         when (selectedType) {
             null -> {
                 SpanText("Выберите тип коннектора", Modifier.fontSize(1.1.cssRem))
-                Row(Modifier.gap(0.5.cssRem)) {
-                    ActionButton(
-                        text = "Файл",
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .gap(1.25.cssRem)
+                        .padding(top = 0.75.cssRem),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    ConnectorTypeCard(
+                        iconSrc = "/globe-icon.svg",
+                        label = "Web",
+                        palette = palette,
+                        onClick = { selectedType = ConnectorType.Url }
+                    )
+                    ConnectorTypeCard(
+                        iconSrc = "/file-icon.svg",
+                        label = "Файл",
+                        palette = palette,
                         onClick = { selectedType = ConnectorType.File }
                     )
                 }
