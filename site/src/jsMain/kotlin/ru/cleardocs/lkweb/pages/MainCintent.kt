@@ -371,6 +371,34 @@ private fun ConnectorTypeCard(
 }
 
 @Composable
+private fun connectorCategory(
+    title: String,
+    palette: ru.cleardocs.lkweb.SitePalette,
+    items: List<Pair<String, String>>
+) {
+    SpanText(title, Modifier.fontSize(1.1.cssRem).padding(top = 1.5.cssRem))
+    Div(
+        attrs = {
+            style {
+                property("display", "flex")
+                property("flex-wrap", "wrap")
+                property("gap", "1rem")
+            }
+        }
+    ) {
+        items.forEach { (label, iconUrl) ->
+            ConnectorTypeCard(
+                iconSrc = iconUrl,
+                label = label,
+                palette = palette,
+                onClick = {},
+                enabled = false
+            )
+        }
+    }
+}
+
+@Composable
 private fun AddConnectorBlock(
     connectorsViewModel: ConnectorsViewModel,
     onBack: () -> Unit,
@@ -422,13 +450,53 @@ private fun AddConnectorBlock(
                         onClick = { selectedType = ConnectorType.File }
                     )
                     ConnectorTypeCard(
-                        iconSrc = "/1c.png",
+                        iconSrc = "/1c.svg",
                         label = "1С",
                         palette = palette,
                         onClick = {},
                         enabled = false
                     )
                 }
+                connectorCategory("Популярные", palette, listOf(
+                    "Confluence" to "https://cdn.simpleicons.org/confluence/172B4D",
+                    "Sharepoint" to "/sharepoint-icon.png",
+                    "Google Drive" to "https://cdn.simpleicons.org/googledrive/4285F4",
+                    "Jira" to "https://cdn.simpleicons.org/jira/0052CC",
+                    "Zendesk" to "https://cdn.simpleicons.org/zendesk/03363D",
+                    "Slack" to "/slack-icon.png",
+                    "Salesforce" to "/salesforce-icon.png",
+                    "HubSpot" to "https://cdn.simpleicons.org/hubspot/FF7A59",
+                    "Gong" to "https://cdn.simpleicons.org/gong/22429B",
+                    "Github" to "/github-icon.png",
+                    "Google Sites" to "/googlesites-icon.png",
+                ))
+                connectorCategory("Sales", palette, listOf(
+                    "Fireflies" to "/file-icon.svg",
+                    "Highspot" to "/highspot-icon.png",
+                    "Loopio" to "/loopio-icon.png",
+                ))
+                connectorCategory("Коммуникации", palette, listOf(
+                    "Zulip" to "/zulip-icon.png",
+                    "Microsoft Teams" to "/teams-icon.png",
+                    "Discord" to "/discord-icon.png",
+                ))
+                connectorCategory("Почта", palette, listOf(
+                    "Gmail" to "/gmail-icon.png",
+                    "IMAP" to "https://cdn.simpleicons.org/microsoftoutlook/0078D4",
+                ))
+                connectorCategory("Разработка", palette, listOf(
+                    "Bitbucket" to "https://cdn.simpleicons.org/bitbucket/0052CC",
+                ))
+                connectorCategory("Облачное хранилище", palette, listOf(
+                    "OCI" to "/oci-icon.svg",
+                    "Dropbox" to "/dropbox-icon.png",
+                    "S3" to "/s3-icon.png",
+                    "R2" to "/r2-icon.png",
+                ))
+                connectorCategory("Форумы и wiki", palette, listOf(
+                    "XenForo" to "/xenforo-icon.svg",
+                    "Wikipedia" to "/wikipedia-icon.png",
+                ))
             }
 
             ConnectorType.File -> AddFileConnectorForm(
