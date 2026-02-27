@@ -214,6 +214,10 @@ object ChatApi {
                         StreamEvent.Document(docId, title)
                     }
                 }
+                "reasoning_delta" -> {
+                    val reasoning = packet["reasoning"]?.jsonPrimitive?.content
+                    if (reasoning != null) listOf(StreamEvent.Reasoning(reasoning)) else emptyList()
+                }
                 else -> emptyList()
             }
         } catch (_: Exception) {

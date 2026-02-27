@@ -11,6 +11,8 @@ data class ChatMessage(
     val isLoading: Boolean = false,
     val citations: Map<Int, String> = emptyMap(),
     val citationDocumentIds: Map<Int, String> = emptyMap(),
+    /** Рассуждения модели (thinking/reasoning), отображаются до ответа. */
+    val reasoning: String = "",
 )
 
 enum class ChatRole {

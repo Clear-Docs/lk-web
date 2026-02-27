@@ -279,7 +279,35 @@ private fun ChatBubble(
                 .padding(0.75.cssRem)
                 .borderRadius(topLeft = 1.cssRem, bottomLeft = 1.cssRem, topRight = 1.cssRem)
         ) {
-            Column {
+            Column(modifier = Modifier.gap(0.5.cssRem)) {
+                // Рассуждения модели (reasoning) — приглушённый блок над ответом
+                if (message.reasoning.isNotEmpty() && !isUser) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .backgroundColor(palette.cobweb.toRgb().copyf(alpha = 0.25f))
+                            .borderRadius(0.5.cssRem)
+                            .padding(0.5.cssRem)
+                    ) {
+                        Column(modifier = Modifier.fillMaxWidth().gap(0.25.cssRem)) {
+                            SpanText(
+                                "Рассуждение",
+                                Modifier
+                                    .fontSize(0.7.cssRem)
+                                    .color(palette.cobweb)
+                            )
+                            Div(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .fontSize(0.85.cssRem)
+                                    .color(palette.cobweb)
+                                    .toAttrs { style { property("white-space", "pre-wrap") } }
+                            ) {
+                                Text(message.reasoning)
+                            }
+                        }
+                    }
+                }
                 if (message.content.isNotEmpty()) {
                     ChatMessageRenderer(
                         content = message.content,
