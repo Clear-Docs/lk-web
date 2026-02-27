@@ -15,6 +15,7 @@ import com.varabyte.kobweb.silk.components.style.base
 import com.varabyte.kobweb.silk.init.InitSilk
 import com.varabyte.kobweb.silk.init.InitSilkContext
 import com.varabyte.kobweb.silk.init.registerStyleBase
+import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import com.varabyte.kobweb.silk.theme.colors.palette.background
 import com.varabyte.kobweb.silk.theme.colors.palette.color
 import com.varabyte.kobweb.silk.theme.colors.palette.toPalette
@@ -116,12 +117,17 @@ val AuthToggleButtonVariant by ButtonStyle.addVariantBase {
 }
 
 val ActionButtonVariant by ButtonStyle.addVariantBase {
-    val palette = colorMode.toPalette()
+    val palette = colorMode.toSitePalette()
+    val itemBg = when (colorMode) {
+        ColorMode.LIGHT -> Colors.White
+        ColorMode.DARK -> palette.nearBackground
+    }
     Modifier
-        .setVariable(ButtonVars.BackgroundDefaultColor, Colors.White)
-        .color(palette.color)
-        .border(1.px, LineStyle.Solid, palette.color.toRgb().copyf(alpha = 0.2f))
-        .padding(topBottom = 0.5.cssRem, leftRight = 1.cssRem)
+        .setVariable(ButtonVars.BackgroundDefaultColor, itemBg)
+        .color(colorMode.toPalette().color)
+        .borderRadius(0.75.cssRem)
+        .padding(1.25.cssRem)
+        .boxShadow(2.px, 2.px, 8.px, color = palette.brand.primary.toRgb().copyf(alpha = 0.12f))
         .display(DisplayStyle.Flex)
         .alignItems(AlignItems.Center)
 }
