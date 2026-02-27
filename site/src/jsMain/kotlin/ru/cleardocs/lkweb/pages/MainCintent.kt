@@ -64,6 +64,7 @@ import ru.cleardocs.lkweb.components.sections.ProfileBlock
 import ru.cleardocs.lkweb.components.sections.ProfileMenu
 import ru.cleardocs.lkweb.firebase.signOut
 import ru.cleardocs.lkweb.connectors.Connector
+import ru.cleardocs.lkweb.connectors.ConnectorType
 import ru.cleardocs.lkweb.connectors.ConnectorsViewState
 import ru.cleardocs.lkweb.connectors.ConnectorsViewState.ConnectorsData
 import ru.cleardocs.lkweb.connectors.ConnectorsViewModel
@@ -295,9 +296,59 @@ private fun NoConnectorsMessage() {
 }
 
 @Composable
-private fun AddFileConnectorBlock(
+private fun AddConnectorBlock(
     connectorsViewModel: ConnectorsViewModel,
     onBack: () -> Unit,
+    palette: ru.cleardocs.lkweb.SitePalette
+) {
+    var selectedType by remember { mutableStateOf<ConnectorType?>(null) }
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .gap(1.cssRem)
+    ) {
+        Row(
+            Modifier.fillMaxWidth().gap(0.5.cssRem),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ActionButton(
+                text = "Назад",
+                onClick = {
+                    if (selectedType == null) {
+                        onBack()
+                    } else {
+                        selectedType = null
+                    }
+                },
+                enabled = true
+            )
+        }
+
+        when (selectedType) {
+            null -> {
+                SpanText("Выберите тип коннектора", Modifier.fontSize(1.1.cssRem))
+                Row(Modifier.gap(0.5.cssRem)) {
+                    ActionButton(
+                        text = "Файл",
+                        onClick = { selectedType = ConnectorType.File }
+                    )
+                }
+            }
+            ConnectorType.File -> AddFileConnectorForm(
+                connectorsViewModel = connectorsViewModel,
+                palette = palette
+            )
+            ConnectorType.Url -> {
+                SpanText("URL (скоро)", Modifier.fontSize(1.1.cssRem))
+            }
+        }
+    }
+}
+
+@Composable
+private fun AddFileConnectorForm(
+    connectorsViewModel: ConnectorsViewModel,
     palette: ru.cleardocs.lkweb.SitePalette
 ) {
     var connectorName by remember { mutableStateOf("") }
@@ -313,17 +364,6 @@ private fun AddFileConnectorBlock(
             .fillMaxWidth()
             .gap(1.cssRem)
     ) {
-        Row(
-            Modifier.fillMaxWidth().gap(0.5.cssRem),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ActionButton(
-                text = "Назад",
-                onClick = onBack,
-                enabled = !isAdding
-            )
-        }
-
         SpanText("Добавить файловый коннектор", Modifier.fontSize(1.1.cssRem))
 
         InputLayout(label = "Название") {
@@ -435,12 +475,12 @@ private fun ConnectorsContent() {
                     if (s.canAdd) {
                         ActionButton(
                             text = "Добавить коннектор",
-                            onClick = { connectorsViewModel.goToAddFile() },
+                            onClick = { connectorsViewModel.goToAddConnector() },
                         )
                     }
                 }
             }
-            is ConnectorsData.AddFile -> Column(
+            is ConnectorsData.AddConnector -> Column(
                 Modifier
                     .fillMaxWidth()
                     .padding(top = 1.5.cssRem)
@@ -448,7 +488,7 @@ private fun ConnectorsContent() {
                     .padding(1.cssRem)
                     .backgroundColor(palette.nearBackground)
             ) {
-                AddFileConnectorBlock(
+                AddConnectorBlock(
                     connectorsViewModel = connectorsViewModel,
                     onBack = { connectorsViewModel.backToConnectors() },
                     palette = palette
