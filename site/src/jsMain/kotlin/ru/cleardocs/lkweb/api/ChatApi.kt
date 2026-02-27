@@ -14,6 +14,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import kotlin.js.json
+import kotlinx.browser.window
 import ru.cleardocs.lkweb.ApiConfig
 import ru.cleardocs.lkweb.api.dto.CreateChatSessionRequest
 import ru.cleardocs.lkweb.api.dto.CreateChatSessionResponse
@@ -85,11 +87,10 @@ object ChatApi {
     private val uuidInDocumentId = Regex("[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}")
 
     /**
-     * Загружает файл по Onyx API. GET /api/chat/file/{documentId}
+     * Загружает байты файла по Onyx API. GET /api/chat/file/{documentId}
      * document_id из потока: "FILE_CONNECTOR__{uuid}" — endpoint ожидает только UUID.
-     * @return Data URL для отображения в iframe/embed (PDF, изображения и др.)
      */
-    suspend fun fetchFile(documentId: String, apiKey: String?): String {
+    private suspend fun fetchFileBytes(documentId: String, apiKey: String?): Pair<ByteArray, String> {
         val fileId = uuidInDocumentId.find(documentId)?.value ?: documentId
         val url = "${ApiConfig.onyxBaseUrl}/api/chat/file/$fileId"
         val response = client.get(url) {
@@ -98,8 +99,29 @@ object ChatApi {
         }
         val bytes: ByteArray = response.body()
         val contentType = response.contentType()?.toString() ?: "application/octet-stream"
+        return bytes to contentType
+    }
+
+    /**
+     * Загружает файл по Onyx API.
+     * @return Data URL для отображения в iframe/embed (PDF, изображения и др.)
+     */
+    suspend fun fetchFile(documentId: String, apiKey: String?): String {
+        val (bytes, contentType) = fetchFileBytes(documentId, apiKey)
         val base64 = bytesToBase64(bytes)
         return "data:$contentType;base64,$base64"
+    }
+
+    /**
+     * Загружает файл и открывает в новой вкладке браузера.
+     * Пользователь может сохранить файл или открыть системным приложением.
+     */
+    suspend fun openFileInNewTab(documentId: String, displayName: String, apiKey: String?) {
+        val (bytes, contentType) = fetchFileBytes(documentId, apiKey)
+        val blob = js("new Blob")(arrayOf(bytes.asDynamic()), json("type" to contentType))
+        val blobUrl = js("URL.createObjectURL")(blob).unsafeCast<String>()
+        window.open(blobUrl)
+        window.setTimeout({ js("URL.revokeObjectURL")(blobUrl) }, 2000)
     }
 
     private fun bytesToBase64(bytes: ByteArray): String {

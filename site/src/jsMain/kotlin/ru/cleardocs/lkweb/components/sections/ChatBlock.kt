@@ -6,6 +6,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import com.varabyte.kobweb.compose.foundation.layout.Arrangement
 import com.varabyte.kobweb.compose.foundation.layout.Box
@@ -49,13 +50,14 @@ import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.css.percent
+import ru.cleardocs.lkweb.api.ChatApi
 import ru.cleardocs.lkweb.chat.ChatMessage
 import ru.cleardocs.lkweb.chat.ChatMessageRenderer
 import ru.cleardocs.lkweb.chat.ChatRole
 import ru.cleardocs.lkweb.chat.ChatViewModel
 import ru.cleardocs.lkweb.components.widgets.ExpandableChatInput
-import ru.cleardocs.lkweb.components.widgets.FilePreviewDialog
 import ru.cleardocs.lkweb.toSitePalette
 import kotlinx.browser.document
 
@@ -82,7 +84,7 @@ fun ChatBlock(
     val inputBorder = palette.cobweb.toString()
 
     var inputText by remember { mutableStateOf("") }
-    var filePreview by remember { mutableStateOf<Pair<String, String>?>(null) }
+    val scope = rememberCoroutineScope()
 
     DisposableEffect(Unit) {
         if (document.getElementById("chat-loading-keyframes") == null) {
@@ -149,7 +151,11 @@ fun ChatBlock(
                         palette = palette,
                         isUser = msg.role == ChatRole.USER,
                         onCitationClick = { docId, displayName ->
-                            filePreview = docId to displayName
+                            scope.launch {
+                                try {
+                                    ChatApi.openFileInNewTab(docId, displayName, apiKey)
+                                } catch (_: Throwable) { }
+                            }
                         },
                     )
                 }
@@ -240,15 +246,6 @@ fun ChatBlock(
                 }
             }
         }
-    }
-
-    filePreview?.let { (docId, displayName) ->
-        FilePreviewDialog(
-            documentId = docId,
-            displayName = displayName,
-            apiKey = apiKey,
-            onClose = { filePreview = null },
-        )
     }
 }
 
