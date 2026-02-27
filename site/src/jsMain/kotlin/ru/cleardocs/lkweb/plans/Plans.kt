@@ -114,7 +114,7 @@ private fun PlanCard(plan: Plan, palette: ru.cleardocs.lkweb.SitePalette, onSele
                 horizontalArrangement = Arrangement.End
             ) {
                 Button(
-                    onClick = onSelectClick,
+                    onClick = { onSelectClick() },
                     modifier = Modifier.padding(0.25.cssRem)
                 ) {
                     Text("Подключить тариф")

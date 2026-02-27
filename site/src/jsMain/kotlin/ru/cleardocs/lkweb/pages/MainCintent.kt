@@ -410,10 +410,12 @@ private fun AddConnectorBlock(
                     )
                 }
             }
+
             ConnectorType.File -> AddFileConnectorForm(
                 connectorsViewModel = connectorsViewModel,
                 palette = palette
             )
+
             ConnectorType.Url -> AddUrlConnectorForm(
                 connectorsViewModel = connectorsViewModel,
                 palette = palette
@@ -457,11 +459,16 @@ private fun AddFileConnectorForm(
         }
 
         InputLayout(label = "Файлы") {
+            SpanText(
+                "Форматы: txt, md, csv, eml, docx, pptx, xlsx, epub, pdf, lic, json, org",
+                Modifier.fontSize(0.8.cssRem).color(ColorMode.current.toPalette().color.toRgb().copyf(alpha = 0.65f))
+                    .padding(bottom = 0.25.cssRem)
+            )
             Input(
                 type = InputType.File,
                 attrs = {
                     id("connector-file-input")
-                    accept(".txt,.docx,.pptx,.xlsx,.csv,.eml,.epub,.zip,.pdf")
+                    accept(".txt,.md,.csv,.eml,.docx,.pptx,.xlsx,.epub,.pdf,.lic,.json,.org")
                     multiple()
                     if (isAdding) disabled()
                     style(authInputStyle(inputBg, inputFg, inputBorder, null))
@@ -592,8 +599,10 @@ private fun ConnectorsContent() {
             is ConnectorsViewState.Loading -> {}
             is ConnectorsViewState.GotoAuth ->
                 SpanText("Перенаправляем на авторизацию...")
+
             is ConnectorsViewState.Error ->
                 SpanText("Ошибка: ${s.message}")
+
             is ConnectorsData.Connectors -> {
                 DisposableEffect(Unit) {
                     onDispose { connectorsViewModel.stopPolling() }
@@ -623,6 +632,7 @@ private fun ConnectorsContent() {
                     }
                 }
             }
+
             is ConnectorsData.AddConnector -> Column(
                 Modifier
                     .fillMaxWidth()
@@ -637,6 +647,7 @@ private fun ConnectorsContent() {
                     palette = palette
                 )
             }
+
             is ConnectorsData.Chat -> Column(
                 Modifier
                     .fillMaxWidth()
@@ -693,14 +704,12 @@ private fun ConnectorsContent() {
                 toastMessage?.let { msg ->
                     Toast(message = msg)
                 }
-                val error by chatCredsViewModel.error.collectAsState()
-                when {
-                    credentials != null -> ChatBlock(
+                credentials?.let {
+                    ChatBlock(
                         modifier = Modifier.flexGrow(1),
-                        personaId = credentials!!.personaId,
-                        apiKey = credentials!!.apiKey,
+                        personaId = it.personaId,
+                        apiKey = it.apiKey,
                     )
-                    else -> SpanText("Ошибка: ${error ?: "Не удалось загрузить credentials"}")
                 }
             }
         }
@@ -736,25 +745,25 @@ fun ProfilePage() {
                 .padding(1.cssRem),
             contentAlignment = Alignment.Center
         ) {
-                Row(
-                    Modifier
+            Row(
+                Modifier
+                    .flexGrow(1)
+                    .fillMaxSize()
+                    .gap(1.cssRem),
+                verticalAlignment = Alignment.Top
+            ) {
+                ProfileMenu(
+                    modifier = Modifier
                         .flexGrow(1)
-                        .fillMaxSize()
-                        .gap(1.cssRem),
-                    verticalAlignment = Alignment.Top
-                ) {
-                    ProfileMenu(
-                        modifier = Modifier
-                            .flexGrow(1)
-                            .fillMaxHeight()
-                            .width(20.percent)
-                            .flexShrink(0)
-                            .displayIfAtLeast(Breakpoint.MD),
-                        onSignOut = onSignOut
-                    )
+                        .fillMaxHeight()
+                        .width(20.percent)
+                        .flexShrink(0)
+                        .displayIfAtLeast(Breakpoint.MD),
+                    onSignOut = onSignOut
+                )
 
-                    MainContent(mainState = mainState, meViewModel = meViewModel)
-                }
+                MainContent(mainState = mainState, meViewModel = meViewModel)
             }
         }
+    }
 }
