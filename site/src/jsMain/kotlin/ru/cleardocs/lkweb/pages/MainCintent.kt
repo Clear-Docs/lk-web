@@ -403,9 +403,10 @@ private fun AddConnectorBlock(
                 connectorsViewModel = connectorsViewModel,
                 palette = palette
             )
-            ConnectorType.Url -> {
-                SpanText("URL (скоро)", Modifier.fontSize(1.1.cssRem))
-            }
+            ConnectorType.Url -> AddUrlConnectorForm(
+                connectorsViewModel = connectorsViewModel,
+                palette = palette
+            )
         }
     }
 }
@@ -488,6 +489,73 @@ private fun AddFileConnectorForm(
                         if (e is kotlinx.coroutines.CancellationException) throw e
                         isAdding = false
                     }
+                }
+            },
+            enabled = !isAdding
+        )
+    }
+}
+
+@Composable
+private fun AddUrlConnectorForm(
+    connectorsViewModel: ConnectorsViewModel,
+    palette: ru.cleardocs.lkweb.SitePalette
+) {
+    var connectorName by remember { mutableStateOf("") }
+    var connectorUrl by remember { mutableStateOf("") }
+    var isAdding by remember { mutableStateOf(false) }
+    val colorPalette = ColorMode.current.toPalette()
+    val inputBg = colorPalette.background.toString()
+    val inputFg = colorPalette.color.toString()
+    val inputBorder = palette.cobweb.toString()
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .gap(1.cssRem)
+    ) {
+        SpanText("Добавить URL-коннектор", Modifier.fontSize(1.1.cssRem))
+
+        InputLayout(label = "Название") {
+            AuthInput(
+                type = InputType.Text,
+                value = connectorName,
+                placeholder = "Введите название коннектора",
+                onValueChange = { connectorName = it },
+                inputBg = inputBg,
+                inputFg = inputFg,
+                inputBorder = inputBorder,
+                enabled = !isAdding,
+                marginBottom = null
+            )
+        }
+
+        InputLayout(label = "URL") {
+            AuthInput(
+                type = InputType.Text,
+                value = connectorUrl,
+                placeholder = "https://example.com",
+                onValueChange = { connectorUrl = it },
+                inputBg = inputBg,
+                inputFg = inputFg,
+                inputBorder = inputBorder,
+                enabled = !isAdding,
+                marginBottom = null
+            )
+        }
+
+        ActionButton(
+            text = if (isAdding) "Добавление..." else "Добавить",
+            onClick = {
+                val name = connectorName.trim()
+                val url = connectorUrl.trim()
+                if (name.isEmpty() || url.isEmpty()) return@ActionButton
+
+                isAdding = true
+                connectorsViewModel.addUrlConnector(name, url, recursive = true) {
+                    isAdding = false
+                    connectorName = ""
+                    connectorUrl = ""
                 }
             },
             enabled = !isAdding

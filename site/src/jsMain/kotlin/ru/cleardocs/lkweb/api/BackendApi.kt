@@ -4,6 +4,7 @@ import io.ktor.client.call.body
 import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.patch
+import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -18,6 +19,7 @@ import io.ktor.http.isSuccess
 import ru.cleardocs.lkweb.ApiConfig
 import ru.cleardocs.lkweb.api.dto.ChatResponseDto
 import ru.cleardocs.lkweb.api.dto.CreateConnectorResponseDto
+import ru.cleardocs.lkweb.api.dto.CreateUrlConnectorRequestDto
 import ru.cleardocs.lkweb.api.dto.UpdateConnectorRequestDto
 import ru.cleardocs.lkweb.api.dto.GetConnectorsDto
 import ru.cleardocs.lkweb.api.dto.LimitDto
@@ -174,6 +176,30 @@ object BackendApi {
         if (!response.status.isSuccess()) {
             val body = try { response.bodyAsText() } catch (_: Throwable) { "" }
             throw BackendError(response.status.value, body)
+        }
+        return response.body()
+    }
+
+    /**
+     * Создаёт URL-коннектор.
+     * POST /api/v1/connectors/url с Content-Type: application/json.
+     * Ответ: CreateConnectorResponseDto.
+     */
+    suspend fun createUrlConnector(
+        name: String,
+        url: String,
+        recursive: Boolean = true,
+    ): CreateConnectorResponseDto {
+        val token = requireToken()
+        val requestBody = CreateUrlConnectorRequestDto(name = name, url = url, recursive = recursive)
+        val response = client.post("api/v1/connectors/url") {
+            header("Authorization", "Bearer $token")
+            contentType(ContentType.Application.Json)
+            setBody(requestBody)
+        }
+        if (!response.status.isSuccess()) {
+            val errorBody = try { response.bodyAsText() } catch (_: Throwable) { "" }
+            throw BackendError(response.status.value, errorBody)
         }
         return response.body()
     }
