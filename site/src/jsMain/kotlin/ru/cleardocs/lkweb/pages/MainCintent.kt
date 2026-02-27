@@ -381,8 +381,7 @@ private fun AddConnectorBlock(
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .gap(1.25.cssRem)
-                        .padding(top = 0.75.cssRem),
+                        .gap(1.25.cssRem),
                     horizontalArrangement = Arrangement.Start
                 ) {
                     ConnectorTypeCard(
@@ -724,7 +723,7 @@ fun ProfilePage() {
             Modifier
                 .flexGrow(1)
                 .fillMaxWidth()
-                .padding(2.cssRem),
+                .padding(1.cssRem),
             contentAlignment = Alignment.Center
         ) {
             Column(
