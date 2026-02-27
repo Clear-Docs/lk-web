@@ -146,11 +146,16 @@ fun ChatBlock(
                 modifier = Modifier.fillMaxSize().gap(0.75.cssRem),
                 verticalArrangement = Arrangement.Top
             ) {
+                val reasoningColor = when (ColorMode.current) {
+                    ColorMode.LIGHT -> Color.rgb(0x334155)
+                    ColorMode.DARK -> Color.rgb(0xE2E8F0)
+                }
                 messages.forEach { msg ->
                     ChatBubble(
                         message = msg,
                         palette = palette,
                         isUser = msg.role == ChatRole.USER,
+                        reasoningColor = reasoningColor,
                         onCitationClick = { docId, displayName ->
                             val w = window.open("", "_blank")
                             scope.launch {
@@ -264,6 +269,7 @@ private fun ChatBubble(
     message: ChatMessage,
     palette: ru.cleardocs.lkweb.SitePalette,
     isUser: Boolean,
+    reasoningColor: Color,
     onCitationClick: ((documentId: String, displayName: String) -> Unit)? = null,
     onCitationUrlClick: ((url: String) -> Unit)? = null,
 ) {
@@ -294,13 +300,13 @@ private fun ChatBubble(
                                 "Рассуждение",
                                 Modifier
                                     .fontSize(0.7.cssRem)
-                                    .color(palette.cobweb)
+                                    .color(reasoningColor)
                             )
                             Div(
                                 Modifier
                                     .fillMaxWidth()
                                     .fontSize(0.85.cssRem)
-                                    .color(palette.cobweb)
+                                    .color(reasoningColor)
                                     .toAttrs { style { property("white-space", "pre-wrap") } }
                             ) {
                                 Text(message.reasoning)

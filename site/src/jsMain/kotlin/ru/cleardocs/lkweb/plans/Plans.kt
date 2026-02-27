@@ -3,7 +3,9 @@ package ru.cleardocs.lkweb.plans
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.varabyte.kobweb.compose.foundation.layout.Arrangement
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
@@ -12,7 +14,6 @@ import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.compose.ui.graphics.Colors
 import com.varabyte.kobweb.compose.ui.modifiers.color
-import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.components.forms.Button
 import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
@@ -20,6 +21,8 @@ import org.jetbrains.compose.web.css.LineStyle
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Text
+import kotlinx.browser.window
+import ru.cleardocs.lkweb.components.widgets.Toast
 import ru.cleardocs.lkweb.components.widgets.cardSurface
 import ru.cleardocs.lkweb.toSitePalette
 
@@ -51,9 +54,11 @@ fun Plans(currentPlanCode: String? = null) {
 @Composable
 fun PlansList(plans: List<Plan>) {
     val palette = ColorMode.current.toSitePalette()
+    var toastMessage by remember { mutableStateOf<String?>(null) }
     Column(Modifier.fillMaxWidth().gap(1.cssRem)) {
-        plans.forEach { plan -> PlanCard(plan = plan, palette = palette) }
+        plans.forEach { plan -> PlanCard(plan = plan, palette = palette, onSelectClick = { toastMessage = "Функционал в разработке"; window.setTimeout({ toastMessage = null }, 2500) }) }
     }
+    toastMessage?.let { msg -> Toast(message = msg) }
 }
 
 private fun formatPeriod(days: Int): String = when {
@@ -70,7 +75,7 @@ private fun formatPeriod(days: Int): String = when {
 }
 
 @Composable
-private fun PlanCard(plan: Plan, palette: ru.cleardocs.lkweb.SitePalette) {
+private fun PlanCard(plan: Plan, palette: ru.cleardocs.lkweb.SitePalette, onSelectClick: () -> Unit) {
     Column(
         Modifier
             .fillMaxWidth()
@@ -104,16 +109,15 @@ private fun PlanCard(plan: Plan, palette: ru.cleardocs.lkweb.SitePalette) {
         }
         SpanText("Лимит коннекторов: ${plan.limit.maxConnectors}")
         if (!plan.isActive && plan.priceRub > 0) {
-            val ctx = rememberPageContext()
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
                 Button(
-                    onClick = { ctx.router.navigateTo("/profile") },
+                    onClick = onSelectClick,
                     modifier = Modifier.padding(0.25.cssRem)
                 ) {
-                    Text("Выбрать")
+                    Text("Подключить тариф")
                 }
             }
         }

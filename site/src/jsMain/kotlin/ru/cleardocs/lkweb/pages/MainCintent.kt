@@ -693,10 +693,8 @@ private fun ConnectorsContent() {
                 toastMessage?.let { msg ->
                     Toast(message = msg)
                 }
-                val loading by chatCredsViewModel.loading.collectAsState()
                 val error by chatCredsViewModel.error.collectAsState()
                 when {
-                    loading -> SpanText("Загрузка чата...")
                     credentials != null -> ChatBlock(
                         modifier = Modifier.flexGrow(1),
                         personaId = credentials!!.personaId,
