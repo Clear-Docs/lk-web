@@ -15,11 +15,12 @@ import ru.cleardocs.lkweb.SitePalette
 import ru.cleardocs.lkweb.components.layouts.MarkdownStyle
 import com.varabyte.kobweb.silk.components.style.toModifier
 
-private val citationRegex = Regex("""\[\[(\d+)\]\]\(\)""")
+// [[1]]() — файл, [[1]](https://...) — веб-источник (как в Onyx)
+private val citationRegex = Regex("""\[\[(\d+)\]\]\((.*?)\)""")
 
 private sealed class ContentSegment {
     data class Text(val value: String) : ContentSegment()
-    data class Citation(val number: Int) : ContentSegment()
+    data class Citation(val number: Int, val url: String?) : ContentSegment()
 }
 
 private const val CITATION_PLACEHOLDER_PREFIX = "___CIT_"
@@ -35,7 +36,8 @@ private fun parseContent(content: String): List<ContentSegment> {
         if (match.range.first > lastEnd) {
             segments.add(ContentSegment.Text(content.substring(lastEnd, match.range.first)))
         }
-        segments.add(ContentSegment.Citation(match.groupValues[1].toInt()))
+        val url = match.groupValues.getOrNull(2)?.takeIf { it.isNotBlank() }
+        segments.add(ContentSegment.Citation(match.groupValues[1].toInt(), url))
         lastEnd = match.range.last + 1
     }
     if (lastEnd < content.length) {
@@ -52,21 +54,27 @@ private fun escapeHtml(s: String): String = s
     .replace("\"", "&quot;")
     .replace("'", "&#39;")
 
+private fun truncateLabel(text: String, maxLen: Int = 42): String =
+    if (text.length <= maxLen) text else text.take(maxLen) + "…"
+
 private fun buildCitationBadgeHtml(
     displayName: String,
     documentId: String?,
+    url: String?,
     palette: SitePalette,
     isDark: Boolean,
 ): String {
-    // Как в Onyx: для file-источников показываем "File", полное имя — в tooltip
-    val label = "File"
-    val fullTitle = escapeHtml(displayName.ifBlank { "File" })
-    val docIdAttr = documentId?.let { """ data-document-id="${escapeHtml(it)}" data-display-name="${escapeHtml(fullTitle)}" """ } ?: ""
-    val cursor = if (documentId != null) "cursor:pointer;" else ""
+    // Как в Onyx: pill-бейдж, tooltip с полным названием. URL из [[N]](url) приоритетнее documentId
+    val fullTitle = displayName.ifBlank { (url ?: "Источник") }
+    val label = truncateLabel(fullTitle)
+    val docIdAttr = if (url == null) documentId?.let { """ data-document-id="${escapeHtml(it)}" data-display-name="${escapeHtml(fullTitle)}" """ } ?: "" else ""
+    val urlAttr = url?.let { """ data-citation-url="${escapeHtml(it)}" """ } ?: ""
+    val cursor = if (documentId != null || url != null) "cursor:pointer;" else ""
     val bgColor = palette.brand.primary.toString()
     val textColor = "#FFFFFF"
     val shadow = if (isDark) "0 0 0 1px rgba(255,255,255,0.15)" else "0 0 0 1px rgba(59,130,246,0.25)"
-    return """<span class="chat-citation-badge"$docIdAttr style="display:inline-flex;align-items:center;margin-left:0.25rem;margin-right:0.15rem;border-radius:0.5rem;padding:0.15rem 0.5rem;font-size:0.75rem;font-weight:500;color:$textColor;background:$bgColor;box-shadow:$shadow;vertical-align:middle;white-space:nowrap;$cursor" title="$fullTitle">$label</span>"""
+    val titleAttr = """ title="${escapeHtml(fullTitle)}" """
+    return """<span class="chat-citation-badge"$docIdAttr$urlAttr style="display:inline-flex;align-items:center;margin-left:0.25rem;margin-right:0.15rem;border-radius:0.5rem;padding:0.15rem 0.5rem;font-size:0.75rem;font-weight:500;color:$textColor;background:$bgColor;box-shadow:$shadow;vertical-align:middle;white-space:nowrap;$cursor"$titleAttr>$label</span>"""
 }
 
 private fun buildFullHtml(
@@ -84,11 +92,13 @@ private fun buildFullHtml(
             is ContentSegment.Text -> sb.append(segment.value)
             is ContentSegment.Citation -> {
                 val placeholder = "$CITATION_PLACEHOLDER_PREFIX${segment.number}$CITATION_PLACEHOLDER_SUFFIX"
+                val displayName = citations[segment.number] ?: segment.url ?: "Источник"
                 placeholderToBadge[placeholder] = buildCitationBadgeHtml(
-                    citations[segment.number] ?: "File",
-                    citationDocumentIds[segment.number],
-                    palette,
-                    isDark,
+                    displayName = displayName,
+                    documentId = citationDocumentIds[segment.number],
+                    url = segment.url,
+                    palette = palette,
+                    isDark = isDark,
                 )
                 sb.append(placeholder)
             }
@@ -102,8 +112,9 @@ private fun buildFullHtml(
 }
 
 /**
- * Рендерит содержимое сообщения чата: markdown + инлайн-цитаты как бейджи.
- * При клике на цитату с documentId вызывается [onCitationClick].
+ * Рендерит содержимое сообщения чата: markdown + инлайн-цитаты как бейджи (как в Onyx).
+ * [[1]]() — файл: клик загружает через Onyx API.
+ * [[1]](url) — веб: клик открывает URL в новой вкладке.
  */
 @Composable
 fun ChatMessageRenderer(
@@ -113,6 +124,7 @@ fun ChatMessageRenderer(
     palette: SitePalette,
     modifier: Modifier = Modifier,
     onCitationClick: ((documentId: String, displayName: String) -> Unit)? = null,
+    onCitationUrlClick: ((url: String) -> Unit)? = null,
 ) {
     val isDark = com.varabyte.kobweb.silk.theme.colors.ColorMode.current == com.varabyte.kobweb.silk.theme.colors.ColorMode.DARK
     val fullHtml = remember(content, citations, citationDocumentIds, palette, isDark) {
@@ -120,20 +132,30 @@ fun ChatMessageRenderer(
     }
     val ref = remember { mutableStateOf<org.w3c.dom.HTMLDivElement?>(null) }
 
-    DisposableEffect(ref.value, onCitationClick) {
+    DisposableEffect(ref.value, onCitationClick, onCitationUrlClick) {
         val el = ref.value
-        val callback = onCitationClick
-        if (el != null && callback != null) {
+        val fileCb = onCitationClick
+        val urlCb = onCitationUrlClick
+        if (el != null && (fileCb != null || urlCb != null)) {
             val handler: (Event) -> Unit = { ev ->
                 var target: Element? = ev.target?.unsafeCast<Element>()
                 while (target != null && target != el) {
                     val docId = target.getAttribute("data-document-id")
-                    if (docId != null) {
-                        val displayName = target.getAttribute("data-display-name") ?: "File"
-                        ev.preventDefault()
-                        ev.stopPropagation()
-                        callback(docId, displayName)
-                        break
+                    val citationUrl = target.getAttribute("data-citation-url")
+                    when {
+                        docId != null && fileCb != null -> {
+                            val displayName = target.getAttribute("data-display-name") ?: "File"
+                            ev.preventDefault()
+                            ev.stopPropagation()
+                            fileCb(docId, displayName)
+                            break
+                        }
+                        citationUrl != null && urlCb != null -> {
+                            ev.preventDefault()
+                            ev.stopPropagation()
+                            urlCb(citationUrl)
+                            break
+                        }
                     }
                     target = target.parentElement
                 }

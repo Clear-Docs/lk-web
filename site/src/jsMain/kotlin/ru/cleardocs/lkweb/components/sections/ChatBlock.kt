@@ -166,6 +166,7 @@ fun ChatBlock(
                                 }
                             }
                         },
+                        onCitationUrlClick = { url -> window.open(url, "_blank") },
                     )
                 }
             }
@@ -264,6 +265,7 @@ private fun ChatBubble(
     palette: ru.cleardocs.lkweb.SitePalette,
     isUser: Boolean,
     onCitationClick: ((documentId: String, displayName: String) -> Unit)? = null,
+    onCitationUrlClick: ((url: String) -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -286,6 +288,7 @@ private fun ChatBubble(
                         palette = palette,
                         modifier = Modifier.fillMaxWidth(),
                         onCitationClick = onCitationClick,
+                        onCitationUrlClick = onCitationUrlClick,
                     )
                 } else if (message.isLoading) {
                     Span(
