@@ -18,6 +18,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.flexGrow
 import com.varabyte.kobweb.compose.ui.modifiers.flexShrink
 import com.varabyte.kobweb.compose.ui.modifiers.fontSize
 import com.varabyte.kobweb.compose.ui.modifiers.gap
+import com.varabyte.kobweb.compose.ui.modifiers.minHeight
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.compose.ui.graphics.Color
@@ -66,10 +67,12 @@ import ru.cleardocs.lkweb.connectors.Connector
 import ru.cleardocs.lkweb.connectors.ConnectorsViewState
 import ru.cleardocs.lkweb.connectors.ConnectorsViewState.ConnectorsData
 import ru.cleardocs.lkweb.connectors.ConnectorsViewModel
+import ru.cleardocs.lkweb.plans.Plans
 import ru.cleardocs.lkweb.profile.MeViewModel
 import ru.cleardocs.lkweb.profile.ProfileAuthState
 import ru.cleardocs.lkweb.toSitePalette
 import ru.cleardocs.lkweb.utils.requireProfileAuthRedirect
+import ru.cleardocs.lkweb.ActionButtonVariant
 import ru.cleardocs.lkweb.di.kodein
 import ru.cleardocs.lkweb.pages.MenuViewModel
 import org.kodein.di.instance
@@ -80,6 +83,25 @@ private fun MainContent(mainState: MainViewState, meViewModel: MeViewModel) {
     when (mainState) {
         MainViewState.Profile -> ProfileContent(meViewModel = meViewModel)
         MainViewState.Connectors -> ConnectorsContent()
+        MainViewState.Plans -> PlansContent(meViewModel = meViewModel)
+    }
+}
+
+@Composable
+private fun PlansContent(meViewModel: MeViewModel) {
+    val me by meViewModel.me.collectAsState()
+    val currentPlanCode = me?.plan?.code
+    val palette = ColorMode.current.toSitePalette()
+
+    Column(
+        Modifier
+            .flexGrow(1)
+            .fillMaxSize()
+            .gap(1.25.cssRem)
+            .cardSurface(palette),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Plans(currentPlanCode = currentPlanCode)
     }
 }
 
@@ -204,6 +226,7 @@ private fun ConnectorItem(
     Row(
         Modifier
             .fillMaxWidth()
+            .minHeight(3.cssRem)
             .padding(topBottom = 0.5.cssRem, leftRight = 0.75.cssRem)
             .borderRadius(0.5.cssRem)
             .border(1.px, LineStyle.Solid, palette.brand.primary)
@@ -403,16 +426,18 @@ private fun ConnectorsContent() {
                         onResume = { id -> connectorsViewModel.setConnectorStatus(id, "ACTIVE") },
                     )
                 }
-                ActionButton(
-                    text = "Перейти в чат",
-                    onClick = { connectorsViewModel.goToChat() },
-                    enabled = s.connectors.isNotEmpty()
-                )
-                if (s.canAdd) {
+                Row(Modifier.gap(1.cssRem)) {
                     ActionButton(
-                        text = "Добавить коннектор",
-                        onClick = { connectorsViewModel.goToAddFile() },
+                        text = "Перейти в чат",
+                        onClick = { connectorsViewModel.goToChat() },
+                        enabled = s.connectors.isNotEmpty()
                     )
+                    if (s.canAdd) {
+                        ActionButton(
+                            text = "Добавить коннектор",
+                            onClick = { connectorsViewModel.goToAddFile() },
+                        )
+                    }
                 }
             }
             is ConnectorsData.AddFile -> Column(
@@ -451,12 +476,12 @@ private fun ConnectorsContent() {
                     )
                     Box(Modifier.flexGrow(1))
                     credentials?.let {
+                        val shareUrl =
+                            "https://lk.cleardocs.ru/chat?apiKey=${it.apiKey}&personaId=${it.personaId}"
                         ActionButton(
                             text = "Поделиться",
                             onClick = {
-                                val url =
-                                    "https://lk.cleardocs.ru/chat?apiKey=${it.apiKey}&personaId=${it.personaId}"
-                                window.navigator.clipboard.writeText(url)
+                                window.navigator.clipboard.writeText(shareUrl)
                                     .then {
                                         toastMessage = "Скопировано в буфер обмена"
                                         window.setTimeout({ toastMessage = null }, 2500)
@@ -466,6 +491,20 @@ private fun ConnectorsContent() {
                                     }
                             }
                         )
+                        Button(
+                            onClick = { window.open(shareUrl, "_blank") },
+                            variant = ActionButtonVariant
+                        ) {
+                            Img(
+                                src = "/run-above.svg",
+                                alt = "Открыть в новой вкладке"
+                            ) {
+                                style {
+                                    property("width", "1.25rem")
+                                    property("height", "1.25rem")
+                                }
+                            }
+                        }
                     }
                 }
                 toastMessage?.let { msg ->

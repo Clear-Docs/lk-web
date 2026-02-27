@@ -6,6 +6,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import com.varabyte.kobweb.compose.foundation.layout.Arrangement
 import com.varabyte.kobweb.compose.foundation.layout.Box
@@ -49,7 +50,9 @@ import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
+import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.css.percent
+import ru.cleardocs.lkweb.api.ChatApi
 import ru.cleardocs.lkweb.chat.ChatMessage
 import ru.cleardocs.lkweb.chat.ChatMessageRenderer
 import ru.cleardocs.lkweb.chat.ChatRole
@@ -81,6 +84,7 @@ fun ChatBlock(
     val inputBorder = palette.cobweb.toString()
 
     var inputText by remember { mutableStateOf("") }
+    val scope = rememberCoroutineScope()
 
     DisposableEffect(Unit) {
         if (document.getElementById("chat-loading-keyframes") == null) {
@@ -146,6 +150,13 @@ fun ChatBlock(
                         message = msg,
                         palette = palette,
                         isUser = msg.role == ChatRole.USER,
+                        onCitationClick = { docId, displayName ->
+                            scope.launch {
+                                try {
+                                    ChatApi.openFileInNewTab(docId, displayName, apiKey)
+                                } catch (_: Throwable) { }
+                            }
+                        },
                     )
                 }
             }
@@ -243,6 +254,7 @@ private fun ChatBubble(
     message: ChatMessage,
     palette: ru.cleardocs.lkweb.SitePalette,
     isUser: Boolean,
+    onCitationClick: ((documentId: String, displayName: String) -> Unit)? = null,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -254,15 +266,17 @@ private fun ChatBubble(
                     Modifier.backgroundColor(palette.brand.primary.toRgb().copyf(alpha = 0.15f))
                 }
                 .padding(0.75.cssRem)
-                .borderRadius(0.6.cssRem)
+                .borderRadius(topLeft = 1.cssRem, bottomLeft = 1.cssRem, topRight = 1.cssRem)
         ) {
             Column {
                 if (message.content.isNotEmpty()) {
                     ChatMessageRenderer(
                         content = message.content,
                         citations = message.citations,
+                        citationDocumentIds = message.citationDocumentIds,
                         palette = palette,
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        onCitationClick = onCitationClick,
                     )
                 } else if (message.isLoading) {
                     Span(

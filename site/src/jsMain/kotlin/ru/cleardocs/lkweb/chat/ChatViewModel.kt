@@ -99,6 +99,7 @@ class ChatViewModel(
                             content = fullText.ifBlank { "(Пустой ответ)" },
                             isLoading = false,
                             citations = citations,
+                            citationDocumentIds = citationToDocId,
                         )
                     } else list
                 }

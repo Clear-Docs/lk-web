@@ -11,7 +11,8 @@ class MenuViewModel {
 
     val menuEntries: List<Pair<MainViewState, String>> = listOf(
         MainViewState.Connectors to "Коннекторы",
-        MainViewState.Profile to "Профиль"
+        MainViewState.Profile to "Профиль",
+        MainViewState.Plans to "Тарифы"
     )
 
     fun selectState(state: MainViewState) {

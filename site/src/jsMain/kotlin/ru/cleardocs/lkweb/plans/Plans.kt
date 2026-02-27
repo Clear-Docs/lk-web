@@ -56,6 +56,19 @@ fun PlansList(plans: List<Plan>) {
     }
 }
 
+private fun formatPeriod(days: Int): String = when {
+    days == 365 -> "1 год"
+    days % 30 == 0 -> {
+        val months = days / 30
+        when {
+            months == 1 -> "1 месяц"
+            months in 2..4 -> "$months месяца"
+            else -> "$months месяцев"
+        }
+    }
+    else -> "$days дн."
+}
+
 @Composable
 private fun PlanCard(plan: Plan, palette: ru.cleardocs.lkweb.SitePalette) {
     Column(
@@ -87,10 +100,10 @@ private fun PlanCard(plan: Plan, palette: ru.cleardocs.lkweb.SitePalette) {
         }
         SpanText("Цена: ${plan.priceRub} ₽")
         if (plan.periodDays > 0) {
-            SpanText("Период: ${plan.periodDays} дн.")
+            SpanText("Период: ${formatPeriod(plan.periodDays)}")
         }
         SpanText("Лимит коннекторов: ${plan.limit.maxConnectors}")
-        if (!plan.isActive) {
+        if (!plan.isActive && plan.priceRub > 0) {
             val ctx = rememberPageContext()
             Row(
                 modifier = Modifier.fillMaxWidth(),

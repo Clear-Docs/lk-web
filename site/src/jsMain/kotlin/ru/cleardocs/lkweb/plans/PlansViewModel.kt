@@ -1,17 +1,25 @@
 package ru.cleardocs.lkweb.plans
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import ru.cleardocs.lkweb.api.BackendApi
-import ru.cleardocs.lkweb.api.dto.PlanDto
 
 class PlansViewModel(
     /** Код текущего тарифа пользователя — от него зависит [Plan.isActive]. */
     private val currentPlanCode: String? = null,
+    private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main),
 ) {
 
     private val _plans = MutableStateFlow<List<Plan>>(emptyList())
+
+    init {
+        scope.launch { loadPlans() }
+    }
     val plans: StateFlow<List<Plan>> = _plans.asStateFlow()
 
     private val _loading = MutableStateFlow(false)
