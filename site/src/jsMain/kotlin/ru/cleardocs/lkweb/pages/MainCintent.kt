@@ -229,7 +229,7 @@ private fun ConnectorItem(
     val statusUpper = connector.status?.uppercase()
     val iconSrc = when (connector.type.uppercase()) {
         "URL" -> "/globe-icon.svg"
-        "1C" -> "/1c-icon.png"
+        "1C" -> "/1c.png"
         else -> "/file-icon.svg"
     }
     val itemBg = when (ColorMode.current) {
@@ -422,7 +422,7 @@ private fun AddConnectorBlock(
                         onClick = { selectedType = ConnectorType.File }
                     )
                     ConnectorTypeCard(
-                        iconSrc = "/1c-icon.png",
+                        iconSrc = "/1c.png",
                         label = "1С",
                         palette = palette,
                         onClick = {},
