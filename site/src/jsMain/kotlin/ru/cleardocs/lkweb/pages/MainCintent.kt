@@ -241,7 +241,7 @@ private fun ConnectorItem(
             .padding(1.25.cssRem)
             .borderRadius(0.75.cssRem)
             .backgroundColor(itemBg)
-            .boxShadow(1.px, 1.px, 8.px, color = Colors.Black.toRgb().copyf(alpha = 0.1f))
+            .boxShadow(2.px, 2.px, 8.px, color = palette.brand.primary.toRgb().copyf(alpha = 0.12f))
             .gap(0.75.cssRem),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -336,7 +336,7 @@ private fun ConnectorTypeCard(
                 property("min-height", "6rem")
                 property("border-radius", "0.75rem")
                 property("background", cardBg)
-                property("box-shadow", "2px 2px 8px rgba(0,0,0,0.1)")
+                property("box-shadow", "2px 2px 8px ${palette.brand.primary.toRgb().copyf(alpha = 0.12f)}")
                 property("transition", "box-shadow 0.2s ease")
             }
             onClick { onClick() }
