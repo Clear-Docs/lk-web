@@ -44,7 +44,6 @@ fun ChatPage() {
         .fillMaxSize()
         .width(100.vw)
         .minHeight(100.vh)
-        .padding(1.cssRem)
         .background(palette.nearBackground)
 
     when {
@@ -53,10 +52,6 @@ fun ChatPage() {
             personaId = personaIdFromUrl,
             apiKey = apiKeyFromUrl,
         )
-
-        loading -> Box(Modifier.fillMaxSize().fillMaxWidth().width(100.vw)) {
-            SpanText("Загрузка чата...", modifier = Modifier.padding(2.cssRem))
-        }
     }
     credentials?.let {
         ChatBlock(

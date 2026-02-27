@@ -631,7 +631,7 @@ private fun ConnectorsContent() {
                     .flexGrow(1)
                     .padding(top = 1.5.cssRem)
                     .borderRadius(0.6.cssRem)
-                    .padding(1.cssRem)
+                    .gap(1.cssRem)
                     .backgroundColor(palette.nearBackground)
             ) {
                 val chatCredsViewModel = remember { ChatCredentialsViewModel() }
