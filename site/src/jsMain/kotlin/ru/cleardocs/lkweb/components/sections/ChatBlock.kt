@@ -94,8 +94,8 @@ fun ChatBlock(
                 document.createTextNode(
                     """
                     @keyframes chat-dots-pulse {
-                        0%, 100% { opacity: 0.35; }
-                        50% { opacity: 1; }
+                        0%, 100% { opacity: 0.65; filter: brightness(0.9); }
+                        50% { opacity: 1; filter: brightness(1.2); }
                     }
                 """.trimIndent()
                 )
