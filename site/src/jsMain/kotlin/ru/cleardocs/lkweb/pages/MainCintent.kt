@@ -227,30 +227,48 @@ private fun ConnectorItem(
 ) {
     val textColor = ColorMode.current.toPalette().color
     val statusUpper = connector.status?.uppercase()
+    val iconSrc = when (connector.type.uppercase()) {
+        "URL" -> "/globe-icon.svg"
+        else -> "/file-icon.svg"
+    }
+    val itemBg = when (ColorMode.current) {
+        ColorMode.LIGHT -> Colors.White
+        ColorMode.DARK -> palette.nearBackground
+    }
     Row(
         Modifier
             .fillMaxWidth()
-            .minHeight(3.cssRem)
-            .padding(topBottom = 0.5.cssRem, leftRight = 0.75.cssRem)
-            .borderRadius(0.5.cssRem)
-            .border(1.px, LineStyle.Solid, palette.brand.primary)
-            .backgroundColor(palette.nearBackground)
-            .color(textColor)
-            .gap(0.5.cssRem),
+            .padding(1.25.cssRem)
+            .borderRadius(0.75.cssRem)
+            .backgroundColor(itemBg)
+            .boxShadow(1.px, 1.px, 8.px, color = Colors.Black.toRgb().copyf(alpha = 0.1f))
+            .gap(0.75.cssRem),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Img(
-            src = "/file-icon.svg",
-            alt = "",
+            src = iconSrc,
+            alt = connector.name,
             attrs = {
                 style {
-                    property("width", "1.125rem")
-                    property("height", "1.125rem")
+                    property("width", "2rem")
+                    property("height", "2rem")
+                    property("object-fit", "contain")
                     property("flex-shrink", "0")
                 }
             }
         )
-        SpanText(connector.name, Modifier.flexGrow(1))
+        Div(
+            attrs = {
+                style {
+                    property("flex-grow", "1")
+                    property("overflow", "hidden")
+                    property("text-overflow", "ellipsis")
+                    property("min-width", "0")
+                }
+            }
+        ) {
+            SpanText(connector.name, Modifier.color(textColor).fontSize(1.cssRem))
+        }
         ConnectorStatusBadge(connector.status, Modifier.flexShrink(0))
         ConnectorStatusButtons(
             connectorId = connector.id,
@@ -270,16 +288,10 @@ private fun ConnectorsList(
     onResume: (String) -> Unit,
 ) {
     val palette = ColorMode.current.toSitePalette()
-    Div(
+    Column(
         Modifier
             .fillMaxWidth()
-            .toAttrs {
-                style {
-                    property("display", "flex")
-                    property("flex-wrap", "wrap")
-                    property("gap", "0.5rem")
-                }
-            }
+            .gap(1.25.cssRem)
     ) {
         connectors.forEach { c ->
             ConnectorItem(
