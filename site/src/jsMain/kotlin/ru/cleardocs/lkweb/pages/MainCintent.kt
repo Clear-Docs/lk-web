@@ -450,7 +450,7 @@ private fun AddConnectorBlock(
                         onClick = { selectedType = ConnectorType.File }
                     )
                     ConnectorTypeCard(
-                        iconSrc = "/1c.svg",
+                        iconSrc = "/1c.png",
                         label = "1С",
                         palette = palette,
                         onClick = {},
@@ -488,8 +488,9 @@ private fun AddConnectorBlock(
                     "Bitbucket" to "https://cdn.simpleicons.org/bitbucket/0052CC",
                 ))
                 connectorCategory("Облачное хранилище", palette, listOf(
+                    "Yandex Cloud" to "https://storage.yandexcloud.net/cloud-www-assets/region-assets/ru/light/mobile/logo.svg",
                     "OCI" to "/oci-icon.svg",
-                    "Dropbox" to "/dropbox-icon.png",
+                    "Dropbox" to "/dropbox-icon.svg",
                     "S3" to "/s3-icon.png",
                     "R2" to "/r2-icon.png",
                 ))
