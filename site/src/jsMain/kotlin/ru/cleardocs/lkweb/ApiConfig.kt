@@ -49,4 +49,12 @@ object ApiConfig {
             header("Accept", "application/json")
         }
     }
+
+    /** HttpClient для Onyx API (файлы, стрим чата). */
+    fun createOnyxHttpClient(): HttpClient = HttpClient(Js) {
+        defaultRequest {
+            url(onyxBaseUrl)
+            header("Accept", "*/*")
+        }
+    }
 }

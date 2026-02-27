@@ -120,6 +120,11 @@ class ChatViewModel(
         }
     }
 
+    /** Показать сообщение об ошибке (например, при загрузке файла). */
+    fun showError(message: String) {
+        _error.value = message
+    }
+
     /**
      * Сброс сессии и истории.
      */

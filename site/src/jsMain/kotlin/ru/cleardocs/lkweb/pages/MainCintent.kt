@@ -1,6 +1,7 @@
 package ru.cleardocs.lkweb.pages
 
 import androidx.compose.runtime.*
+import com.varabyte.kobweb.compose.foundation.layout.Arrangement
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
@@ -17,8 +18,10 @@ import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.flexGrow
 import com.varabyte.kobweb.compose.ui.modifiers.flexShrink
 import com.varabyte.kobweb.compose.ui.modifiers.fontSize
+import com.varabyte.kobweb.compose.ui.modifiers.boxShadow
 import com.varabyte.kobweb.compose.ui.modifiers.gap
 import com.varabyte.kobweb.compose.ui.modifiers.minHeight
+import com.varabyte.kobweb.compose.ui.modifiers.onClick
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.compose.ui.graphics.Color
@@ -64,6 +67,7 @@ import ru.cleardocs.lkweb.components.sections.ProfileBlock
 import ru.cleardocs.lkweb.components.sections.ProfileMenu
 import ru.cleardocs.lkweb.firebase.signOut
 import ru.cleardocs.lkweb.connectors.Connector
+import ru.cleardocs.lkweb.connectors.ConnectorType
 import ru.cleardocs.lkweb.connectors.ConnectorsViewState
 import ru.cleardocs.lkweb.connectors.ConnectorsViewState.ConnectorsData
 import ru.cleardocs.lkweb.connectors.ConnectorsViewModel
@@ -295,9 +299,121 @@ private fun NoConnectorsMessage() {
 }
 
 @Composable
-private fun AddFileConnectorBlock(
+private fun ConnectorTypeCard(
+    iconSrc: String,
+    label: String,
+    palette: ru.cleardocs.lkweb.SitePalette,
+    onClick: () -> Unit
+) {
+    val textColor = ColorMode.current.toPalette().color
+    val cardBg = when (ColorMode.current) {
+        ColorMode.LIGHT -> "white"
+        ColorMode.DARK -> palette.nearBackground.toString()
+    }
+    Div(
+        attrs = {
+            style {
+                property("cursor", "pointer")
+                property("display", "flex")
+                property("flex-direction", "column")
+                property("align-items", "center")
+                property("justify-content", "center")
+                property("gap", "0.75rem")
+                property("padding", "1.25rem")
+                property("width", "7rem")
+                property("min-height", "6rem")
+                property("border-radius", "0.75rem")
+                property("background", cardBg)
+                property("box-shadow", "2px 2px 8px rgba(0,0,0,0.1)")
+                property("transition", "box-shadow 0.2s ease")
+            }
+            onClick { onClick() }
+        }
+    ) {
+        Img(
+            src = iconSrc,
+            alt = label,
+            attrs = {
+                style {
+                    property("width", "2rem")
+                    property("height", "2rem")
+                    property("object-fit", "contain")
+                }
+            }
+        )
+        SpanText(label, Modifier.color(textColor).fontSize(1.cssRem))
+    }
+}
+
+@Composable
+private fun AddConnectorBlock(
     connectorsViewModel: ConnectorsViewModel,
     onBack: () -> Unit,
+    palette: ru.cleardocs.lkweb.SitePalette
+) {
+    var selectedType by remember { mutableStateOf<ConnectorType?>(null) }
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .gap(1.cssRem)
+    ) {
+        Row(
+            Modifier.fillMaxWidth().gap(0.5.cssRem),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            ActionButton(
+                text = "Назад",
+                onClick = {
+                    if (selectedType == null) {
+                        onBack()
+                    } else {
+                        selectedType = null
+                    }
+                },
+                enabled = true
+            )
+        }
+
+        when (selectedType) {
+            null -> {
+                SpanText("Выберите тип коннектора", Modifier.fontSize(1.1.cssRem))
+                Row(
+                    Modifier
+                        .fillMaxWidth()
+                        .gap(1.25.cssRem)
+                        .padding(top = 0.75.cssRem),
+                    horizontalArrangement = Arrangement.Start
+                ) {
+                    ConnectorTypeCard(
+                        iconSrc = "/globe-icon.svg",
+                        label = "Web",
+                        palette = palette,
+                        onClick = { selectedType = ConnectorType.Url }
+                    )
+                    ConnectorTypeCard(
+                        iconSrc = "/file-icon.svg",
+                        label = "Файл",
+                        palette = palette,
+                        onClick = { selectedType = ConnectorType.File }
+                    )
+                }
+            }
+            ConnectorType.File -> AddFileConnectorForm(
+                connectorsViewModel = connectorsViewModel,
+                palette = palette
+            )
+            ConnectorType.Url -> AddUrlConnectorForm(
+                connectorsViewModel = connectorsViewModel,
+                palette = palette
+            )
+        }
+    }
+}
+
+@Composable
+private fun AddFileConnectorForm(
+    connectorsViewModel: ConnectorsViewModel,
     palette: ru.cleardocs.lkweb.SitePalette
 ) {
     var connectorName by remember { mutableStateOf("") }
@@ -313,17 +429,6 @@ private fun AddFileConnectorBlock(
             .fillMaxWidth()
             .gap(1.cssRem)
     ) {
-        Row(
-            Modifier.fillMaxWidth().gap(0.5.cssRem),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ActionButton(
-                text = "Назад",
-                onClick = onBack,
-                enabled = !isAdding
-            )
-        }
-
         SpanText("Добавить файловый коннектор", Modifier.fontSize(1.1.cssRem))
 
         InputLayout(label = "Название") {
@@ -392,6 +497,73 @@ private fun AddFileConnectorBlock(
 }
 
 @Composable
+private fun AddUrlConnectorForm(
+    connectorsViewModel: ConnectorsViewModel,
+    palette: ru.cleardocs.lkweb.SitePalette
+) {
+    var connectorName by remember { mutableStateOf("") }
+    var connectorUrl by remember { mutableStateOf("") }
+    var isAdding by remember { mutableStateOf(false) }
+    val colorPalette = ColorMode.current.toPalette()
+    val inputBg = colorPalette.background.toString()
+    val inputFg = colorPalette.color.toString()
+    val inputBorder = palette.cobweb.toString()
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .gap(1.cssRem)
+    ) {
+        SpanText("Добавить URL-коннектор", Modifier.fontSize(1.1.cssRem))
+
+        InputLayout(label = "Название") {
+            AuthInput(
+                type = InputType.Text,
+                value = connectorName,
+                placeholder = "Введите название коннектора",
+                onValueChange = { connectorName = it },
+                inputBg = inputBg,
+                inputFg = inputFg,
+                inputBorder = inputBorder,
+                enabled = !isAdding,
+                marginBottom = null
+            )
+        }
+
+        InputLayout(label = "URL") {
+            AuthInput(
+                type = InputType.Text,
+                value = connectorUrl,
+                placeholder = "https://example.com",
+                onValueChange = { connectorUrl = it },
+                inputBg = inputBg,
+                inputFg = inputFg,
+                inputBorder = inputBorder,
+                enabled = !isAdding,
+                marginBottom = null
+            )
+        }
+
+        ActionButton(
+            text = if (isAdding) "Добавление..." else "Добавить",
+            onClick = {
+                val name = connectorName.trim()
+                val url = connectorUrl.trim()
+                if (name.isEmpty() || url.isEmpty()) return@ActionButton
+
+                isAdding = true
+                connectorsViewModel.addUrlConnector(name, url, recursive = true) {
+                    isAdding = false
+                    connectorName = ""
+                    connectorUrl = ""
+                }
+            },
+            enabled = !isAdding
+        )
+    }
+}
+
+@Composable
 private fun ConnectorsContent() {
     val connectorsViewModel = remember { ConnectorsViewModel() }
     val state by connectorsViewModel.state.collectAsState()
@@ -435,12 +607,12 @@ private fun ConnectorsContent() {
                     if (s.canAdd) {
                         ActionButton(
                             text = "Добавить коннектор",
-                            onClick = { connectorsViewModel.goToAddFile() },
+                            onClick = { connectorsViewModel.goToAddConnector() },
                         )
                     }
                 }
             }
-            is ConnectorsData.AddFile -> Column(
+            is ConnectorsData.AddConnector -> Column(
                 Modifier
                     .fillMaxWidth()
                     .padding(top = 1.5.cssRem)
@@ -448,7 +620,7 @@ private fun ConnectorsContent() {
                     .padding(1.cssRem)
                     .backgroundColor(palette.nearBackground)
             ) {
-                AddFileConnectorBlock(
+                AddConnectorBlock(
                     connectorsViewModel = connectorsViewModel,
                     onBack = { connectorsViewModel.backToConnectors() },
                     palette = palette

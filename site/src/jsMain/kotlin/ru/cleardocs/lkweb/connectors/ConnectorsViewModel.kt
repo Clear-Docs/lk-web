@@ -33,13 +33,13 @@ class ConnectorsViewModel(
         scope.launch { loadConnectors() }
     }
 
-    fun goToAddFile() {
+    fun goToAddConnector() {
         val current = _state.value
         if (current is ConnectorsViewState.ConnectorsData.Connectors) {
             lastConnectors = current.connectors
             lastCanAdd = current.canAdd
             stopPolling()
-            _state.value = ConnectorsViewState.ConnectorsData.AddFile
+            _state.value = ConnectorsViewState.ConnectorsData.AddConnector
         }
     }
 
@@ -117,7 +117,7 @@ class ConnectorsViewModel(
         lastCanAdd = canAdd
         val current = _state.value
         if (current !is ConnectorsViewState.ConnectorsData.Chat &&
-            current !is ConnectorsViewState.ConnectorsData.AddFile
+            current !is ConnectorsViewState.ConnectorsData.AddConnector
         ) {
             _state.value = ConnectorsViewState.ConnectorsData.Connectors(connectors, canAdd)
         }
@@ -218,8 +218,63 @@ class ConnectorsViewModel(
     }
 
     /**
+     * Создаёт URL-коннектор через POST /api/v1/connectors (JSON).
+     * Запускается в scope ViewModel, чтобы не отменяться при уходе AddConnector-блока из композиции.
+     */
+    fun addUrlConnector(
+        name: String,
+        url: String,
+        recursive: Boolean = true,
+        onComplete: () -> Unit = {},
+    ) {
+        if (name.isBlank()) {
+            _state.value = ConnectorsViewState.Error("Введите название коннектора")
+            return
+        }
+        if (url.isBlank()) {
+            _state.value = ConnectorsViewState.Error("Введите URL")
+            return
+        }
+        scope.launch {
+            try {
+                addUrlConnectorSuspend(name, url.trim(), recursive)
+            } finally {
+                onComplete()
+            }
+        }
+    }
+
+    private suspend fun addUrlConnectorSuspend(
+        name: String,
+        url: String,
+        recursive: Boolean,
+    ) {
+        try {
+            BackendApi.createUrlConnector(name, url, recursive)
+            loadConnectors()
+        } catch (e: Throwable) {
+            val errorMsg = when {
+                e is ru.cleardocs.lkweb.api.BackendError -> when (e.code) {
+                    401 -> "Сессия истекла"
+                    403 -> "Доступ запрещён"
+                    else -> e.message ?: "Ошибка ${e.code}"
+                }
+                e.message?.contains("401") == true -> "Сессия истекла"
+                e.message?.contains("403") == true -> "Доступ запрещён"
+                e.message?.contains("Backend unreachable") == true -> "Сервер недоступен"
+                else -> e.message ?: "Ошибка при добавлении коннектора"
+            }
+            _state.value = if (isUnauthError(errorMsg)) {
+                ConnectorsViewState.GotoAuth
+            } else {
+                ConnectorsViewState.Error(errorMsg)
+            }
+        }
+    }
+
+    /**
      * Создаёт file-коннектор через POST /api/v1/connectors.
-     * Запускается в scope ViewModel, чтобы не отменяться при уходе AddFile-блока из композиции.
+     * Запускается в scope ViewModel, чтобы не отменяться при уходе AddConnector-блока из композиции.
      */
     fun addConnector(
         name: String,

@@ -6,7 +6,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import com.varabyte.kobweb.compose.foundation.layout.Arrangement
 import com.varabyte.kobweb.compose.foundation.layout.Box
@@ -50,7 +49,6 @@ import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
-import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.css.percent
 import ru.cleardocs.lkweb.api.ChatApi
 import ru.cleardocs.lkweb.chat.ChatMessage
@@ -60,6 +58,9 @@ import ru.cleardocs.lkweb.chat.ChatViewModel
 import ru.cleardocs.lkweb.components.widgets.ExpandableChatInput
 import ru.cleardocs.lkweb.toSitePalette
 import kotlinx.browser.document
+import kotlinx.browser.window
+import kotlinx.coroutines.launch
+import androidx.compose.runtime.rememberCoroutineScope
 
 /**
  * Чат с стриминговой подпиской через Flow.
@@ -94,8 +95,8 @@ fun ChatBlock(
                 document.createTextNode(
                     """
                     @keyframes chat-dots-pulse {
-                        0%, 100% { opacity: 0.35; }
-                        50% { opacity: 1; }
+                        0%, 100% { opacity: 0.65; filter: brightness(0.9); }
+                        50% { opacity: 1; filter: brightness(1.2); }
                     }
                 """.trimIndent()
                 )
@@ -151,10 +152,18 @@ fun ChatBlock(
                         palette = palette,
                         isUser = msg.role == ChatRole.USER,
                         onCitationClick = { docId, displayName ->
+                            val w = window.open("", "_blank")
                             scope.launch {
                                 try {
-                                    ChatApi.openFileInNewTab(docId, displayName, apiKey)
-                                } catch (_: Throwable) { }
+                                    if (w != null) {
+                                        ChatApi.openFileInWindow(docId, displayName, apiKey, w)
+                                    } else {
+                                        viewModel.showError("Разрешите всплывающие окна для открытия файла")
+                                    }
+                                } catch (e: Throwable) {
+                                    w?.close()
+                                    viewModel.showError(e.message ?: "Не удалось загрузить файл")
+                                }
                             }
                         },
                     )
