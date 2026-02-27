@@ -22,7 +22,7 @@ import ru.cleardocs.lkweb.SitePalette
  */
 fun Modifier.cardSurface(
     palette: SitePalette,
-    padding: CSSSizeValue<CSSUnit.rem> = 2.cssRem,
+    padding: CSSSizeValue<CSSUnit.rem> = 1.cssRem,
     borderRadius: CSSSizeValue<CSSUnit.rem> = 1.25.cssRem,
 ) = this
     .padding(padding)

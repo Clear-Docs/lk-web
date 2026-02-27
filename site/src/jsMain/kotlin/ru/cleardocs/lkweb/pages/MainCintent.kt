@@ -726,24 +726,18 @@ fun ProfilePage() {
                 .padding(1.cssRem),
             contentAlignment = Alignment.Center
         ) {
-            Column(
-                Modifier
-                    .flexGrow(1)
-                    .fillMaxSize()
-                    .gap(1.cssRem)
-            ) {
                 Row(
                     Modifier
                         .flexGrow(1)
                         .fillMaxSize()
-                        .gap(1.25.cssRem),
+                        .gap(1.cssRem),
                     verticalAlignment = Alignment.Top
                 ) {
                     ProfileMenu(
                         modifier = Modifier
                             .flexGrow(1)
                             .fillMaxHeight()
-                            .width(25.percent)
+                            .width(20.percent)
                             .flexShrink(0)
                             .displayIfAtLeast(Breakpoint.MD),
                         onSignOut = onSignOut
@@ -753,5 +747,4 @@ fun ProfilePage() {
                 }
             }
         }
-    }
 }
