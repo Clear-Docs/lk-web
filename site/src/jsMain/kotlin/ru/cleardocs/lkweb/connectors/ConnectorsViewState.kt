@@ -2,7 +2,8 @@ package ru.cleardocs.lkweb.connectors
 
 enum class ConnectorType {
     File,
-    Url,  // для будущего
+    Url,
+    OneC,  // неактивен, в разработке
 }
 
 sealed interface ConnectorsViewState {

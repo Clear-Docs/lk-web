@@ -229,6 +229,7 @@ private fun ConnectorItem(
     val statusUpper = connector.status?.uppercase()
     val iconSrc = when (connector.type.uppercase()) {
         "URL" -> "/globe-icon.svg"
+        "1C" -> "/1c-icon.png"
         else -> "/file-icon.svg"
     }
     val itemBg = when (ColorMode.current) {
@@ -315,45 +316,57 @@ private fun ConnectorTypeCard(
     iconSrc: String,
     label: String,
     palette: ru.cleardocs.lkweb.SitePalette,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    enabled: Boolean = true,
 ) {
+    var toastMessage by remember { mutableStateOf<String?>(null) }
     val textColor = ColorMode.current.toPalette().color
     val cardBg = when (ColorMode.current) {
         ColorMode.LIGHT -> "white"
         ColorMode.DARK -> palette.nearBackground.toString()
     }
-    Div(
-        attrs = {
-            style {
-                property("cursor", "pointer")
-                property("display", "flex")
-                property("flex-direction", "column")
-                property("align-items", "center")
-                property("justify-content", "center")
-                property("gap", "0.75rem")
-                property("padding", "1.25rem")
-                property("width", "7rem")
-                property("min-height", "6rem")
-                property("border-radius", "0.75rem")
-                property("background", cardBg)
-                property("box-shadow", "2px 2px 8px ${palette.brand.primary.toRgb().copyf(alpha = 0.12f)}")
-                property("transition", "box-shadow 0.2s ease")
-            }
-            onClick { onClick() }
-        }
-    ) {
-        Img(
-            src = iconSrc,
-            alt = label,
+    Box {
+        Div(
             attrs = {
                 style {
-                    property("width", "2rem")
-                    property("height", "2rem")
-                    property("object-fit", "contain")
+                    property("cursor", if (enabled) "pointer" else "default")
+                    property("display", "flex")
+                    property("flex-direction", "column")
+                    property("align-items", "center")
+                    property("justify-content", "center")
+                    property("gap", "0.75rem")
+                    property("padding", "1.25rem")
+                    property("width", "7rem")
+                    property("min-height", "6rem")
+                    property("border-radius", "0.75rem")
+                    property("background", cardBg)
+                    property("box-shadow", "2px 2px 8px ${palette.brand.primary.toRgb().copyf(alpha = 0.12f)}")
+                    property("transition", "box-shadow 0.2s ease")
+                    if (!enabled) property("opacity", "0.6")
+                }
+                onClick {
+                    if (enabled) onClick()
+                    else {
+                        toastMessage = "В разработке"
+                        window.setTimeout({ toastMessage = null }, 2500)
+                    }
                 }
             }
-        )
-        SpanText(label, Modifier.color(textColor).fontSize(1.cssRem))
+        ) {
+            Img(
+                src = iconSrc,
+                alt = label,
+                attrs = {
+                    style {
+                        property("width", "2rem")
+                        property("height", "2rem")
+                        property("object-fit", "contain")
+                    }
+                }
+            )
+            SpanText(label, Modifier.color(textColor).fontSize(1.cssRem))
+        }
+        toastMessage?.let { msg -> Toast(message = msg) }
     }
 }
 
@@ -408,6 +421,13 @@ private fun AddConnectorBlock(
                         palette = palette,
                         onClick = { selectedType = ConnectorType.File }
                     )
+                    ConnectorTypeCard(
+                        iconSrc = "/1c-icon.png",
+                        label = "1С",
+                        palette = palette,
+                        onClick = {},
+                        enabled = false
+                    )
                 }
             }
 
@@ -420,6 +440,8 @@ private fun AddConnectorBlock(
                 connectorsViewModel = connectorsViewModel,
                 palette = palette
             )
+
+            ConnectorType.OneC -> { /* неактивен */ }
         }
     }
 }
