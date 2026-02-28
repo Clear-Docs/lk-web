@@ -58,7 +58,7 @@ private enum class AuthMode {
     SIGN_UP
 }
 
-private val AuthFormWidthStyle by ComponentStyle {
+val AuthFormWidthStyle by ComponentStyle {
     base { Modifier.maxWidth(32.cssRem) }
     Breakpoint.MD { Modifier.width(32.cssRem) }
 }
