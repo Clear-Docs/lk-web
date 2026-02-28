@@ -7,12 +7,38 @@ import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.silk.components.navigation.Link
 import com.varabyte.kobweb.silk.components.navigation.UncoloredLinkVariant
 import com.varabyte.kobweb.silk.components.navigation.UndecoratedLinkVariant
+import com.varabyte.kobweb.silk.components.style.ComponentStyle
+import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
+import com.varabyte.kobweb.silk.components.style.toModifier
+import com.varabyte.kobweb.silk.init.InitSilk
+import com.varabyte.kobweb.silk.init.InitSilkContext
 import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
+import org.jetbrains.compose.web.css.LineStyle
 import org.jetbrains.compose.web.css.cssRem
-import ru.cleardocs.lkweb.components.widgets.cardSurface
+import org.jetbrains.compose.web.css.px
 import ru.cleardocs.lkweb.pages.MainViewState
 import ru.cleardocs.lkweb.toSitePalette
+
+@Suppress("PRIVATE_COMPONENT_STYLE")
+private val ProfileMenuCardColumnStyle by ComponentStyle {
+    base {
+        Modifier.gap(0.75.cssRem)
+    }
+    Breakpoint.MD {
+        val palette = colorMode.toSitePalette()
+        Modifier
+            .padding(1.cssRem)
+            .borderRadius(1.cssRem)
+            .backgroundColor(palette.nearBackground)
+            .border(1.px, LineStyle.Solid, palette.cobweb)
+    }
+}
+
+@InitSilk
+fun registerProfileMenuCardStyle(ctx: InitSilkContext) {
+    ctx.theme.registerComponentStyle(ProfileMenuCardColumnStyle)
+}
 
 /**
  * Карточка меню профиля: заголовок «Меню», список пунктов с подсветкой текущего, пункт «Выйти».
@@ -28,9 +54,7 @@ fun ProfileMenuCard(
 ) {
     val palette = ColorMode.current.toSitePalette()
 
-    val columnModifier = modifier
-        .gap(0.75.cssRem)
-        .cardSurface(palette, padding = 1.cssRem, borderRadius = 1.cssRem)
+    val columnModifier = modifier.then(ProfileMenuCardColumnStyle.toModifier())
 
     Column(columnModifier) {
         SpanText("Меню", Modifier.fontSize(1.05.cssRem))
