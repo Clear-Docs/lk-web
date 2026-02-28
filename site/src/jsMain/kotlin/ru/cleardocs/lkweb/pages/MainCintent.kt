@@ -371,154 +371,85 @@ private fun ConnectorTypeCard(
     }
 }
 
+private val ALL_CONNECTOR_TYPE_CARDS = listOf(
+    Triple("/globe-icon.svg", "Web", ConnectorType.Url),
+    Triple("/file-icon.svg", "Файл", ConnectorType.File),
+    Triple("https://storage.yandexcloud.net/cloud-www-assets/region-assets/ru/light/mobile/logo.svg", "Yandex Cloud", null),
+    Triple("/1c.png", "1С", null),
+    Triple("https://cdn.simpleicons.org/confluence/172B4D", "Confluence", null),
+    Triple("/sharepoint-icon.png", "Sharepoint", null),
+    Triple("https://cdn.simpleicons.org/googledrive/4285F4", "Google Drive", null),
+    Triple("https://cdn.simpleicons.org/jira/0052CC", "Jira", null),
+    Triple("https://cdn.simpleicons.org/zendesk/03363D", "Zendesk", null),
+    Triple("/slack-icon.png", "Slack", null),
+    Triple("/notion-icon.png", "Notion", null),
+    Triple("/salesforce-icon.png", "Salesforce", null),
+    Triple("https://cdn.simpleicons.org/hubspot/FF7A59", "HubSpot", null),
+    Triple("/github-icon.png", "Github", null),
+    Triple("/googlesites-icon.png", "Google Sites", null),
+    Triple("/fireflies-icon.png", "Fireflies", null),
+    Triple("/highspot-icon.png", "Highspot", null),
+    Triple("/loopio-icon.png", "Loopio", null),
+    Triple("/zulip-icon.png", "Zulip", null),
+    Triple("/teams-icon.png", "Microsoft Teams", null),
+    Triple("/discord-icon.png", "Discord", null),
+    Triple("/gmail-icon.png", "Gmail", null),
+    Triple("https://cdn.simpleicons.org/bitbucket/0052CC", "Bitbucket", null),
+    Triple("/oci-icon.svg", "OCI", null),
+    Triple("/dropbox-icon.svg", "Dropbox", null),
+    Triple("/s3-icon.png", "S3", null),
+    Triple("/r2-icon.png", "R2", null),
+    Triple("/xenforo-icon.svg", "XenForo", null),
+    Triple("/wikipedia-icon.png", "Wikipedia", null),
+)
+
 @Composable
-private fun connectorCategory(
-    title: String,
+private fun ConnectorTypeCardsRow(
     palette: ru.cleardocs.lkweb.SitePalette,
-    items: List<Pair<String, String>>
-) {
-    SpanText(title, Modifier.fontSize(1.1.cssRem).padding(top = 1.5.cssRem))
-    Div(
-        attrs = {
-            style {
-                property("display", "flex")
-                property("flex-wrap", "wrap")
-                property("gap", "1rem")
-            }
-        }
-    ) {
-        items.forEach { (label, iconUrl) ->
-            ConnectorTypeCard(
-                iconSrc = iconUrl,
-                label = label,
-                palette = palette,
-                onClick = {},
-                enabled = false
-            )
-        }
-    }
-}
-
-@Composable
-private fun AddConnectorBlock(
+    canAdd: Boolean,
+    selectedType: ConnectorType?,
+    onSelectType: (ConnectorType?) -> Unit,
     connectorsViewModel: ConnectorsViewModel,
-    onBack: () -> Unit,
-    palette: ru.cleardocs.lkweb.SitePalette
 ) {
-    var selectedType by remember { mutableStateOf<ConnectorType?>(null) }
-
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .gap(1.cssRem)
-    ) {
-        Row(
-            Modifier.fillMaxWidth().gap(0.5.cssRem),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ActionButton(
-                text = "Назад",
-                onClick = {
-                    if (selectedType == null) {
-                        onBack()
-                    } else {
-                        selectedType = null
-                    }
-                },
-                enabled = true
-            )
-        }
-
+    Column(Modifier.fillMaxWidth().gap(1.cssRem)) {
         when (selectedType) {
             null -> {
-                SpanText("Выберите тип коннектора", Modifier.fontSize(1.1.cssRem))
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .gap(1.25.cssRem),
-                    horizontalArrangement = Arrangement.Start
+                Div(
+                    attrs = {
+                        style {
+                            property("display", "flex")
+                            property("flex-wrap", "wrap")
+                            property("gap", "1rem")
+                        }
+                    }
                 ) {
-                    ConnectorTypeCard(
-                        iconSrc = "/globe-icon.svg",
-                        label = "Web",
-                        palette = palette,
-                        onClick = { selectedType = ConnectorType.Url }
-                    )
-                    ConnectorTypeCard(
-                        iconSrc = "/file-icon.svg",
-                        label = "Файл",
-                        palette = palette,
-                        onClick = { selectedType = ConnectorType.File }
-                    )
-
-                    ConnectorTypeCard(
-                        iconSrc = "https://storage.yandexcloud.net/cloud-www-assets/region-assets/ru/light/mobile/logo.svg",
-                        label = "Yandex Cloud",
-                        palette = palette,
-                        onClick = {},
-                        enabled = false
-                    )
-
-                    ConnectorTypeCard(
-                        iconSrc = "/1c.png",
-                        label = "1С",
-                        palette = palette,
-                        onClick = {},
-                        enabled = false
-                    )
-
+                    ALL_CONNECTOR_TYPE_CARDS.forEach { (iconSrc, label, type) ->
+                        ConnectorTypeCard(
+                            iconSrc = iconSrc,
+                            label = label,
+                            palette = palette,
+                            onClick = {
+                                if (type != null && canAdd) onSelectType(type)
+                            },
+                            enabled = type != null && canAdd
+                        )
+                    }
                 }
-                connectorCategory("Популярные", palette, listOf(
-                    "Confluence" to "https://cdn.simpleicons.org/confluence/172B4D",
-                    "Sharepoint" to "/sharepoint-icon.png",
-                    "Google Drive" to "https://cdn.simpleicons.org/googledrive/4285F4",
-                    "Jira" to "https://cdn.simpleicons.org/jira/0052CC",
-                    "Zendesk" to "https://cdn.simpleicons.org/zendesk/03363D",
-                    "Slack" to "/slack-icon.png",
-                    "Notion" to "/notion-icon.png",
-                    "Salesforce" to "/salesforce-icon.png",
-                    "HubSpot" to "https://cdn.simpleicons.org/hubspot/FF7A59",
-                    "Github" to "/github-icon.png",
-                    "Google Sites" to "/googlesites-icon.png",
-                ))
-                connectorCategory("Sales", palette, listOf(
-                    "Fireflies" to "/fireflies-icon.png",
-                    "Highspot" to "/highspot-icon.png",
-                    "Loopio" to "/loopio-icon.png",
-                ))
-                connectorCategory("Коммуникации", palette, listOf(
-                    "Zulip" to "/zulip-icon.png",
-                    "Microsoft Teams" to "/teams-icon.png",
-                    "Discord" to "/discord-icon.png",
-                ))
-                connectorCategory("Почта", palette, listOf(
-                    "Gmail" to "/gmail-icon.png",
-                ))
-                connectorCategory("Разработка", palette, listOf(
-                    "Bitbucket" to "https://cdn.simpleicons.org/bitbucket/0052CC",
-                ))
-                connectorCategory("Облачное хранилище", palette, listOf(
-                    "OCI" to "/oci-icon.svg",
-                    "Dropbox" to "/dropbox-icon.svg",
-                    "S3" to "/s3-icon.png",
-                    "R2" to "/r2-icon.png",
-                ))
-                connectorCategory("Форумы и wiki", palette, listOf(
-                    "XenForo" to "/xenforo-icon.svg",
-                    "Wikipedia" to "/wikipedia-icon.png",
-                ))
             }
-
-            ConnectorType.File -> AddFileConnectorForm(
-                connectorsViewModel = connectorsViewModel,
-                palette = palette
-            )
-
-            ConnectorType.Url -> AddUrlConnectorForm(
-                connectorsViewModel = connectorsViewModel,
-                palette = palette
-            )
-
+            ConnectorType.File -> {
+                ActionButton(text = "Назад", onClick = { onSelectType(null) }, enabled = true)
+                AddFileConnectorForm(
+                    connectorsViewModel = connectorsViewModel,
+                    palette = palette
+                )
+            }
+            ConnectorType.Url -> {
+                ActionButton(text = "Назад", onClick = { onSelectType(null) }, enabled = true)
+                AddUrlConnectorForm(
+                    connectorsViewModel = connectorsViewModel,
+                    palette = palette
+                )
+            }
             ConnectorType.OneC -> { /* неактивен */ }
         }
     }
@@ -704,6 +635,7 @@ private fun ConnectorsContent() {
                 SpanText("Ошибка: ${s.message}")
 
             is ConnectorsData.Connectors -> {
+                var selectedType by remember { mutableStateOf<ConnectorType?>(null) }
                 DisposableEffect(Unit) {
                     onDispose { connectorsViewModel.stopPolling() }
                 }
@@ -724,27 +656,13 @@ private fun ConnectorsContent() {
                         onClick = { connectorsViewModel.goToChat() },
                         enabled = s.connectors.isNotEmpty()
                     )
-                    if (s.canAdd) {
-                        ActionButton(
-                            text = "Добавить коннектор",
-                            onClick = { connectorsViewModel.goToAddConnector() },
-                        )
-                    }
                 }
-            }
-
-            is ConnectorsData.AddConnector -> Column(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = 1.5.cssRem)
-                    .borderRadius(0.6.cssRem)
-                    .padding(1.cssRem)
-                    .backgroundColor(palette.nearBackground)
-            ) {
-                AddConnectorBlock(
-                    connectorsViewModel = connectorsViewModel,
-                    onBack = { connectorsViewModel.backToConnectors() },
-                    palette = palette
+                ConnectorTypeCardsRow(
+                    palette = palette,
+                    canAdd = s.canAdd,
+                    selectedType = selectedType,
+                    onSelectType = { selectedType = it },
+                    connectorsViewModel = connectorsViewModel
                 )
             }
 
