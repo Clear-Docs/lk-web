@@ -450,6 +450,15 @@ private fun AddConnectorBlock(
                         palette = palette,
                         onClick = { selectedType = ConnectorType.File }
                     )
+
+                    ConnectorTypeCard(
+                        iconSrc = "https://storage.yandexcloud.net/cloud-www-assets/region-assets/ru/light/mobile/logo.svg",
+                        label = "Yandex Cloud",
+                        palette = palette,
+                        onClick = {},
+                        enabled = false
+                    )
+
                     ConnectorTypeCard(
                         iconSrc = "/1c.png",
                         label = "1С",
@@ -457,6 +466,7 @@ private fun AddConnectorBlock(
                         onClick = {},
                         enabled = false
                     )
+
                 }
                 connectorCategory("Популярные", palette, listOf(
                     "Confluence" to "https://cdn.simpleicons.org/confluence/172B4D",
@@ -468,7 +478,6 @@ private fun AddConnectorBlock(
                     "Notion" to "/notion-icon.png",
                     "Salesforce" to "/salesforce-icon.png",
                     "HubSpot" to "https://cdn.simpleicons.org/hubspot/FF7A59",
-                    "Gong" to "https://cdn.simpleicons.org/gong/22429B",
                     "Github" to "/github-icon.png",
                     "Google Sites" to "/googlesites-icon.png",
                 ))
@@ -484,13 +493,11 @@ private fun AddConnectorBlock(
                 ))
                 connectorCategory("Почта", palette, listOf(
                     "Gmail" to "/gmail-icon.png",
-                    "IMAP" to "https://cdn.simpleicons.org/microsoftoutlook/0078D4",
                 ))
                 connectorCategory("Разработка", palette, listOf(
                     "Bitbucket" to "https://cdn.simpleicons.org/bitbucket/0052CC",
                 ))
                 connectorCategory("Облачное хранилище", palette, listOf(
-                    "Yandex Cloud" to "https://storage.yandexcloud.net/cloud-www-assets/region-assets/ru/light/mobile/logo.svg",
                     "OCI" to "/oci-icon.svg",
                     "Dropbox" to "/dropbox-icon.svg",
                     "S3" to "/s3-icon.png",
