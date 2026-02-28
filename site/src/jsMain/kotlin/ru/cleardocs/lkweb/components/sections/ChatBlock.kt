@@ -120,7 +120,6 @@ fun ChatBlock(
                 .fillMaxWidth()
                 .minHeight(0.px)
                 .padding(0.5.cssRem)
-                .backgroundColor(palette.nearBackground)
                 .overflow(Overflow.Auto)
                 .toAttrs {
                     ref { el ->
@@ -193,7 +192,6 @@ fun ChatBlock(
             modifier = Modifier
                 .fillMaxWidth()
                 .gap(0.5.cssRem)
-                .backgroundColor(palette.nearBackground)
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth().gap(0.5.cssRem),

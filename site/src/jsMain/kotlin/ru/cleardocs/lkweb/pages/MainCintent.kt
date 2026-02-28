@@ -101,8 +101,7 @@ private fun PlansContent(meViewModel: MeViewModel) {
         Modifier
             .flexGrow(1)
             .fillMaxSize()
-            .gap(1.25.cssRem)
-            .cardSurface(palette),
+            .gap(1.25.cssRem),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Plans(currentPlanCode = currentPlanCode)
@@ -121,8 +120,7 @@ private fun ProfileContent(meViewModel: MeViewModel) {
         Modifier
             .flexGrow(1)
             .fillMaxSize()
-            .gap(1.25.cssRem)
-            .cardSurface(palette),
+            .gap(1.25.cssRem),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         SpanText("Профиль", Modifier.fontSize(1.5.cssRem))
@@ -622,8 +620,7 @@ private fun ConnectorsContent() {
         Modifier
             .flexGrow(1)
             .fillMaxSize()
-            .gap(1.25.cssRem)
-            .cardSurface(palette),
+            .gap(1.25.cssRem),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         when (val s = state) {
@@ -673,7 +670,6 @@ private fun ConnectorsContent() {
                     .padding(top = 1.5.cssRem)
                     .borderRadius(0.6.cssRem)
                     .gap(1.cssRem)
-                    .backgroundColor(palette.nearBackground)
             ) {
                 val chatCredsViewModel = remember { ChatCredentialsViewModel() }
                 val credentials by chatCredsViewModel.credentials.collectAsState()
