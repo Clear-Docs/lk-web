@@ -8,22 +8,24 @@ import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.backgroundColor
 import com.varabyte.kobweb.compose.ui.modifiers.border
 import com.varabyte.kobweb.compose.ui.modifiers.borderRadius
+import com.varabyte.kobweb.compose.ui.modifiers.fillMaxSize
+import com.varabyte.kobweb.compose.ui.modifiers.flexGrow
 import com.varabyte.kobweb.compose.ui.modifiers.gap
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import org.jetbrains.compose.web.css.CSSSizeValue
 import org.jetbrains.compose.web.css.CSSUnit
 import org.jetbrains.compose.web.css.LineStyle
-import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
 import ru.cleardocs.lkweb.SitePalette
+import ru.cleardocs.lkweb.SiteTokens
 
 /**
  * Modifier extension for card-like surfaces (background, border, radius, padding).
  */
 fun Modifier.cardSurface(
     palette: SitePalette,
-    padding: CSSSizeValue<CSSUnit.rem> = 1.cssRem,
-    borderRadius: CSSSizeValue<CSSUnit.rem> = 1.25.cssRem,
+    padding: CSSSizeValue<CSSUnit.rem> = SiteTokens.Spacing.lg,
+    borderRadius: CSSSizeValue<CSSUnit.rem> = SiteTokens.Radius.card,
 ) = this
     .padding(padding)
     .borderRadius(borderRadius)
@@ -37,9 +39,9 @@ fun Modifier.cardSurface(
 fun CardSurface(
     modifier: Modifier = Modifier,
     palette: SitePalette,
-    padding: CSSSizeValue<CSSUnit.rem> = 2.cssRem,
-    borderRadius: CSSSizeValue<CSSUnit.rem> = 1.25.cssRem,
-    gap: CSSSizeValue<CSSUnit.rem> = 1.25.cssRem,
+    padding: CSSSizeValue<CSSUnit.rem> = SiteTokens.Spacing.xxl,
+    borderRadius: CSSSizeValue<CSSUnit.rem> = SiteTokens.Radius.card,
+    gap: CSSSizeValue<CSSUnit.rem> = SiteTokens.Spacing.xl,
     horizontalAlignment: Alignment.Horizontal = Alignment.Start,
     content: @Composable ColumnScope.() -> Unit,
 ) {
@@ -47,6 +49,28 @@ fun CardSurface(
         modifier
             .cardSurface(palette, padding, borderRadius)
             .gap(gap),
+        horizontalAlignment = horizontalAlignment,
+        content = content
+    )
+}
+
+/**
+ * Column с card surface для основных контент-блоков (профиль, коннекторы, тарифы).
+ * По умолчанию: flexGrow(1), fillMaxSize(), gap = SiteTokens.Spacing.xl.
+ */
+@Composable
+fun ContentCard(
+    palette: SitePalette,
+    modifier: Modifier = Modifier,
+    horizontalAlignment: Alignment.Horizontal = Alignment.CenterHorizontally,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Column(
+        modifier
+            .flexGrow(1)
+            .fillMaxSize()
+            .gap(SiteTokens.Spacing.xl)
+            .cardSurface(palette),
         horizontalAlignment = horizontalAlignment,
         content = content
     )

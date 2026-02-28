@@ -42,9 +42,7 @@ import com.varabyte.kobweb.silk.components.forms.Button
 import com.varabyte.kobweb.silk.components.style.toModifier
 import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
-import com.varabyte.kobweb.silk.theme.colors.palette.background
-import com.varabyte.kobweb.silk.theme.colors.palette.color
-import com.varabyte.kobweb.silk.theme.colors.palette.toPalette
+import ru.cleardocs.lkweb.rememberInputColors
 import kotlinx.coroutines.launch
 import org.jetbrains.compose.web.attributes.*
 import org.jetbrains.compose.web.css.cssRem
@@ -100,10 +98,7 @@ fun AuthPage() {
     val authState by repository.authStateFlow.collectAsState()
     val ctx = rememberPageContext()
     val palette = ColorMode.current.toSitePalette()
-    val colorPalette = ColorMode.current.toPalette()
-    val inputBg = colorPalette.background.toString()
-    val inputFg = colorPalette.color.toString()
-    val inputBorder = palette.cobweb.toString()
+    val inputColors = rememberInputColors()
     val scope = rememberCoroutineScope()
     var mode by remember { mutableStateOf(AuthMode.SIGN_IN) }
     var email by remember { mutableStateOf("") }
@@ -180,9 +175,9 @@ fun AuthPage() {
                                     value = email,
                                     placeholder = "Email",
                                     onValueChange = { email = it },
-                                    inputBg = inputBg,
-                                    inputFg = inputFg,
-                                    inputBorder = inputBorder,
+                                    inputBg = inputColors.background,
+                                    inputFg = inputColors.foreground,
+                                    inputBorder = inputColors.border,
                                     enabled = !isLoading
                                 )
                             }
@@ -194,9 +189,9 @@ fun AuthPage() {
                                 onValueChange = { password = it },
                                 isPasswordVisible = isPasswordVisible,
                                 onToggleVisibility = { isPasswordVisible = !isPasswordVisible },
-                                inputBg = inputBg,
-                                inputFg = inputFg,
-                                inputBorder = inputBorder,
+                                inputBg = inputColors.background,
+                                inputFg = inputColors.foreground,
+                                inputBorder = inputColors.border,
                                 enabled = !isLoading
                                 )
                             }
@@ -212,9 +207,9 @@ fun AuthPage() {
                                     onValueChange = { confirmPassword = it },
                                     isPasswordVisible = isConfirmPasswordVisible,
                                     onToggleVisibility = { isConfirmPasswordVisible = !isConfirmPasswordVisible },
-                                    inputBg = inputBg,
-                                    inputFg = inputFg,
-                                    inputBorder = inputBorder,
+                                    inputBg = inputColors.background,
+                                    inputFg = inputColors.foreground,
+                                    inputBorder = inputColors.border,
                                     enabled = !isLoading
                                     )
                                 }

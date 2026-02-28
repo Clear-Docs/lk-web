@@ -32,6 +32,7 @@ import org.jetbrains.compose.web.dom.Img
 import org.jetbrains.compose.web.dom.Text
 import ru.cleardocs.lkweb.components.widgets.AuthInput
 import ru.cleardocs.lkweb.components.widgets.InputLayout
+import ru.cleardocs.lkweb.rememberInputColors
 import ru.cleardocs.lkweb.toSitePalette
 
 /**
@@ -45,11 +46,7 @@ fun DisabledChatBlock(
     modifier: Modifier = Modifier,
 ) {
     val palette = ColorMode.current.toSitePalette()
-    val (inputBg, inputFg) = when (ColorMode.current) {
-        ColorMode.LIGHT -> "#FFFFFF" to "#0F172A"
-        ColorMode.DARK -> "#0B1120" to "#FFFFFF"
-    }
-    val inputBorder = palette.cobweb.toString()
+    val inputColors = rememberInputColors()
     var message by remember { mutableStateOf("") }
 
     Box(
@@ -109,9 +106,9 @@ fun DisabledChatBlock(
                         value = message,
                         placeholder = "Введите сообщение...",
                         onValueChange = { message = it },
-                        inputBg = inputBg,
-                        inputFg = inputFg,
-                        inputBorder = inputBorder,
+                        inputBg = inputColors.background,
+                        inputFg = inputColors.foreground,
+                        inputBorder = inputColors.border,
                         enabled = false,
                         marginBottom = null
                     )

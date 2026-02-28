@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import ru.cleardocs.lkweb.api.BackendApi
+import ru.cleardocs.lkweb.utils.isUnauthError
+import ru.cleardocs.lkweb.utils.toUserFriendlyMessage
 
 private const val POLL_INTERVAL_MS = 10_000L
 
@@ -53,12 +55,6 @@ class ConnectorsViewModel(
         pollJob = null
     }
 
-    private fun isUnauthError(error: String): Boolean =
-        error.contains("401") || error.contains("403") ||
-            error.contains("Сессия истекла") || error.contains("Доступ запрещён") ||
-            error.contains("User not authenticated", ignoreCase = true) ||
-            error.contains("не авторизован", ignoreCase = true)
-
     /**
      * Загружает список коннекторов из REST GET /api/v1/connectors.
      * При успехе: если не все ACTIVE — запускает пуллинг раз в 10 сек; когда все ACTIVE — останавливает.
@@ -78,18 +74,8 @@ class ConnectorsViewModel(
             }
             onConnectorsLoaded(connectors, response.canAdd)
         } catch (e: Throwable) {
-            val errorMsg = when {
-                e is ru.cleardocs.lkweb.api.BackendError -> when (e.code) {
-                    401 -> "Сессия истекла"
-                    403 -> "Доступ запрещён"
-                    else -> e.message ?: "Ошибка ${e.code}"
-                }
-                e.message?.contains("401") == true -> "Сессия истекла"
-                e.message?.contains("403") == true -> "Доступ запрещён"
-                e.message?.contains("Backend unreachable") == true -> "Сервер недоступен"
-                else -> e.message ?: "Ошибка загрузки коннекторов"
-            }
-            _state.value = if (isUnauthError(errorMsg)) {
+            val errorMsg = e.toUserFriendlyMessage("Ошибка загрузки коннекторов")
+            _state.value = if (errorMsg.isUnauthError()) {
                 ConnectorsViewState.GotoAuth
             } else {
                 ConnectorsViewState.Error(errorMsg)
@@ -147,18 +133,8 @@ class ConnectorsViewModel(
                 BackendApi.updateConnectorStatus(id, status)
                 loadConnectors()
             } catch (e: Throwable) {
-                val errorMsg = when {
-                    e is ru.cleardocs.lkweb.api.BackendError -> when (e.code) {
-                        401 -> "Сессия истекла"
-                        403 -> "Доступ запрещён"
-                        else -> e.message ?: "Ошибка ${e.code}"
-                    }
-                    e.message?.contains("401") == true -> "Сессия истекла"
-                    e.message?.contains("403") == true -> "Доступ запрещён"
-                    e.message?.contains("Backend unreachable") == true -> "Сервер недоступен"
-                    else -> e.message ?: "Ошибка при изменении статуса коннектора"
-                }
-                _state.value = if (isUnauthError(errorMsg)) {
+                val errorMsg = e.toUserFriendlyMessage("Ошибка при изменении статуса коннектора")
+                _state.value = if (errorMsg.isUnauthError()) {
                     ConnectorsViewState.GotoAuth
                 } else {
                     ConnectorsViewState.Error(errorMsg)
@@ -180,18 +156,8 @@ class ConnectorsViewModel(
                 BackendApi.deleteConnector(id)
                 loadConnectors()
             } catch (e: Throwable) {
-                val errorMsg = when {
-                    e is ru.cleardocs.lkweb.api.BackendError -> when (e.code) {
-                        401 -> "Сессия истекла"
-                        403 -> "Доступ запрещён"
-                        else -> e.message ?: "Ошибка ${e.code}"
-                    }
-                    e.message?.contains("401") == true -> "Сессия истекла"
-                    e.message?.contains("403") == true -> "Доступ запрещён"
-                    e.message?.contains("Backend unreachable") == true -> "Сервер недоступен"
-                    else -> e.message ?: "Ошибка при удалении коннектора"
-                }
-                _state.value = if (isUnauthError(errorMsg)) {
+                val errorMsg = e.toUserFriendlyMessage("Ошибка при удалении коннектора")
+                _state.value = if (errorMsg.isUnauthError()) {
                     ConnectorsViewState.GotoAuth
                 } else {
                     ConnectorsViewState.Error(errorMsg)
@@ -236,18 +202,8 @@ class ConnectorsViewModel(
             BackendApi.createUrlConnector(name, url, recursive)
             loadConnectors()
         } catch (e: Throwable) {
-            val errorMsg = when {
-                e is ru.cleardocs.lkweb.api.BackendError -> when (e.code) {
-                    401 -> "Сессия истекла"
-                    403 -> "Доступ запрещён"
-                    else -> e.message ?: "Ошибка ${e.code}"
-                }
-                e.message?.contains("401") == true -> "Сессия истекла"
-                e.message?.contains("403") == true -> "Доступ запрещён"
-                e.message?.contains("Backend unreachable") == true -> "Сервер недоступен"
-                else -> e.message ?: "Ошибка при добавлении коннектора"
-            }
-            _state.value = if (isUnauthError(errorMsg)) {
+            val errorMsg = e.toUserFriendlyMessage("Ошибка при добавлении коннектора")
+            _state.value = if (errorMsg.isUnauthError()) {
                 ConnectorsViewState.GotoAuth
             } else {
                 ConnectorsViewState.Error(errorMsg)
@@ -287,18 +243,8 @@ class ConnectorsViewModel(
             BackendApi.createFileConnector(name, files, filenames)
             loadConnectors()
         } catch (e: Throwable) {
-            val errorMsg = when {
-                e is ru.cleardocs.lkweb.api.BackendError -> when (e.code) {
-                    401 -> "Сессия истекла"
-                    403 -> "Доступ запрещён"
-                    else -> e.message ?: "Ошибка ${e.code}"
-                }
-                e.message?.contains("401") == true -> "Сессия истекла"
-                e.message?.contains("403") == true -> "Доступ запрещён"
-                e.message?.contains("Backend unreachable") == true -> "Сервер недоступен"
-                else -> e.message ?: "Ошибка при добавлении коннектора"
-            }
-            _state.value = if (isUnauthError(errorMsg)) {
+            val errorMsg = e.toUserFriendlyMessage("Ошибка при добавлении коннектора")
+            _state.value = if (errorMsg.isUnauthError()) {
                 ConnectorsViewState.GotoAuth
             } else {
                 ConnectorsViewState.Error(errorMsg)

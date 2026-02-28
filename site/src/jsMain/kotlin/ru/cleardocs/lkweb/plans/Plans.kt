@@ -21,9 +21,9 @@ import org.jetbrains.compose.web.css.LineStyle
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Text
-import kotlinx.browser.window
-import ru.cleardocs.lkweb.components.widgets.Toast
+import ru.cleardocs.lkweb.components.widgets.rememberTimedToast
 import ru.cleardocs.lkweb.components.widgets.cardSurface
+import ru.cleardocs.lkweb.SiteTokens
 import ru.cleardocs.lkweb.toSitePalette
 
 /**
@@ -37,10 +37,10 @@ fun Plans(currentPlanCode: String? = null) {
     val loading by viewModel.loading.collectAsState()
     val error by viewModel.error.collectAsState()
 
-    Column(Modifier.fillMaxWidth().gap(1.25.cssRem)) {
+    Column(Modifier.fillMaxWidth().gap(SiteTokens.Spacing.xl)) {
         SpanText("Тарифы", Modifier.fontSize(1.5.cssRem))
         when {
-            loading -> SpanText("Загрузка тарифов...")
+            loading -> { }
             error != null -> SpanText("Ошибка: $error")
             plans.isEmpty() -> SpanText("Нет доступных тарифов.")
             else -> PlansList(plans = plans)
@@ -54,11 +54,10 @@ fun Plans(currentPlanCode: String? = null) {
 @Composable
 fun PlansList(plans: List<Plan>) {
     val palette = ColorMode.current.toSitePalette()
-    var toastMessage by remember { mutableStateOf<String?>(null) }
-    Column(Modifier.fillMaxWidth().gap(1.cssRem)) {
-        plans.forEach { plan -> PlanCard(plan = plan, palette = palette, onSelectClick = { toastMessage = "Функционал в разработке"; window.setTimeout({ toastMessage = null }, 2500) }) }
+    val showToast = rememberTimedToast()
+    Column(Modifier.fillMaxWidth().gap(SiteTokens.Spacing.lg)) {
+        plans.forEach { plan -> PlanCard(plan = plan, palette = palette, onSelectClick = { showToast("Функционал в разработке") }) }
     }
-    toastMessage?.let { msg -> Toast(message = msg) }
 }
 
 private fun formatPeriod(days: Int): String = when {
@@ -81,14 +80,14 @@ private fun PlanCard(plan: Plan, palette: ru.cleardocs.lkweb.SitePalette, onSele
             .fillMaxWidth()
             .cardSurface(
                 palette,
-                padding = 1.25.cssRem,
-                borderRadius = 1.cssRem
+                padding = SiteTokens.Spacing.xl,
+                borderRadius = SiteTokens.Radius.lg
             )
             .then(
                 if (plan.isActive) Modifier.border(2.px, LineStyle.Solid, palette.brand.primary)
                 else Modifier
             )
-            .gap(0.5.cssRem)
+            .gap(SiteTokens.Spacing.sm)
     ) {
         Row(Modifier.fillMaxWidth().gap(0.5.cssRem)) {
             SpanText(plan.title, Modifier.fontSize(1.15.cssRem))

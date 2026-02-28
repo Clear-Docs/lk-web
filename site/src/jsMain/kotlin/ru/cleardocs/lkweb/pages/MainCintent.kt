@@ -32,6 +32,7 @@ import org.jetbrains.compose.web.dom.Div
 import com.varabyte.kobweb.core.Page
 import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.components.layout.breakpoint.displayIfAtLeast
+import com.varabyte.kobweb.silk.components.layout.breakpoint.displayUntil
 import com.varabyte.kobweb.silk.components.forms.Button
 import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
@@ -55,12 +56,13 @@ import org.jetbrains.compose.web.dom.Span
 import org.jetbrains.compose.web.dom.Input
 import ru.cleardocs.lkweb.components.layouts.PageLayout
 import ru.cleardocs.lkweb.components.widgets.ActionButton
-import ru.cleardocs.lkweb.components.widgets.AuthInput
-import ru.cleardocs.lkweb.components.widgets.InputLayout
-import ru.cleardocs.lkweb.components.widgets.Toast
-import ru.cleardocs.lkweb.components.widgets.authInputStyle
-import ru.cleardocs.lkweb.components.widgets.cardSurface
-import ru.cleardocs.lkweb.connectors.toByteArray
+import ru.cleardocs.lkweb.components.widgets.ContentCard
+import ru.cleardocs.lkweb.components.widgets.rememberTimedToast
+import ru.cleardocs.lkweb.connectors.AddFileConnectorForm
+import ru.cleardocs.lkweb.connectors.AddUrlConnectorForm
+import ru.cleardocs.lkweb.connectors.ConnectorTypeCardsRow
+import ru.cleardocs.lkweb.connectors.ConnectorsList
+import ru.cleardocs.lkweb.connectors.NoConnectorsMessage
 import ru.cleardocs.lkweb.chat.ChatCredentialsViewModel
 import ru.cleardocs.lkweb.components.sections.ChatBlock
 import ru.cleardocs.lkweb.components.sections.ProfileBlock
@@ -74,6 +76,7 @@ import ru.cleardocs.lkweb.connectors.ConnectorsViewModel
 import ru.cleardocs.lkweb.plans.Plans
 import ru.cleardocs.lkweb.profile.MeViewModel
 import ru.cleardocs.lkweb.profile.ProfileAuthState
+import ru.cleardocs.lkweb.SiteTokens
 import ru.cleardocs.lkweb.toSitePalette
 import ru.cleardocs.lkweb.utils.requireProfileAuthRedirect
 import ru.cleardocs.lkweb.ActionButtonVariant
@@ -95,13 +98,12 @@ private fun MainContent(mainState: MainViewState, meViewModel: MeViewModel) {
 private fun PlansContent(meViewModel: MeViewModel) {
     val me by meViewModel.me.collectAsState()
     val currentPlanCode = me?.plan?.code
-    val palette = ColorMode.current.toSitePalette()
 
     Column(
         Modifier
             .flexGrow(1)
             .fillMaxSize()
-            .gap(1.25.cssRem),
+            .gap(SiteTokens.Spacing.xl),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Plans(currentPlanCode = currentPlanCode)
@@ -116,15 +118,8 @@ private fun ProfileContent(meViewModel: MeViewModel) {
     val meError by meViewModel.error.collectAsState()
     val palette = ColorMode.current.toSitePalette()
 
-    Column(
-        Modifier
-            .flexGrow(1)
-            .fillMaxSize()
-            .gap(1.25.cssRem),
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
+    val profileBody: @Composable () -> Unit = {
         SpanText("Профиль", Modifier.fontSize(1.5.cssRem))
-
         when (authState) {
             ProfileAuthState.Loading -> SpanText("Проверяем авторизацию...")
             ProfileAuthState.Unauthenticated -> SpanText("Перенаправляем на авторизацию...")
@@ -135,478 +130,24 @@ private fun ProfileContent(meViewModel: MeViewModel) {
             }
         }
     }
-}
 
-/**
- * Маппинг статусов коннектора по Onyx ConnectorCredentialPairStatus
- * (Swagger: /api/openapi.json → ConnectorCredentialPairStatus)
- * Enum: SCHEDULED, INITIAL_INDEXING, ACTIVE, PAUSED, DELETING, INVALID
- */
-private fun connectorStatusLabel(status: String?): String = when (status?.uppercase()) {
-    "ACTIVE" -> "Готов"
-    "SCHEDULED", "INITIAL_INDEXING" -> "Индексация"
-    "INVALID" -> "Ошибка"
-    "PAUSED" -> "Приостановлен"
-    "DELETING" -> "Удаление"
-    null, "" -> "—"
-    else -> status
-}
-
-private fun connectorStatusColors(status: String?): Pair<Color, Color> = when (status?.uppercase()) {
-    "ACTIVE" -> Color.rgb(0x22C55E) to Colors.White
-    "SCHEDULED", "INITIAL_INDEXING" -> Color.rgb(0xF59E0B) to Color.rgb(0x1F2937)
-    "INVALID" -> Color.rgb(0xDC2626) to Colors.White
-    "PAUSED" -> Color.rgb(0x94A3B8) to Color.rgb(0x1E293B)
-    "DELETING" -> Color.rgb(0x64748B) to Colors.White
-    else -> Color.rgb(0x94A3B8) to Color.rgb(0x1E293B)
-}
-
-@Composable
-private fun ConnectorStatusBadge(status: String?, modifier: Modifier = Modifier) {
-    val label = connectorStatusLabel(status)
-    val (bg, text) = connectorStatusColors(status)
-    Span(
-        modifier
-            .borderRadius(0.35.cssRem)
-            .padding(left = 0.45.cssRem, right = 0.45.cssRem, top = 0.2.cssRem, bottom = 0.2.cssRem)
-            .fontSize(0.75.cssRem)
-            .toAttrs {
-                style {
-                    property("background", bg.toString())
-                    property("color", text.toString())
-                    property("font-weight", "500")
-                    property("white-space", "nowrap")
-                }
-            }
-    ) {
-        SpanText(label)
-    }
-}
-
-@Composable
-private fun ConnectorStatusButtons(
-    connectorId: String,
-    statusUpper: String?,
-    onPause: (String) -> Unit,
-    onResume: (String) -> Unit,
-    onDelete: (String) -> Unit,
-) {
-    if (statusUpper == "ACTIVE") {
-        Button(
-            onClick = { onPause(connectorId) },
-            modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
+    Box(Modifier.flexGrow(1).fillMaxSize()) {
+        Column(
+            Modifier
+                .displayUntil(Breakpoint.MD)
+                .flexGrow(1)
+                .fillMaxSize()
+                .gap(SiteTokens.Spacing.xl),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            SpanText("Пауза")
+            profileBody()
         }
-    }
-    if (statusUpper == "PAUSED") {
-        Button(
-            onClick = { onResume(connectorId) },
-            modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
+        ContentCard(
+            palette = palette,
+            modifier = Modifier.displayIfAtLeast(Breakpoint.MD)
         ) {
-            SpanText("Возобновить")
+            profileBody()
         }
-        Button(
-            onClick = { onDelete(connectorId) },
-            modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
-        ) {
-            SpanText("Удалить")
-        }
-    }
-}
-
-@Composable
-private fun ConnectorItem(
-    connector: Connector,
-    palette: ru.cleardocs.lkweb.SitePalette,
-    onDelete: (String) -> Unit,
-    onPause: (String) -> Unit,
-    onResume: (String) -> Unit,
-) {
-    val textColor = ColorMode.current.toPalette().color
-    val statusUpper = connector.status?.uppercase()
-    val iconSrc = when (connector.type.uppercase()) {
-        "URL" -> "/globe-icon.svg"
-        "1C" -> "/1c.png"
-        "NOTION" -> "/notion-icon.png"
-        else -> "/file-icon.svg"
-    }
-    val itemBg = when (ColorMode.current) {
-        ColorMode.LIGHT -> Colors.White
-        ColorMode.DARK -> palette.nearBackground
-    }
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(1.25.cssRem)
-            .borderRadius(0.75.cssRem)
-            .backgroundColor(itemBg)
-            .boxShadow(2.px, 2.px, 8.px, color = palette.brand.primary.toRgb().copyf(alpha = 0.12f))
-            .gap(0.75.cssRem),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Img(
-            src = iconSrc,
-            alt = connector.name,
-            attrs = {
-                style {
-                    property("width", "2rem")
-                    property("height", "2rem")
-                    property("object-fit", "contain")
-                    property("flex-shrink", "0")
-                }
-            }
-        )
-        Div(
-            attrs = {
-                style {
-                    property("flex-grow", "1")
-                    property("overflow", "hidden")
-                    property("text-overflow", "ellipsis")
-                    property("min-width", "0")
-                }
-            }
-        ) {
-            SpanText(connector.name, Modifier.color(textColor).fontSize(1.cssRem))
-        }
-        ConnectorStatusBadge(connector.status, Modifier.flexShrink(0))
-        ConnectorStatusButtons(
-            connectorId = connector.id,
-            statusUpper = statusUpper,
-            onPause = onPause,
-            onResume = onResume,
-            onDelete = onDelete,
-        )
-    }
-}
-
-@Composable
-private fun ConnectorsList(
-    connectors: List<Connector>,
-    onDelete: (String) -> Unit,
-    onPause: (String) -> Unit,
-    onResume: (String) -> Unit,
-) {
-    val palette = ColorMode.current.toSitePalette()
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .gap(1.25.cssRem)
-    ) {
-        connectors.forEach { c ->
-            ConnectorItem(
-                connector = c,
-                palette = palette,
-                onDelete = onDelete,
-                onPause = onPause,
-                onResume = onResume,
-            )
-        }
-    }
-}
-
-@Composable
-private fun NoConnectorsMessage() {
-    SpanText("Нет коннекторов.")
-}
-
-@Composable
-private fun ConnectorTypeCard(
-    iconSrc: String,
-    label: String,
-    palette: ru.cleardocs.lkweb.SitePalette,
-    onClick: () -> Unit,
-    enabled: Boolean = true,
-) {
-    var toastMessage by remember { mutableStateOf<String?>(null) }
-    val textColor = ColorMode.current.toPalette().color
-    val cardBg = when (ColorMode.current) {
-        ColorMode.LIGHT -> "white"
-        ColorMode.DARK -> palette.nearBackground.toString()
-    }
-    Box {
-        Div(
-            attrs = {
-                style {
-                    property("cursor", if (enabled) "pointer" else "default")
-                    property("display", "flex")
-                    property("flex-direction", "column")
-                    property("align-items", "center")
-                    property("justify-content", "center")
-                    property("gap", "0.75rem")
-                    property("padding", "1.25rem")
-                    property("width", "10rem")
-                    property("min-height", "6rem")
-                    property("border-radius", "0.75rem")
-                    property("background", cardBg)
-                    property("box-shadow", "2px 2px 8px ${palette.brand.primary.toRgb().copyf(alpha = 0.12f)}")
-                    property("transition", "box-shadow 0.2s ease")
-                    if (!enabled) property("opacity", "0.6")
-                }
-                onClick {
-                    if (enabled) onClick()
-                    else {
-                        toastMessage = "В разработке"
-                        window.setTimeout({ toastMessage = null }, 2500)
-                    }
-                }
-            }
-        ) {
-            Img(
-                src = iconSrc,
-                alt = label,
-                attrs = {
-                    style {
-                        property("width", "2rem")
-                        property("height", "2rem")
-                        property("object-fit", "contain")
-                    }
-                }
-            )
-            SpanText(label, Modifier.color(textColor).fontSize(1.cssRem))
-        }
-        toastMessage?.let { msg -> Toast(message = msg) }
-    }
-}
-
-private val ALL_CONNECTOR_TYPE_CARDS = listOf(
-    Triple("/globe-icon.svg", "Web", ConnectorType.Url),
-    Triple("/file-icon.svg", "Файл", ConnectorType.File),
-    Triple("https://storage.yandexcloud.net/cloud-www-assets/region-assets/ru/light/mobile/logo.svg", "Yandex Cloud", null),
-    Triple("/1c.png", "1С", null),
-    Triple("https://cdn.simpleicons.org/confluence/172B4D", "Confluence", null),
-    Triple("/sharepoint-icon.png", "Sharepoint", null),
-    Triple("https://cdn.simpleicons.org/googledrive/4285F4", "Google Drive", null),
-    Triple("https://cdn.simpleicons.org/jira/0052CC", "Jira", null),
-    Triple("https://cdn.simpleicons.org/zendesk/03363D", "Zendesk", null),
-    Triple("/slack-icon.png", "Slack", null),
-    Triple("/notion-icon.png", "Notion", null),
-    Triple("/salesforce-icon.png", "Salesforce", null),
-    Triple("https://cdn.simpleicons.org/hubspot/FF7A59", "HubSpot", null),
-    Triple("/github-icon.png", "Github", null),
-    Triple("/googlesites-icon.png", "Google Sites", null),
-    Triple("/fireflies-icon.png", "Fireflies", null),
-    Triple("/highspot-icon.png", "Highspot", null),
-    Triple("/loopio-icon.png", "Loopio", null),
-    Triple("/zulip-icon.png", "Zulip", null),
-    Triple("/teams-icon.png", "Microsoft Teams", null),
-    Triple("/discord-icon.png", "Discord", null),
-    Triple("/gmail-icon.png", "Gmail", null),
-    Triple("https://cdn.simpleicons.org/bitbucket/0052CC", "Bitbucket", null),
-    Triple("/oci-icon.svg", "OCI", null),
-    Triple("/dropbox-icon.svg", "Dropbox", null),
-    Triple("/s3-icon.png", "S3", null),
-    Triple("/r2-icon.png", "R2", null),
-    Triple("/xenforo-icon.svg", "XenForo", null),
-    Triple("/wikipedia-icon.png", "Wikipedia", null),
-)
-
-@Composable
-private fun ConnectorTypeCardsRow(
-    palette: ru.cleardocs.lkweb.SitePalette,
-    canAdd: Boolean,
-    selectedType: ConnectorType?,
-    onSelectType: (ConnectorType?) -> Unit,
-    connectorsViewModel: ConnectorsViewModel,
-) {
-    Column(Modifier.fillMaxWidth().gap(1.cssRem)) {
-        when (selectedType) {
-            null -> {
-                Div(
-                    attrs = {
-                        style {
-                            property("display", "flex")
-                            property("flex-wrap", "wrap")
-                            property("gap", "1rem")
-                        }
-                    }
-                ) {
-                    ALL_CONNECTOR_TYPE_CARDS.forEach { (iconSrc, label, type) ->
-                        ConnectorTypeCard(
-                            iconSrc = iconSrc,
-                            label = label,
-                            palette = palette,
-                            onClick = {
-                                if (type != null && canAdd) onSelectType(type)
-                            },
-                            enabled = type != null && canAdd
-                        )
-                    }
-                }
-            }
-            ConnectorType.File -> {
-                ActionButton(text = "Назад", onClick = { onSelectType(null) }, enabled = true)
-                AddFileConnectorForm(
-                    connectorsViewModel = connectorsViewModel,
-                    palette = palette
-                )
-            }
-            ConnectorType.Url -> {
-                ActionButton(text = "Назад", onClick = { onSelectType(null) }, enabled = true)
-                AddUrlConnectorForm(
-                    connectorsViewModel = connectorsViewModel,
-                    palette = palette
-                )
-            }
-            ConnectorType.OneC -> { /* неактивен */ }
-        }
-    }
-}
-
-@Composable
-private fun AddFileConnectorForm(
-    connectorsViewModel: ConnectorsViewModel,
-    palette: ru.cleardocs.lkweb.SitePalette
-) {
-    var connectorName by remember { mutableStateOf("") }
-    var isAdding by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
-    val colorPalette = ColorMode.current.toPalette()
-    val inputBg = colorPalette.background.toString()
-    val inputFg = colorPalette.color.toString()
-    val inputBorder = palette.cobweb.toString()
-
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .gap(1.cssRem)
-    ) {
-        SpanText("Добавить файловый коннектор", Modifier.fontSize(1.1.cssRem))
-
-        InputLayout(label = "Название") {
-            AuthInput(
-                type = InputType.Text,
-                value = connectorName,
-                placeholder = "Введите название коннектора",
-                onValueChange = { connectorName = it },
-                inputBg = inputBg,
-                inputFg = inputFg,
-                inputBorder = inputBorder,
-                enabled = !isAdding,
-                marginBottom = null
-            )
-        }
-
-        InputLayout(label = "Файлы") {
-            SpanText(
-                "Форматы: txt, md, csv, eml, docx, pptx, xlsx, epub, pdf, lic, json, org",
-                Modifier.fontSize(0.8.cssRem).color(ColorMode.current.toPalette().color.toRgb().copyf(alpha = 0.65f))
-                    .padding(bottom = 0.25.cssRem)
-            )
-            Input(
-                type = InputType.File,
-                attrs = {
-                    id("connector-file-input")
-                    accept(".txt,.md,.csv,.eml,.docx,.pptx,.xlsx,.epub,.pdf,.lic,.json,.org")
-                    multiple()
-                    if (isAdding) disabled()
-                    style(authInputStyle(inputBg, inputFg, inputBorder, null))
-                }
-            )
-        }
-
-        ActionButton(
-            text = if (isAdding) "Добавление..." else "Добавить",
-            onClick = {
-                val name = connectorName.trim()
-                if (name.isEmpty()) return@ActionButton
-                val input = document.getElementById("connector-file-input")
-                    ?.unsafeCast<org.w3c.dom.HTMLInputElement>()
-                val files = input?.files
-                if (files == null || files.length == 0) return@ActionButton
-
-                isAdding = true
-                scope.launch {
-                    try {
-                        val byteArrays = mutableListOf<ByteArray>()
-                        val filenames = mutableListOf<String>()
-                        for (i in 0 until files.length) {
-                            val file = files.item(i) as? org.w3c.files.File ?: continue
-                            byteArrays.add(file.toByteArray())
-                            filenames.add(file.name)
-                        }
-                        if (byteArrays.isNotEmpty()) {
-                            connectorsViewModel.addConnector(name, byteArrays, filenames) { isAdding = false }
-                            connectorName = ""
-                            input.let { it.value = "" }
-                        } else {
-                            isAdding = false
-                        }
-                    } catch (e: Throwable) {
-                        if (e is kotlinx.coroutines.CancellationException) throw e
-                        isAdding = false
-                    }
-                }
-            },
-            enabled = !isAdding
-        )
-    }
-}
-
-@Composable
-private fun AddUrlConnectorForm(
-    connectorsViewModel: ConnectorsViewModel,
-    palette: ru.cleardocs.lkweb.SitePalette
-) {
-    var connectorName by remember { mutableStateOf("") }
-    var connectorUrl by remember { mutableStateOf("") }
-    var isAdding by remember { mutableStateOf(false) }
-    val colorPalette = ColorMode.current.toPalette()
-    val inputBg = colorPalette.background.toString()
-    val inputFg = colorPalette.color.toString()
-    val inputBorder = palette.cobweb.toString()
-
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .gap(1.cssRem)
-    ) {
-        SpanText("Добавить URL-коннектор", Modifier.fontSize(1.1.cssRem))
-
-        InputLayout(label = "Название") {
-            AuthInput(
-                type = InputType.Text,
-                value = connectorName,
-                placeholder = "Введите название коннектора",
-                onValueChange = { connectorName = it },
-                inputBg = inputBg,
-                inputFg = inputFg,
-                inputBorder = inputBorder,
-                enabled = !isAdding,
-                marginBottom = null
-            )
-        }
-
-        InputLayout(label = "URL") {
-            AuthInput(
-                type = InputType.Text,
-                value = connectorUrl,
-                placeholder = "https://example.com",
-                onValueChange = { connectorUrl = it },
-                inputBg = inputBg,
-                inputFg = inputFg,
-                inputBorder = inputBorder,
-                enabled = !isAdding,
-                marginBottom = null
-            )
-        }
-
-        ActionButton(
-            text = if (isAdding) "Добавление..." else "Добавить",
-            onClick = {
-                val name = connectorName.trim()
-                val url = connectorUrl.trim()
-                if (name.isEmpty() || url.isEmpty()) return@ActionButton
-
-                isAdding = true
-                connectorsViewModel.addUrlConnector(name, url, recursive = true) {
-                    isAdding = false
-                    connectorName = ""
-                    connectorUrl = ""
-                }
-            },
-            enabled = !isAdding
-        )
     }
 }
 
@@ -620,7 +161,7 @@ private fun ConnectorsContent() {
         Modifier
             .flexGrow(1)
             .fillMaxSize()
-            .gap(1.25.cssRem),
+            .gap(SiteTokens.Spacing.xl),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         when (val s = state) {
@@ -673,7 +214,7 @@ private fun ConnectorsContent() {
             ) {
                 val chatCredsViewModel = remember { ChatCredentialsViewModel() }
                 val credentials by chatCredsViewModel.credentials.collectAsState()
-                var toastMessage by remember { mutableStateOf<String?>(null) }
+                val showToast = rememberTimedToast()
                 Row(
                     Modifier.fillMaxWidth().gap(0.5.cssRem),
                     verticalAlignment = Alignment.CenterVertically
@@ -690,10 +231,7 @@ private fun ConnectorsContent() {
                             text = "Поделиться",
                             onClick = {
                                 window.navigator.clipboard.writeText(shareUrl)
-                                    .then {
-                                        toastMessage = "Скопировано в буфер обмена"
-                                        window.setTimeout({ toastMessage = null }, 2500)
-                                    }
+                                    .then { showToast("Скопировано в буфер обмена") }
                                     .catch {
                                         console.error("Не удалось скопировать в буфер обмена", it)
                                     }
@@ -714,9 +252,6 @@ private fun ConnectorsContent() {
                             }
                         }
                     }
-                }
-                toastMessage?.let { msg ->
-                    Toast(message = msg)
                 }
                 credentials?.let {
                     ChatBlock(
