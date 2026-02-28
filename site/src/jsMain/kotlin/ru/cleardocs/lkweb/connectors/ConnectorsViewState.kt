@@ -2,7 +2,8 @@ package ru.cleardocs.lkweb.connectors
 
 enum class ConnectorType {
     File,
-    Url,  // для будущего
+    Url,
+    OneC,  // неактивен, в разработке
 }
 
 sealed interface ConnectorsViewState {
@@ -11,7 +12,6 @@ sealed interface ConnectorsViewState {
     data object GotoAuth : ConnectorsViewState
     sealed interface ConnectorsData : ConnectorsViewState {
         data class Connectors(val connectors: List<Connector>, val canAdd: Boolean = true) : ConnectorsData
-        data object AddConnector : ConnectorsData
         data object Chat : ConnectorsData
     }
 }

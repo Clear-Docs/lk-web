@@ -33,21 +33,6 @@ class ConnectorsViewModel(
         scope.launch { loadConnectors() }
     }
 
-    fun goToAddConnector() {
-        val current = _state.value
-        if (current is ConnectorsViewState.ConnectorsData.Connectors) {
-            lastConnectors = current.connectors
-            lastCanAdd = current.canAdd
-            stopPolling()
-            _state.value = ConnectorsViewState.ConnectorsData.AddConnector
-        }
-    }
-
-    fun backToConnectors() {
-        _state.value = ConnectorsViewState.ConnectorsData.Connectors(lastConnectors, lastCanAdd)
-        if (!lastConnectors.allActive()) startPolling()
-    }
-
     fun goToChat() {
         val current = _state.value
         if (current is ConnectorsViewState.ConnectorsData.Connectors && current.connectors.isNotEmpty()) {
@@ -116,9 +101,7 @@ class ConnectorsViewModel(
         lastConnectors = connectors
         lastCanAdd = canAdd
         val current = _state.value
-        if (current !is ConnectorsViewState.ConnectorsData.Chat &&
-            current !is ConnectorsViewState.ConnectorsData.AddConnector
-        ) {
+        if (current !is ConnectorsViewState.ConnectorsData.Chat) {
             _state.value = ConnectorsViewState.ConnectorsData.Connectors(connectors, canAdd)
         }
         if (connectors.allActive()) {

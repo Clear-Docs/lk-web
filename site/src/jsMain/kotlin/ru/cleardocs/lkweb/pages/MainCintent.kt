@@ -227,30 +227,50 @@ private fun ConnectorItem(
 ) {
     val textColor = ColorMode.current.toPalette().color
     val statusUpper = connector.status?.uppercase()
+    val iconSrc = when (connector.type.uppercase()) {
+        "URL" -> "/globe-icon.svg"
+        "1C" -> "/1c.png"
+        "NOTION" -> "/notion-icon.png"
+        else -> "/file-icon.svg"
+    }
+    val itemBg = when (ColorMode.current) {
+        ColorMode.LIGHT -> Colors.White
+        ColorMode.DARK -> palette.nearBackground
+    }
     Row(
         Modifier
             .fillMaxWidth()
-            .minHeight(3.cssRem)
-            .padding(topBottom = 0.5.cssRem, leftRight = 0.75.cssRem)
-            .borderRadius(0.5.cssRem)
-            .border(1.px, LineStyle.Solid, palette.brand.primary)
-            .backgroundColor(palette.nearBackground)
-            .color(textColor)
-            .gap(0.5.cssRem),
+            .padding(1.25.cssRem)
+            .borderRadius(0.75.cssRem)
+            .backgroundColor(itemBg)
+            .boxShadow(2.px, 2.px, 8.px, color = palette.brand.primary.toRgb().copyf(alpha = 0.12f))
+            .gap(0.75.cssRem),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Img(
-            src = "/file-icon.svg",
-            alt = "",
+            src = iconSrc,
+            alt = connector.name,
             attrs = {
                 style {
-                    property("width", "1.125rem")
-                    property("height", "1.125rem")
+                    property("width", "2rem")
+                    property("height", "2rem")
+                    property("object-fit", "contain")
                     property("flex-shrink", "0")
                 }
             }
         )
-        SpanText(connector.name, Modifier.flexGrow(1))
+        Div(
+            attrs = {
+                style {
+                    property("flex-grow", "1")
+                    property("overflow", "hidden")
+                    property("text-overflow", "ellipsis")
+                    property("min-width", "0")
+                }
+            }
+        ) {
+            SpanText(connector.name, Modifier.color(textColor).fontSize(1.cssRem))
+        }
         ConnectorStatusBadge(connector.status, Modifier.flexShrink(0))
         ConnectorStatusButtons(
             connectorId = connector.id,
@@ -270,16 +290,10 @@ private fun ConnectorsList(
     onResume: (String) -> Unit,
 ) {
     val palette = ColorMode.current.toSitePalette()
-    Div(
+    Column(
         Modifier
             .fillMaxWidth()
-            .toAttrs {
-                style {
-                    property("display", "flex")
-                    property("flex-wrap", "wrap")
-                    property("gap", "0.5rem")
-                }
-            }
+            .gap(1.25.cssRem)
     ) {
         connectors.forEach { c ->
             ConnectorItem(
@@ -303,110 +317,140 @@ private fun ConnectorTypeCard(
     iconSrc: String,
     label: String,
     palette: ru.cleardocs.lkweb.SitePalette,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    enabled: Boolean = true,
 ) {
+    var toastMessage by remember { mutableStateOf<String?>(null) }
     val textColor = ColorMode.current.toPalette().color
     val cardBg = when (ColorMode.current) {
         ColorMode.LIGHT -> "white"
         ColorMode.DARK -> palette.nearBackground.toString()
     }
-    Div(
-        attrs = {
-            style {
-                property("cursor", "pointer")
-                property("display", "flex")
-                property("flex-direction", "column")
-                property("align-items", "center")
-                property("justify-content", "center")
-                property("gap", "0.75rem")
-                property("padding", "1.25rem")
-                property("width", "7rem")
-                property("min-height", "6rem")
-                property("border-radius", "0.75rem")
-                property("background", cardBg)
-                property("box-shadow", "2px 2px 8px rgba(0,0,0,0.1)")
-                property("transition", "box-shadow 0.2s ease")
-            }
-            onClick { onClick() }
-        }
-    ) {
-        Img(
-            src = iconSrc,
-            alt = label,
+    Box {
+        Div(
             attrs = {
                 style {
-                    property("width", "2rem")
-                    property("height", "2rem")
-                    property("object-fit", "contain")
+                    property("cursor", if (enabled) "pointer" else "default")
+                    property("display", "flex")
+                    property("flex-direction", "column")
+                    property("align-items", "center")
+                    property("justify-content", "center")
+                    property("gap", "0.75rem")
+                    property("padding", "1.25rem")
+                    property("width", "10rem")
+                    property("min-height", "6rem")
+                    property("border-radius", "0.75rem")
+                    property("background", cardBg)
+                    property("box-shadow", "2px 2px 8px ${palette.brand.primary.toRgb().copyf(alpha = 0.12f)}")
+                    property("transition", "box-shadow 0.2s ease")
+                    if (!enabled) property("opacity", "0.6")
+                }
+                onClick {
+                    if (enabled) onClick()
+                    else {
+                        toastMessage = "В разработке"
+                        window.setTimeout({ toastMessage = null }, 2500)
+                    }
                 }
             }
-        )
-        SpanText(label, Modifier.color(textColor).fontSize(1.cssRem))
+        ) {
+            Img(
+                src = iconSrc,
+                alt = label,
+                attrs = {
+                    style {
+                        property("width", "2rem")
+                        property("height", "2rem")
+                        property("object-fit", "contain")
+                    }
+                }
+            )
+            SpanText(label, Modifier.color(textColor).fontSize(1.cssRem))
+        }
+        toastMessage?.let { msg -> Toast(message = msg) }
     }
 }
 
+private val ALL_CONNECTOR_TYPE_CARDS = listOf(
+    Triple("/globe-icon.svg", "Web", ConnectorType.Url),
+    Triple("/file-icon.svg", "Файл", ConnectorType.File),
+    Triple("https://storage.yandexcloud.net/cloud-www-assets/region-assets/ru/light/mobile/logo.svg", "Yandex Cloud", null),
+    Triple("/1c.png", "1С", null),
+    Triple("https://cdn.simpleicons.org/confluence/172B4D", "Confluence", null),
+    Triple("/sharepoint-icon.png", "Sharepoint", null),
+    Triple("https://cdn.simpleicons.org/googledrive/4285F4", "Google Drive", null),
+    Triple("https://cdn.simpleicons.org/jira/0052CC", "Jira", null),
+    Triple("https://cdn.simpleicons.org/zendesk/03363D", "Zendesk", null),
+    Triple("/slack-icon.png", "Slack", null),
+    Triple("/notion-icon.png", "Notion", null),
+    Triple("/salesforce-icon.png", "Salesforce", null),
+    Triple("https://cdn.simpleicons.org/hubspot/FF7A59", "HubSpot", null),
+    Triple("/github-icon.png", "Github", null),
+    Triple("/googlesites-icon.png", "Google Sites", null),
+    Triple("/fireflies-icon.png", "Fireflies", null),
+    Triple("/highspot-icon.png", "Highspot", null),
+    Triple("/loopio-icon.png", "Loopio", null),
+    Triple("/zulip-icon.png", "Zulip", null),
+    Triple("/teams-icon.png", "Microsoft Teams", null),
+    Triple("/discord-icon.png", "Discord", null),
+    Triple("/gmail-icon.png", "Gmail", null),
+    Triple("https://cdn.simpleicons.org/bitbucket/0052CC", "Bitbucket", null),
+    Triple("/oci-icon.svg", "OCI", null),
+    Triple("/dropbox-icon.svg", "Dropbox", null),
+    Triple("/s3-icon.png", "S3", null),
+    Triple("/r2-icon.png", "R2", null),
+    Triple("/xenforo-icon.svg", "XenForo", null),
+    Triple("/wikipedia-icon.png", "Wikipedia", null),
+)
+
 @Composable
-private fun AddConnectorBlock(
+private fun ConnectorTypeCardsRow(
+    palette: ru.cleardocs.lkweb.SitePalette,
+    canAdd: Boolean,
+    selectedType: ConnectorType?,
+    onSelectType: (ConnectorType?) -> Unit,
     connectorsViewModel: ConnectorsViewModel,
-    onBack: () -> Unit,
-    palette: ru.cleardocs.lkweb.SitePalette
 ) {
-    var selectedType by remember { mutableStateOf<ConnectorType?>(null) }
-
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .gap(1.cssRem)
-    ) {
-        Row(
-            Modifier.fillMaxWidth().gap(0.5.cssRem),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            ActionButton(
-                text = "Назад",
-                onClick = {
-                    if (selectedType == null) {
-                        onBack()
-                    } else {
-                        selectedType = null
-                    }
-                },
-                enabled = true
-            )
-        }
-
+    Column(Modifier.fillMaxWidth().gap(1.cssRem)) {
         when (selectedType) {
             null -> {
-                SpanText("Выберите тип коннектора", Modifier.fontSize(1.1.cssRem))
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .gap(1.25.cssRem)
-                        .padding(top = 0.75.cssRem),
-                    horizontalArrangement = Arrangement.Start
+                Div(
+                    attrs = {
+                        style {
+                            property("display", "flex")
+                            property("flex-wrap", "wrap")
+                            property("gap", "1rem")
+                        }
+                    }
                 ) {
-                    ConnectorTypeCard(
-                        iconSrc = "/globe-icon.svg",
-                        label = "Web",
-                        palette = palette,
-                        onClick = { selectedType = ConnectorType.Url }
-                    )
-                    ConnectorTypeCard(
-                        iconSrc = "/file-icon.svg",
-                        label = "Файл",
-                        palette = palette,
-                        onClick = { selectedType = ConnectorType.File }
-                    )
+                    ALL_CONNECTOR_TYPE_CARDS.forEach { (iconSrc, label, type) ->
+                        ConnectorTypeCard(
+                            iconSrc = iconSrc,
+                            label = label,
+                            palette = palette,
+                            onClick = {
+                                if (type != null && canAdd) onSelectType(type)
+                            },
+                            enabled = type != null && canAdd
+                        )
+                    }
                 }
             }
-            ConnectorType.File -> AddFileConnectorForm(
-                connectorsViewModel = connectorsViewModel,
-                palette = palette
-            )
-            ConnectorType.Url -> AddUrlConnectorForm(
-                connectorsViewModel = connectorsViewModel,
-                palette = palette
-            )
+            ConnectorType.File -> {
+                ActionButton(text = "Назад", onClick = { onSelectType(null) }, enabled = true)
+                AddFileConnectorForm(
+                    connectorsViewModel = connectorsViewModel,
+                    palette = palette
+                )
+            }
+            ConnectorType.Url -> {
+                ActionButton(text = "Назад", onClick = { onSelectType(null) }, enabled = true)
+                AddUrlConnectorForm(
+                    connectorsViewModel = connectorsViewModel,
+                    palette = palette
+                )
+            }
+            ConnectorType.OneC -> { /* неактивен */ }
         }
     }
 }
@@ -446,11 +490,16 @@ private fun AddFileConnectorForm(
         }
 
         InputLayout(label = "Файлы") {
+            SpanText(
+                "Форматы: txt, md, csv, eml, docx, pptx, xlsx, epub, pdf, lic, json, org",
+                Modifier.fontSize(0.8.cssRem).color(ColorMode.current.toPalette().color.toRgb().copyf(alpha = 0.65f))
+                    .padding(bottom = 0.25.cssRem)
+            )
             Input(
                 type = InputType.File,
                 attrs = {
                     id("connector-file-input")
-                    accept(".txt,.docx,.pptx,.xlsx,.csv,.eml,.epub,.zip,.pdf")
+                    accept(".txt,.md,.csv,.eml,.docx,.pptx,.xlsx,.epub,.pdf,.lic,.json,.org")
                     multiple()
                     if (isAdding) disabled()
                     style(authInputStyle(inputBg, inputFg, inputBorder, null))
@@ -581,9 +630,12 @@ private fun ConnectorsContent() {
             is ConnectorsViewState.Loading -> {}
             is ConnectorsViewState.GotoAuth ->
                 SpanText("Перенаправляем на авторизацию...")
+
             is ConnectorsViewState.Error ->
                 SpanText("Ошибка: ${s.message}")
+
             is ConnectorsData.Connectors -> {
+                var selectedType by remember { mutableStateOf<ConnectorType?>(null) }
                 DisposableEffect(Unit) {
                     onDispose { connectorsViewModel.stopPolling() }
                 }
@@ -604,35 +656,23 @@ private fun ConnectorsContent() {
                         onClick = { connectorsViewModel.goToChat() },
                         enabled = s.connectors.isNotEmpty()
                     )
-                    if (s.canAdd) {
-                        ActionButton(
-                            text = "Добавить коннектор",
-                            onClick = { connectorsViewModel.goToAddConnector() },
-                        )
-                    }
                 }
-            }
-            is ConnectorsData.AddConnector -> Column(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(top = 1.5.cssRem)
-                    .borderRadius(0.6.cssRem)
-                    .padding(1.cssRem)
-                    .backgroundColor(palette.nearBackground)
-            ) {
-                AddConnectorBlock(
-                    connectorsViewModel = connectorsViewModel,
-                    onBack = { connectorsViewModel.backToConnectors() },
-                    palette = palette
+                ConnectorTypeCardsRow(
+                    palette = palette,
+                    canAdd = s.canAdd,
+                    selectedType = selectedType,
+                    onSelectType = { selectedType = it },
+                    connectorsViewModel = connectorsViewModel
                 )
             }
+
             is ConnectorsData.Chat -> Column(
                 Modifier
                     .fillMaxWidth()
                     .flexGrow(1)
                     .padding(top = 1.5.cssRem)
                     .borderRadius(0.6.cssRem)
-                    .padding(1.cssRem)
+                    .gap(1.cssRem)
                     .backgroundColor(palette.nearBackground)
             ) {
                 val chatCredsViewModel = remember { ChatCredentialsViewModel() }
@@ -682,16 +722,12 @@ private fun ConnectorsContent() {
                 toastMessage?.let { msg ->
                     Toast(message = msg)
                 }
-                val loading by chatCredsViewModel.loading.collectAsState()
-                val error by chatCredsViewModel.error.collectAsState()
-                when {
-                    loading -> SpanText("Загрузка чата...")
-                    credentials != null -> ChatBlock(
+                credentials?.let {
+                    ChatBlock(
                         modifier = Modifier.flexGrow(1),
-                        personaId = credentials!!.personaId,
-                        apiKey = credentials!!.apiKey,
+                        personaId = it.personaId,
+                        apiKey = it.apiKey,
                     )
-                    else -> SpanText("Ошибка: ${error ?: "Не удалось загрузить credentials"}")
                 }
             }
         }
@@ -724,34 +760,27 @@ fun ProfilePage() {
             Modifier
                 .flexGrow(1)
                 .fillMaxWidth()
-                .padding(2.cssRem),
+                .padding(1.cssRem),
             contentAlignment = Alignment.Center
         ) {
-            Column(
+            Row(
                 Modifier
                     .flexGrow(1)
                     .fillMaxSize()
-                    .gap(1.cssRem)
+                    .gap(1.cssRem),
+                verticalAlignment = Alignment.Top
             ) {
-                Row(
-                    Modifier
+                ProfileMenu(
+                    modifier = Modifier
                         .flexGrow(1)
-                        .fillMaxSize()
-                        .gap(1.25.cssRem),
-                    verticalAlignment = Alignment.Top
-                ) {
-                    ProfileMenu(
-                        modifier = Modifier
-                            .flexGrow(1)
-                            .fillMaxHeight()
-                            .width(25.percent)
-                            .flexShrink(0)
-                            .displayIfAtLeast(Breakpoint.MD),
-                        onSignOut = onSignOut
-                    )
+                        .fillMaxHeight()
+                        .width(20.percent)
+                        .flexShrink(0)
+                        .displayIfAtLeast(Breakpoint.MD),
+                    onSignOut = onSignOut
+                )
 
-                    MainContent(mainState = mainState, meViewModel = meViewModel)
-                }
+                MainContent(mainState = mainState, meViewModel = meViewModel)
             }
         }
     }

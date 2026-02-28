@@ -10,7 +10,7 @@ import ru.cleardocs.lkweb.pages.MenuViewModel
 import org.kodein.di.instance
 
 /**
- * Боковое меню: пункты и текущее состояние берутся из MenuViewModel (DI singleton); внизу кнопка «Выйти».
+ * Боковое меню: пункты и текущее состояние берутся из MenuViewModel (DI singleton); внизу пункт «Выйти».
  *
  * @param onEntrySelected Опционально вызывается после выбора пункта (например, закрыть drawer и перейти на страницу)
  */

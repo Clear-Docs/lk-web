@@ -65,6 +65,7 @@ class ChatViewModel(
                 )
 
                 var fullText = ""
+                var reasoningText = ""
                 val citationToDocId = mutableMapOf<Int, String>()
                 val docIdToTitle = mutableMapOf<String, String>()
 
@@ -76,6 +77,15 @@ class ChatViewModel(
                                 val last = list.lastOrNull()
                                 if (last?.role == ChatRole.ASSISTANT && last.isLoading) {
                                     list.dropLast(1) + last.copy(content = fullText)
+                                } else list
+                            }
+                        }
+                        is ru.cleardocs.lkweb.api.StreamEvent.Reasoning -> {
+                            reasoningText += event.text
+                            _messages.update { list ->
+                                val last = list.lastOrNull()
+                                if (last?.role == ChatRole.ASSISTANT && last.isLoading) {
+                                    list.dropLast(1) + last.copy(reasoning = reasoningText)
                                 } else list
                             }
                         }
@@ -100,6 +110,7 @@ class ChatViewModel(
                             isLoading = false,
                             citations = citations,
                             citationDocumentIds = citationToDocId,
+                            reasoning = reasoningText,
                         )
                     } else list
                 }

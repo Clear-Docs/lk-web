@@ -10,13 +10,12 @@ import com.varabyte.kobweb.silk.components.navigation.UndecoratedLinkVariant
 import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import org.jetbrains.compose.web.css.cssRem
-import ru.cleardocs.lkweb.components.widgets.ActionButton
 import ru.cleardocs.lkweb.components.widgets.cardSurface
 import ru.cleardocs.lkweb.pages.MainViewState
 import ru.cleardocs.lkweb.toSitePalette
 
 /**
- * Карточка меню профиля: заголовок «Меню», список пунктов с подсветкой текущего, кнопка «Выйти».
+ * Карточка меню профиля: заголовок «Меню», список пунктов с подсветкой текущего, пункт «Выйти».
  * Чистый UI-компонент без DI и ViewModel.
  */
 @Composable
@@ -50,10 +49,16 @@ fun ProfileMenuCard(
                 SpanText(label)
             }
         }
-        ActionButton(
-            text = "Выйти",
-            onClick = onSignOut,
-            modifier = Modifier.fillMaxWidth()
-        )
+        Link(
+            "#",
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(0.65.cssRem)
+                .borderRadius(0.75.cssRem)
+                .onClick { it.preventDefault(); onSignOut() },
+            variant = UndecoratedLinkVariant.then(UncoloredLinkVariant)
+        ) {
+            SpanText("Выйти")
+        }
     }
 }
