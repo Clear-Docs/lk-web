@@ -60,6 +60,7 @@ class ConnectorsViewModel(
      * При успехе: если не все ACTIVE — запускает пуллинг раз в 10 сек; когда все ACTIVE — останавливает.
      */
     suspend fun loadConnectors() {
+        console.log("[ConnectorsVM] loadConnectors() - start")
         pollJob?.cancel()
         _state.value = ConnectorsViewState.Loading
         try {
@@ -72,6 +73,7 @@ class ConnectorsViewModel(
                     status = dto.status,
                 )
             }
+            console.log("[ConnectorsVM] loadConnectors() - done")
             onConnectorsLoaded(connectors, response.canAdd)
         } catch (e: Throwable) {
             val errorMsg = e.toUserFriendlyMessage("Ошибка загрузки коннекторов")

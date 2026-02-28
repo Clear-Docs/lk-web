@@ -60,11 +60,13 @@ class MeViewModel(
      * Токен и Firebase проверяются в BackendApi. 401/403 от бэка = не авторизован.
      */
     suspend fun loadMe() {
+        console.log("[MeVM] loadMe() - start")
         _loading.value = true
         _error.value = null
         try {
             val response = BackendApi.me()
             _me.value = response
+            console.log("[MeVM] loadMe() - done")
         } catch (e: Throwable) {
             _error.value = e.toUserFriendlyMessage("Ошибка загрузки профиля")
             _me.value = null

@@ -45,6 +45,7 @@ class AuthViewModel(
         scope.launch {
             repository.authStateFlow.collect { authState ->
                 if (authState == AuthState.Authenticated && !_state.value.isLoading) {
+                    console.log("[Auth] navigate: authState=Authenticated (already logged in)")
                     _state.value = _state.value.copy(
                         errorMessage = null,
                         navigateToProfile = true,
@@ -102,7 +103,7 @@ class AuthViewModel(
             )
             try {
                 signInWithEmailAndPassword(repository.auth, normalizedEmail, s.password)
-                console.log("[Auth] Вход успешен")
+                console.log("[Auth] signInWithEmail: success, navigate (no register)")
                 _state.value = _state.value.copy(
                     isLoading = false,
                     navigateToProfile = true,
@@ -152,9 +153,10 @@ class AuthViewModel(
                     } catch (verifyErr: dynamic) {
                         console.error("[Auth] sendEmailVerification ошибка", verifyErr)
                     }
+                    console.log("[Auth] signUp: calling register()")
                     BackendApi.register()
+                    console.log("[Auth] signUp: register() OK, navigate")
                 }
-                console.log("[Auth] Регистрация: завершено")
                 _state.value = _state.value.copy(
                     isLoading = false,
                     navigateToProfile = true,
@@ -178,7 +180,9 @@ class AuthViewModel(
             )
             try {
                 signInWithGoogle(repository.auth)
+                console.log("[Auth] Google: calling register()")
                 BackendApi.register()
+                console.log("[Auth] Google: register() OK, navigate")
                 _state.value = _state.value.copy(
                     isLoading = false,
                     navigateToProfile = true,
