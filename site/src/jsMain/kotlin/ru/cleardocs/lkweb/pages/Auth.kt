@@ -28,7 +28,10 @@ import com.varabyte.kobweb.compose.ui.modifiers.margin
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.modifiers.width
 import com.varabyte.kobweb.compose.ui.modifiers.flexGrow
+import com.varabyte.kobweb.compose.ui.modifiers.maxWidth
 import ru.cleardocs.lkweb.components.layouts.PageLayout
+import com.varabyte.kobweb.silk.components.style.ComponentStyle
+import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
 import ru.cleardocs.lkweb.components.widgets.AuthInput
 import ru.cleardocs.lkweb.components.widgets.InputLayout
 import ru.cleardocs.lkweb.components.widgets.PasswordFieldWithToggle
@@ -53,6 +56,11 @@ import ru.cleardocs.lkweb.utils.requireGuestRedirect
 private enum class AuthMode {
     SIGN_IN,
     SIGN_UP
+}
+
+private val AuthFormWidthStyle by ComponentStyle {
+    base { Modifier.maxWidth(32.cssRem) }
+    Breakpoint.MD { Modifier.width(32.cssRem) }
 }
 
 private fun authErrorToMessage(error: dynamic, isGoogleAuth: Boolean = false): String {
@@ -116,12 +124,12 @@ fun AuthPage() {
         Box(
             Modifier
                 .fillMaxSize()
-                .padding(leftRight = 1.cssRem, top = 4.cssRem),
+                .padding(leftRight = 0.5.cssRem, top = 4.cssRem),
             contentAlignment = Alignment.Center
         ) {
             Column(
                 Modifier
-                    .width(32.cssRem)
+                    .then(AuthFormWidthStyle.toModifier())
                     .gap(1.25.cssRem)
                     .cardSurface(palette),
                 horizontalAlignment = Alignment.CenterHorizontally
