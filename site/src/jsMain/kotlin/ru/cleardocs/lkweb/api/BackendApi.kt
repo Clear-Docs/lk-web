@@ -53,6 +53,21 @@ object BackendApi {
         client.get("api/v1/plans").body()
 
     /**
+     * Регистрирует пользователя в бэкенде (создаёт запись по Firebase-токену).
+     * POST /api/v1/users/register. Вызывать после createUserWithEmailAndPassword или signInWithGoogle.
+     */
+    suspend fun register() {
+        val token = requireToken()
+        val response = client.post("api/v1/users/register") {
+            header("Authorization", "Bearer $token")
+        }
+        if (!response.status.isSuccess()) {
+            val body = try { response.bodyAsText() } catch (_: Throwable) { "" }
+            throw BackendError(response.status.value, body)
+        }
+    }
+
+    /**
      * Возвращает данные текущего пользователя.
      * GET /api/v1/users/me с заголовком Authorization: Bearer &lt;token&gt;.
      * Токен получается в сервисе из Firebase Auth.
