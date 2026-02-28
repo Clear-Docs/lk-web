@@ -11,8 +11,9 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import ru.cleardocs.lkweb.api.BackendApi
-import ru.cleardocs.lkweb.api.BackendError
 import ru.cleardocs.lkweb.api.dto.MeDto
+import ru.cleardocs.lkweb.utils.isUnauthError
+import ru.cleardocs.lkweb.utils.toUserFriendlyMessage
 import ru.cleardocs.lkweb.firebase.FirebaseProvider
 
 /**
@@ -44,7 +45,7 @@ class MeViewModel(
     val authState: StateFlow<ProfileAuthState> = combine(_loading, _me, _error) { loading, me, error ->
         when {
             me != null -> ProfileAuthState.Authenticated
-            isUnauthError(error) -> ProfileAuthState.Unauthenticated
+            error.isUnauthError() -> ProfileAuthState.Unauthenticated
             loading -> ProfileAuthState.Loading
             else -> ProfileAuthState.Unauthenticated
         }
@@ -54,39 +55,20 @@ class MeViewModel(
         scope.launch { loadMe() }
     }
 
-    private fun isUnauthError(error: String?): Boolean {
-        if (error == null) return false
-        return error.contains("401") || error.contains("403") ||
-            error.contains("Сессия истекла") || error.contains("Доступ запрещён") ||
-            error.contains("User not authenticated", ignoreCase = true) ||
-            error.contains("не авторизован", ignoreCase = true)
-    }
-
     /**
      * Загружает данные текущего пользователя из REST GET /api/v1/users/me.
      * Токен и Firebase проверяются в BackendApi. 401/403 от бэка = не авторизован.
      */
     suspend fun loadMe() {
+        console.log("[MeVM] loadMe() - start")
         _loading.value = true
         _error.value = null
         try {
             val response = BackendApi.me()
             _me.value = response
+            console.log("[MeVM] loadMe() - done")
         } catch (e: Throwable) {
-            val errorMsg = when {
-                e is BackendError -> when (e.code) {
-                    401 -> "Сессия истекла"
-                    403 -> "Доступ запрещён. Возможно, аккаунт ещё не зарегистрирован в системе."
-                    else -> e.message ?: "Ошибка ${e.code}"
-                }
-                e.message?.contains("401") == true -> "Сессия истекла"
-                e.message?.contains("403") == true -> "Доступ запрещён. Возможно, аккаунт ещё не зарегистрирован в системе."
-                e.message?.contains("Backend unreachable") == true -> "Сервер недоступен. Проверьте подключение к сети."
-                e.message?.contains("unreachable") == true -> "Сервер недоступен"
-                e.message?.contains("User not authenticated") == true -> "Пользователь не авторизован"
-                else -> e.message ?: "Ошибка загрузки профиля"
-            }
-            _error.value = errorMsg
+            _error.value = e.toUserFriendlyMessage("Ошибка загрузки профиля")
             _me.value = null
         } finally {
             _loading.value = false

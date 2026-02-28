@@ -8,6 +8,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import ru.cleardocs.lkweb.api.BackendApi
+import ru.cleardocs.lkweb.utils.toUserFriendlyMessage
 
 class PlansViewModel(
     /** Код текущего тарифа пользователя — от него зависит [Plan.isActive]. */
@@ -48,7 +49,7 @@ class PlansViewModel(
                 )
             }
         } catch (e: Throwable) {
-            _error.value = e.message ?: "Ошибка загрузки тарифов"
+            _error.value = e.toUserFriendlyMessage("Ошибка загрузки тарифов")
             _plans.value = emptyList()
         } finally {
             _loading.value = false

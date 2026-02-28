@@ -1,5 +1,7 @@
 package ru.cleardocs.lkweb
 
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import com.varabyte.kobweb.compose.ui.graphics.Color
 import com.varabyte.kobweb.compose.ui.graphics.Colors
 import com.varabyte.kobweb.silk.init.InitSilk
@@ -7,6 +9,7 @@ import com.varabyte.kobweb.silk.init.InitSilkContext
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import com.varabyte.kobweb.silk.theme.colors.palette.background
 import com.varabyte.kobweb.silk.theme.colors.palette.color
+import com.varabyte.kobweb.silk.theme.colors.palette.toPalette
 import org.jetbrains.compose.web.css.cssRem
 
 /**
@@ -57,6 +60,32 @@ object SitePalettes {
 fun ColorMode.toSitePalette(): SitePalette = when (this) {
     ColorMode.LIGHT -> SitePalettes.light
     ColorMode.DARK -> SitePalettes.dark
+}
+
+/**
+ * Фон для карточек/кнопок: белый в светлой теме, nearBackground в тёмной.
+ */
+fun ColorMode.cardItemBackground(palette: SitePalette) = when (this) {
+    ColorMode.LIGHT -> Colors.White
+    ColorMode.DARK -> palette.nearBackground
+}
+
+/**
+ * Цвета для полей ввода (фон, текст, бордер) с учётом текущей темы.
+ */
+data class InputColors(val background: String, val foreground: String, val border: String)
+
+@Composable
+fun rememberInputColors(): InputColors {
+    val palette = ColorMode.current.toSitePalette()
+    val colorPalette = ColorMode.current.toPalette()
+    return remember(palette, colorPalette) {
+        InputColors(
+            background = colorPalette.background.toString(),
+            foreground = colorPalette.color.toString(),
+            border = palette.cobweb.toString()
+        )
+    }
 }
 
 @InitSilk

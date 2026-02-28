@@ -56,6 +56,7 @@ import ru.cleardocs.lkweb.chat.ChatMessageRenderer
 import ru.cleardocs.lkweb.chat.ChatRole
 import ru.cleardocs.lkweb.chat.ChatViewModel
 import ru.cleardocs.lkweb.components.widgets.ExpandableChatInput
+import ru.cleardocs.lkweb.rememberInputColors
 import ru.cleardocs.lkweb.toSitePalette
 import kotlinx.browser.document
 import kotlinx.browser.window
@@ -78,11 +79,7 @@ fun ChatBlock(
     val error by viewModel.error.collectAsState()
 
     val palette = ColorMode.current.toSitePalette()
-    val (inputBg, inputFg) = when (ColorMode.current) {
-        ColorMode.LIGHT -> "#FFFFFF" to "#0F172A"
-        ColorMode.DARK -> "#0B1120" to "#FFFFFF"
-    }
-    val inputBorder = palette.cobweb.toString()
+    val inputColors = rememberInputColors()
 
     var inputText by remember { mutableStateOf("") }
     val scope = rememberCoroutineScope()
@@ -202,9 +199,9 @@ fun ChatBlock(
                         value = inputText,
                         placeholder = "Введите сообщение...",
                         onValueChange = { inputText = it },
-                        inputBg = inputBg,
-                        inputFg = inputFg,
-                        inputBorder = inputBorder,
+                        inputBg = inputColors.background,
+                        inputFg = inputColors.foreground,
+                        inputBorder = inputColors.border,
                         enabled = !loading,
                         marginBottom = null,
                         onEnterSubmit = {

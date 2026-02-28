@@ -1,6 +1,10 @@
 package ru.cleardocs.lkweb.components.widgets
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.backgroundColor
 import com.varabyte.kobweb.compose.ui.modifiers.borderRadius
@@ -18,6 +22,25 @@ import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.css.Position
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.percent
+import kotlinx.browser.window
+
+/**
+ * Возвращает callback для показа Toast на заданное время.
+ * При вызове callback показывает Toast и скрывает его через [durationMs] мс.
+ */
+@Composable
+fun rememberTimedToast(durationMs: Int = 2500): (String) -> Unit {
+    var message by remember { mutableStateOf<String?>(null) }
+    val showToast = remember(durationMs) {
+        { msg: String ->
+            message = msg
+            window.setTimeout({ message = null }, durationMs)
+            Unit
+        }
+    }
+    message?.let { Toast(message = it) }
+    return showToast
+}
 
 @Composable
 fun Toast(

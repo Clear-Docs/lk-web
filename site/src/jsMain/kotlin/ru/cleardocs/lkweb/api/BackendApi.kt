@@ -53,11 +53,29 @@ object BackendApi {
         client.get("api/v1/plans").body()
 
     /**
+     * Регистрирует пользователя в бэкенде (создаёт запись по Firebase-токену).
+     * POST /api/v1/users/register. Вызывать после createUserWithEmailAndPassword или signInWithGoogle.
+     */
+    suspend fun register() {
+        console.log("[BackendApi] register() - start")
+        val token = requireToken()
+        val response = client.post("api/v1/users/register") {
+            header("Authorization", "Bearer $token")
+        }
+        if (!response.status.isSuccess()) {
+            val body = try { response.bodyAsText() } catch (_: Throwable) { "" }
+            throw BackendError(response.status.value, body)
+        }
+        console.log("[BackendApi] register() - done")
+    }
+
+    /**
      * Возвращает данные текущего пользователя.
      * GET /api/v1/users/me с заголовком Authorization: Bearer &lt;token&gt;.
      * Токен получается в сервисе из Firebase Auth.
      */
     suspend fun me(): MeDto {
+        console.log("[BackendApi] me() - start")
         val token = requireToken()
         val response = client.get("api/v1/users/me") {
             header("Authorization", "Bearer $token")
@@ -68,7 +86,7 @@ object BackendApi {
         }
         val resp = response.body<MeResponseDto>()
         val u = resp.user
-        return MeDto(
+        val result = MeDto(
             id = u.id ?: u.email ?: "",
             email = u.email ?: "",
             name = u.name ?: "",
@@ -80,6 +98,8 @@ object BackendApi {
                 limit = LimitDto(maxConnectors = 0),
             ),
         )
+        console.log("[BackendApi] me() - done")
+        return result
     }
 
     /**
@@ -104,6 +124,7 @@ object BackendApi {
      * Токен получается в сервисе из Firebase Auth.
      */
     suspend fun connectors(): GetConnectorsDto {
+        console.log("[BackendApi] connectors() - start")
         val token = requireToken()
         val response = client.get("api/v1/connectors") {
             header("Authorization", "Bearer $token")
@@ -112,7 +133,9 @@ object BackendApi {
             val body = try { response.bodyAsText() } catch (_: Throwable) { "" }
             throw BackendError(response.status.value, body)
         }
-        return response.body()
+        val result = response.body<GetConnectorsDto>()
+        console.log("[BackendApi] connectors() - done")
+        return result
     }
 
     /**
