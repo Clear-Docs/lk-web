@@ -44,6 +44,7 @@ fun ChatPage() {
         .fillMaxSize()
         .width(100.vw)
         .minHeight(100.vh)
+        .padding(0.5.cssRem)
         .background(palette.nearBackground)
 
     when {
