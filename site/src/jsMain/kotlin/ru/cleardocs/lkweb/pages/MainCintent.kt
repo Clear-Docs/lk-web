@@ -230,6 +230,7 @@ private fun ConnectorItem(
     val iconSrc = when (connector.type.uppercase()) {
         "URL" -> "/globe-icon.svg"
         "1C" -> "/1c.png"
+        "NOTION" -> "/notion-icon.png"
         else -> "/file-icon.svg"
     }
     val itemBg = when (ColorMode.current) {
@@ -336,7 +337,7 @@ private fun ConnectorTypeCard(
                     property("justify-content", "center")
                     property("gap", "0.75rem")
                     property("padding", "1.25rem")
-                    property("width", "7rem")
+                    property("width", "10rem")
                     property("min-height", "6rem")
                     property("border-radius", "0.75rem")
                     property("background", cardBg)
@@ -464,6 +465,7 @@ private fun AddConnectorBlock(
                     "Jira" to "https://cdn.simpleicons.org/jira/0052CC",
                     "Zendesk" to "https://cdn.simpleicons.org/zendesk/03363D",
                     "Slack" to "/slack-icon.png",
+                    "Notion" to "/notion-icon.png",
                     "Salesforce" to "/salesforce-icon.png",
                     "HubSpot" to "https://cdn.simpleicons.org/hubspot/FF7A59",
                     "Gong" to "https://cdn.simpleicons.org/gong/22429B",
@@ -471,7 +473,7 @@ private fun AddConnectorBlock(
                     "Google Sites" to "/googlesites-icon.png",
                 ))
                 connectorCategory("Sales", palette, listOf(
-                    "Fireflies" to "/file-icon.svg",
+                    "Fireflies" to "/fireflies-icon.png",
                     "Highspot" to "/highspot-icon.png",
                     "Loopio" to "/loopio-icon.png",
                 ))
