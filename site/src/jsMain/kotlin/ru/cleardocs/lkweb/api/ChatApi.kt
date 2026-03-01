@@ -29,7 +29,7 @@ object ChatApi {
 
     private val client = ApiConfig.createHttpClient()
     private val onyxClient = ApiConfig.createOnyxHttpClient()
-    private val json = Json { ignoreUnknownKeys = true }
+    private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
 
     /**
      * Создаёт сессию чата.
