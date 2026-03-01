@@ -29,86 +29,94 @@ import ru.cleardocs.lkweb.profile.MeViewModel
 import ru.cleardocs.lkweb.profile.ProfileAuthState
 import org.kodein.di.instance
 
+
 @Page(routeOverride = "/index")
 @Composable
 fun HomePage() {
     val repository = FirebaseProvider.repository
     val authState by repository.authStateFlow.collectAsState()
     val ctx = rememberPageContext()
+    val navigateToAuth: () -> Unit = { ctx.router.tryRoutingTo("/auth") }
 
     when (authState) {
-        AuthState.Loading -> {
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    SpanText("Загрузка...", Modifier.fontSize(1.25.cssRem))
-                }
-            }
-        }
-        AuthState.Unauthenticated -> {
-            ctx.router.tryRoutingTo("/auth")
-            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                SpanText("Перенаправляем на авторизацию...", Modifier.fontSize(1.25.cssRem))
-            }
-        }
+        AuthState.Loading -> HomeLoadingContent()
+        AuthState.Unauthenticated -> HomeRedirectingToAuthContent(navigateToAuth)
         AuthState.Authenticated -> {
             val meViewModel = remember { MeViewModel() }
             val profileAuthState by meViewModel.authState.collectAsState()
-            val scope = rememberCoroutineScope()
 
             when (profileAuthState) {
-                ProfileAuthState.Loading -> {
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        SpanText("Проверяем авторизацию...", Modifier.fontSize(1.25.cssRem))
-                    }
-                }
-                ProfileAuthState.Unauthenticated -> {
-                    ctx.router.tryRoutingTo("/auth")
-                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        SpanText("Перенаправляем на авторизацию...", Modifier.fontSize(1.25.cssRem))
-                    }
-                }
-                ProfileAuthState.Authenticated -> {
-                    val onSignOut: () -> Unit = {
-                        scope.launch {
-                            signOut(meViewModel.repository.auth)
-                            ctx.router.tryRoutingTo("/auth")
-                        }
-                        Unit
-                    }
+                ProfileAuthState.Loading -> ProfileAuthCheckingContent()
+                ProfileAuthState.Unauthenticated -> HomeRedirectingToAuthContent(navigateToAuth)
+                ProfileAuthState.Authenticated -> HomeProfileMainContent(meViewModel, navigateToAuth)
+            }
+        }
+    }
+}
 
-                    val menuViewModel by kodein.instance<MenuViewModel>()
-                    val mainState by menuViewModel.stateFlow.collectAsState()
+@Composable
+private fun HomeLoadingContent() {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            SpanText("Загрузка...", Modifier.fontSize(1.25.cssRem))
+        }
+    }
+}
 
-                    PageLayout("Профиль") {
-                        Box(
-                            Modifier
-                                .flexGrow(1)
-                                .fillMaxWidth()
-                                .padding(1.cssRem),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Row(
-                                Modifier
-                                    .flexGrow(1)
-                                    .fillMaxSize()
-                                    .gap(1.cssRem),
-                                verticalAlignment = Alignment.Top
-                            ) {
-                                ProfileMenu(
-                                    modifier = Modifier
-                                        .flexGrow(1)
-                                        .fillMaxHeight()
-                                        .width(20.percent)
-                                        .flexShrink(0)
-                                        .displayIfAtLeast(Breakpoint.MD),
-                                    onSignOut = onSignOut
-                                )
+@Composable
+private fun HomeRedirectingToAuthContent(navigateToAuth: () -> Unit) {
+    navigateToAuth()
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        SpanText("Перенаправляем на авторизацию...", Modifier.fontSize(1.25.cssRem))
+    }
+}
 
-                                MainContent(mainState = mainState, meViewModel = meViewModel)
-                            }
-                        }
-                    }
-                }
+@Composable
+private fun ProfileAuthCheckingContent() {
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        SpanText("Проверяем авторизацию...", Modifier.fontSize(1.25.cssRem))
+    }
+}
+
+@Composable
+private fun HomeProfileMainContent(meViewModel: MeViewModel, navigateToAuth: () -> Unit) {
+    val scope = rememberCoroutineScope()
+    val onSignOut: () -> Unit = {
+        scope.launch {
+            signOut(meViewModel.repository.auth)
+            navigateToAuth()
+        }
+        Unit
+    }
+    val menuViewModel by kodein.instance<MenuViewModel>()
+    val mainState by menuViewModel.stateFlow.collectAsState()
+
+    PageLayout("Профиль") {
+        Box(
+            Modifier
+                .flexGrow(1)
+                .fillMaxWidth()
+                .padding(1.cssRem),
+            contentAlignment = Alignment.Center
+        ) {
+            Row(
+                Modifier
+                    .flexGrow(1)
+                    .fillMaxSize()
+                    .gap(1.cssRem),
+                verticalAlignment = Alignment.Top
+            ) {
+                ProfileMenu(
+                    modifier = Modifier
+                        .flexGrow(1)
+                        .fillMaxHeight()
+                        .width(20.percent)
+                        .flexShrink(0)
+                        .displayIfAtLeast(Breakpoint.MD),
+                    onSignOut = onSignOut
+                )
+
+                MainContent(mainState = mainState, meViewModel = meViewModel)
             }
         }
     }
