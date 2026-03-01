@@ -4,7 +4,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
@@ -30,8 +29,6 @@ import ru.cleardocs.lkweb.di.kodein
 import ru.cleardocs.lkweb.firebase.AuthState
 import ru.cleardocs.lkweb.firebase.FirebaseProvider
 import ru.cleardocs.lkweb.firebase.signOut
-import ru.cleardocs.lkweb.profile.MeViewModel
-import ru.cleardocs.lkweb.profile.ProfileAuthState
 import org.kodein.di.instance
 
 
@@ -46,16 +43,7 @@ fun HomePage() {
     when (authState) {
         AuthState.Loading -> HomeLoadingContent()
         AuthState.Unauthenticated -> HomeRedirectingToAuthContent(navigateToAuth)
-        AuthState.Authenticated -> {
-            val meViewModel = remember { MeViewModel() }
-            val profileAuthState by meViewModel.authState.collectAsState()
-
-            when (profileAuthState) {
-                ProfileAuthState.Loading -> { }
-                ProfileAuthState.Unauthenticated -> HomeRedirectingToAuthContent(navigateToAuth)
-                ProfileAuthState.Authenticated -> HomeProfileMainContent(meViewModel, navigateToAuth)
-            }
-        }
+        AuthState.Authenticated -> HomeProfileMainContent(navigateToAuth)
     }
 }
 
@@ -104,11 +92,11 @@ private fun HomeRedirectingToAuthContent(navigateToAuth: () -> Unit) {
 }
 
 @Composable
-private fun HomeProfileMainContent(meViewModel: MeViewModel, navigateToAuth: () -> Unit) {
+private fun HomeProfileMainContent(navigateToAuth: () -> Unit) {
     val scope = rememberCoroutineScope()
     val onSignOut: () -> Unit = {
         scope.launch {
-            signOut(meViewModel.repository.auth)
+            signOut(FirebaseProvider.repository.auth)
             navigateToAuth()
         }
         Unit
@@ -141,7 +129,7 @@ private fun HomeProfileMainContent(meViewModel: MeViewModel, navigateToAuth: () 
                     onSignOut = onSignOut
                 )
 
-                MainContent(mainState = mainState, meViewModel = meViewModel)
+                MainContent(mainState = mainState)
             }
         }
     }

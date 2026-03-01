@@ -1,13 +1,12 @@
 package ru.cleardocs.lkweb.pages
 
 import androidx.compose.runtime.Composable
-import ru.cleardocs.lkweb.profile.MeViewModel
 
 @Composable
-internal fun MainContent(mainState: MainViewState, meViewModel: MeViewModel) {
+internal fun MainContent(mainState: MainViewState) {
     when (mainState) {
-        MainViewState.Profile -> ProfileContent(meViewModel = meViewModel)
+        MainViewState.Profile -> ProfileContent()
         MainViewState.Connectors -> ConnectorsContent()
-        MainViewState.Plans -> PlansContent(meViewModel = meViewModel)
+        MainViewState.Plans -> PlansContent()
     }
 }

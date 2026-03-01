@@ -31,8 +31,8 @@ import ru.cleardocs.lkweb.toSitePalette
  * Показывает загрузку, ошибку или список тарифов.
  */
 @Composable
-fun Plans(currentPlanCode: String? = null) {
-    val viewModel = remember { PlansViewModel(currentPlanCode = currentPlanCode) }
+fun Plans() {
+    val viewModel = remember { PlansViewModel() }
     val plans by viewModel.plans.collectAsState()
     val loading by viewModel.loading.collectAsState()
     val error by viewModel.error.collectAsState()
