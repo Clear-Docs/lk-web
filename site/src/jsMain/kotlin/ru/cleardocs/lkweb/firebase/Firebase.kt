@@ -149,6 +149,30 @@ fun resetFirebaseUi(ui: dynamic) {
     }
 }
 
+/** Ждёт, пока Firebase определит начальное состояние auth (persistence восстановлен). */
+suspend fun authStateReady(auth: dynamic) {
+    if (auth == null) {
+        console.log("[Firebase.authStateReady] auth is null, skip")
+        return
+    }
+    console.log("[Firebase.authStateReady] start waiting for initial auth state")
+    val promise = try {
+        val fn = auth["authStateReady"]
+        if (fn != null && jsTypeOf(fn) == "function") {
+            js("(function(f, a) { return f.call(a); })")(fn, auth)
+        } else null
+    } catch (e: dynamic) {
+        console.warn("[Firebase.authStateReady] authStateReady() not available or threw:", e)
+        null
+    }
+    if (promise != null && jsTypeOf(promise.then) == "function") {
+        promiseToSuspend<Unit>(promise)
+        console.log("[Firebase.authStateReady] resolved, currentUser uid=", auth.currentUser?.uid)
+    } else {
+        console.log("[Firebase.authStateReady] no promise (authStateReady missing?), skipping wait")
+    }
+}
+
 fun onAuthStateChanged(auth: dynamic, handler: (dynamic) -> Unit): () -> Unit {
     val unsub = FirebaseAuth.onAuthStateChanged(auth) { user ->
         console.log(
