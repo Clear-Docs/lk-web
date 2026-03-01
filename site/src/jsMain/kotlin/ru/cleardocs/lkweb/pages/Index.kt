@@ -26,8 +26,7 @@ import ru.cleardocs.lkweb.firebase.AuthState
 import ru.cleardocs.lkweb.firebase.FirebaseProvider
 import ru.cleardocs.lkweb.firebase.signOut
 import ru.cleardocs.lkweb.profile.MeViewModel
-import ru.cleardocs.lkweb.utils.requireAuthRedirect
-import ru.cleardocs.lkweb.utils.requireProfileAuthRedirect
+import ru.cleardocs.lkweb.profile.ProfileAuthState
 import org.kodein.di.instance
 
 @Page(routeOverride = "/index")
@@ -37,61 +36,78 @@ fun HomePage() {
     val authState by repository.authStateFlow.collectAsState()
     val ctx = rememberPageContext()
 
-    requireAuthRedirect(authState, ctx.router::tryRoutingTo)
-
-    if (authState == AuthState.Loading) {
-        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                SpanText("Загрузка...", Modifier.fontSize(1.25.cssRem))
+    when (authState) {
+        AuthState.Loading -> {
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    SpanText("Загрузка...", Modifier.fontSize(1.25.cssRem))
+                }
             }
         }
-        return
-    }
-
-    if (authState == AuthState.Authenticated) {
-        val meViewModel = remember { MeViewModel() }
-        val profileAuthState by meViewModel.authState.collectAsState()
-        val scope = rememberCoroutineScope()
-
-        requireProfileAuthRedirect(profileAuthState, ctx.router::tryRoutingTo)
-
-        val onSignOut: () -> Unit = {
-            scope.launch {
-                signOut(meViewModel.repository.auth)
-                ctx.router.tryRoutingTo("/auth")
+        AuthState.Unauthenticated -> {
+            ctx.router.tryRoutingTo("/auth")
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                SpanText("Перенаправляем на авторизацию...", Modifier.fontSize(1.25.cssRem))
             }
-            Unit
         }
+        AuthState.Authenticated -> {
+            val meViewModel = remember { MeViewModel() }
+            val profileAuthState by meViewModel.authState.collectAsState()
+            val scope = rememberCoroutineScope()
 
-        val menuViewModel by kodein.instance<MenuViewModel>()
-        val mainState by menuViewModel.stateFlow.collectAsState()
+            when (profileAuthState) {
+                ProfileAuthState.Loading -> {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        SpanText("Проверяем авторизацию...", Modifier.fontSize(1.25.cssRem))
+                    }
+                }
+                ProfileAuthState.Unauthenticated -> {
+                    ctx.router.tryRoutingTo("/auth")
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        SpanText("Перенаправляем на авторизацию...", Modifier.fontSize(1.25.cssRem))
+                    }
+                }
+                ProfileAuthState.Authenticated -> {
+                    val onSignOut: () -> Unit = {
+                        scope.launch {
+                            signOut(meViewModel.repository.auth)
+                            ctx.router.tryRoutingTo("/auth")
+                        }
+                        Unit
+                    }
 
-        PageLayout("Профиль") {
-            Box(
-                Modifier
-                    .flexGrow(1)
-                    .fillMaxWidth()
-                    .padding(1.cssRem),
-                contentAlignment = Alignment.Center
-            ) {
-                Row(
-                    Modifier
-                        .flexGrow(1)
-                        .fillMaxSize()
-                        .gap(1.cssRem),
-                    verticalAlignment = Alignment.Top
-                ) {
-                    ProfileMenu(
-                        modifier = Modifier
-                            .flexGrow(1)
-                            .fillMaxHeight()
-                            .width(20.percent)
-                            .flexShrink(0)
-                            .displayIfAtLeast(Breakpoint.MD),
-                        onSignOut = onSignOut
-                    )
+                    val menuViewModel by kodein.instance<MenuViewModel>()
+                    val mainState by menuViewModel.stateFlow.collectAsState()
 
-                    MainContent(mainState = mainState, meViewModel = meViewModel)
+                    PageLayout("Профиль") {
+                        Box(
+                            Modifier
+                                .flexGrow(1)
+                                .fillMaxWidth()
+                                .padding(1.cssRem),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row(
+                                Modifier
+                                    .flexGrow(1)
+                                    .fillMaxSize()
+                                    .gap(1.cssRem),
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                ProfileMenu(
+                                    modifier = Modifier
+                                        .flexGrow(1)
+                                        .fillMaxHeight()
+                                        .width(20.percent)
+                                        .flexShrink(0)
+                                        .displayIfAtLeast(Breakpoint.MD),
+                                    onSignOut = onSignOut
+                                )
+
+                                MainContent(mainState = mainState, meViewModel = meViewModel)
+                            }
+                        }
+                    }
                 }
             }
         }
