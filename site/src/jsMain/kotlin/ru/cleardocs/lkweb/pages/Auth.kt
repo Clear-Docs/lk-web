@@ -62,7 +62,7 @@ fun AuthPage() {
 
     if (state.navigateToProfile) {
         vm.clearNavigateToProfile()
-        ctx.router.tryRoutingTo("/profile")
+        ctx.router.tryRoutingTo("/index")
     }
 
     PageLayout("Вход в аккаунт") {
