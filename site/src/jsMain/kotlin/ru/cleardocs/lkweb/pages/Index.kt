@@ -1,6 +1,7 @@
 package ru.cleardocs.lkweb.pages
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -16,7 +17,11 @@ import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.components.layout.breakpoint.displayIfAtLeast
 import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
 import com.varabyte.kobweb.silk.components.text.SpanText
+import com.varabyte.kobweb.silk.theme.colors.ColorMode
+import kotlinx.browser.document
 import kotlinx.coroutines.launch
+import org.jetbrains.compose.web.dom.Div
+import ru.cleardocs.lkweb.toSitePalette
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.percent
 import ru.cleardocs.lkweb.components.layouts.PageLayout
@@ -56,10 +61,40 @@ fun HomePage() {
 
 @Composable
 private fun HomeLoadingContent() {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            SpanText("Загрузка...", Modifier.fontSize(1.25.cssRem))
+    val palette = ColorMode.current.toSitePalette()
+    val brandColor = palette.brand.primary.toString()
+
+    DisposableEffect(Unit) {
+        if (document.getElementById("home-loading-spinner-keyframes") == null) {
+            val style = document.createElement("style").unsafeCast<org.w3c.dom.HTMLStyleElement>()
+            style.id = "home-loading-spinner-keyframes"
+            style.appendChild(
+                document.createTextNode(
+                    """
+                    @keyframes home-loading-spin {
+                        to { transform: rotate(360deg); }
+                    }
+                """.trimIndent()
+                )
+            )
+            document.head?.appendChild(style)
         }
+        onDispose { }
+    }
+
+    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Div(
+            attrs = {
+                style {
+                    property("width", "48px")
+                    property("height", "48px")
+                    property("border", "4px solid ${palette.cobweb}")
+                    property("border-top-color", brandColor)
+                    property("border-radius", "50%")
+                    property("animation", "home-loading-spin 0.8s linear infinite")
+                }
+            }
+        )
     }
 }
 
