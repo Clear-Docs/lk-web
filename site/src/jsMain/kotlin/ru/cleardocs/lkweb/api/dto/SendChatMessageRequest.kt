@@ -20,7 +20,12 @@ data class InternalSearchFilters(
     @SerialName("source_type") val sourceType: List<String> = emptyList(),
 )
 
-/** POST /api/v1/chat/send-chat-message */
+/** POST /api/chat/send-chat-message (Onyx) */
+@Serializable
+data class LlmOverride(
+    val temperature: Double = 0.0,
+)
+
 @Serializable
 data class SendChatMessageRequest(
     val message: String,
@@ -33,4 +38,5 @@ data class SendChatMessageRequest(
     @SerialName("allowed_tool_ids") val allowedToolIds: List<Int>? = null,
     @SerialName("forced_tool_id") val forcedToolId: Int? = null,
     @SerialName("stream") val stream: Boolean = true,
+    @SerialName("llm_override") val llmOverride: LlmOverride = LlmOverride(temperature = 0.0),
 )
