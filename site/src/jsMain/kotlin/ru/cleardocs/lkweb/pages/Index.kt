@@ -51,7 +51,7 @@ fun HomePage() {
             val profileAuthState by meViewModel.authState.collectAsState()
 
             when (profileAuthState) {
-                ProfileAuthState.Loading -> ProfileAuthCheckingContent()
+                ProfileAuthState.Loading -> { }
                 ProfileAuthState.Unauthenticated -> HomeRedirectingToAuthContent(navigateToAuth)
                 ProfileAuthState.Authenticated -> HomeProfileMainContent(meViewModel, navigateToAuth)
             }
@@ -101,16 +101,6 @@ private fun HomeLoadingContent() {
 @Composable
 private fun HomeRedirectingToAuthContent(navigateToAuth: () -> Unit) {
     navigateToAuth()
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        SpanText("Перенаправляем на авторизацию...", Modifier.fontSize(1.25.cssRem))
-    }
-}
-
-@Composable
-private fun ProfileAuthCheckingContent() {
-    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        SpanText("Проверяем авторизацию...", Modifier.fontSize(1.25.cssRem))
-    }
 }
 
 @Composable
