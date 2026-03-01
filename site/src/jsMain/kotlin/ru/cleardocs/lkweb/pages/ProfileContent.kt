@@ -1,8 +1,6 @@
 package ru.cleardocs.lkweb.pages
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.ui.Alignment
@@ -19,30 +17,16 @@ import com.varabyte.kobweb.silk.components.style.breakpoint.Breakpoint
 import org.jetbrains.compose.web.css.cssRem
 import ru.cleardocs.lkweb.components.widgets.ContentCard
 import ru.cleardocs.lkweb.components.sections.ProfileBlock
-import ru.cleardocs.lkweb.profile.MeViewModel
-import ru.cleardocs.lkweb.profile.ProfileAuthState
 import ru.cleardocs.lkweb.SiteTokens
 import ru.cleardocs.lkweb.toSitePalette
 
 @Composable
-internal fun ProfileContent(meViewModel: MeViewModel) {
-    val authState by meViewModel.authState.collectAsState()
-    val me by meViewModel.me.collectAsState()
-    val meLoading by meViewModel.loading.collectAsState()
-    val meError by meViewModel.error.collectAsState()
+internal fun ProfileContent() {
     val palette = ColorMode.current.toSitePalette()
 
     val profileBody: @Composable () -> Unit = {
         SpanText("Профиль", Modifier.fontSize(1.5.cssRem))
-        when (authState) {
-            ProfileAuthState.Loading -> SpanText("Проверяем авторизацию...")
-            ProfileAuthState.Unauthenticated -> SpanText("Перенаправляем на авторизацию...")
-            ProfileAuthState.Authenticated -> when {
-                meLoading -> SpanText("Загрузка профиля...")
-                meError != null -> SpanText("Ошибка: $meError")
-                else -> ProfileBlock(meDto = me)
-            }
-        }
+        ProfileBlock()
     }
 
     Box(Modifier.flexGrow(1).fillMaxSize()) {

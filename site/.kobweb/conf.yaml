@@ -5,6 +5,8 @@ server:
   redirects:
     - from: "/index"
       to: "/"
+    - from: "/profile"
+      to: "/"
   files:
     dev:
       contentRoot: "build/processedResources/js/main/public"
