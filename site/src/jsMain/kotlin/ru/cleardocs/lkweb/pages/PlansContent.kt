@@ -19,6 +19,6 @@ internal fun PlansContent() {
             .gap(SiteTokens.Spacing.xl),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Plans(currentPlanCode = null)
+        Plans()
     }
 }
