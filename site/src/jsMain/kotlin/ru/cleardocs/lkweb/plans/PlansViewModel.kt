@@ -11,8 +11,6 @@ import ru.cleardocs.lkweb.api.BackendApi
 import ru.cleardocs.lkweb.utils.toUserFriendlyMessage
 
 class PlansViewModel(
-    /** Код текущего тарифа пользователя — от него зависит [Plan.isActive]. */
-    private val currentPlanCode: String? = null,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main),
 ) {
 
@@ -31,12 +29,18 @@ class PlansViewModel(
 
     /**
      * Загружает список тарифов из REST GET /api/v1/plans и обновляет [plans].
+     * Текущий тариф пользователя (для [Plan.isActive]) берётся из GET /api/v1/users/me.
      * Перед запросом выставляет [loading], при ошибке — [error].
      */
     suspend fun loadPlans() {
         _loading.value = true
         _error.value = null
         try {
+            val currentPlanCode = try {
+                BackendApi.me().plan.code
+            } catch (_: Throwable) {
+                null
+            }
             val response = BackendApi.plans()
             _plans.value = response.plans.map { dto ->
                 Plan(

@@ -32,7 +32,7 @@ import ru.cleardocs.lkweb.toSitePalette
  */
 @Composable
 fun Plans() {
-    val viewModel = remember { PlansViewModel(currentPlanCode = null) }
+    val viewModel = remember { PlansViewModel() }
     val plans by viewModel.plans.collectAsState()
     val loading by viewModel.loading.collectAsState()
     val error by viewModel.error.collectAsState()
