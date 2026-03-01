@@ -231,7 +231,6 @@ fun ChatBlock(
                 ) {
                     Img(
                         src = if (canSend) "/send-active.svg" else "/send.svg",
-                        alt = "Отправить"
                     ) {
                         style {
                             property("width", "1.25rem")

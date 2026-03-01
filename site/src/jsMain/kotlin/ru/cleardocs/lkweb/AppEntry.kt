@@ -14,10 +14,13 @@ import com.varabyte.kobweb.silk.components.style.toModifier
 import com.varabyte.kobweb.silk.init.InitSilk
 import com.varabyte.kobweb.silk.init.InitSilkContext
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
+import kotlinx.browser.document
 import kotlinx.browser.localStorage
 import org.jetbrains.compose.web.css.vh
+import org.w3c.dom.HTMLScriptElement
 
 private const val COLOR_MODE_KEY = "clearDocs:colorMode"
+private const val JIVO_WIDGET_ID = "jivo-widget"
 
 @InitSilk
 fun initColorMode(ctx: InitSilkContext) {
@@ -27,6 +30,16 @@ fun initColorMode(ctx: InitSilkContext) {
 @App
 @Composable
 fun AppEntry(content: @Composable () -> Unit) {
+    SideEffect {
+        if (document.getElementById(JIVO_WIDGET_ID) == null) {
+            val script = document.createElement("script").unsafeCast<HTMLScriptElement>()
+            script.id = JIVO_WIDGET_ID
+            script.src = "https://code.jivo.ru/widget/pRFQhqJ7tP"
+            script.async = true
+            document.head?.appendChild(script)
+        }
+    }
+
     SilkApp {
         val colorMode = ColorMode.current
         SideEffect {
