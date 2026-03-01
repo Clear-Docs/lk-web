@@ -2,6 +2,9 @@ site:
   title: "ClearDocs"
 
 server:
+  redirects:
+    - from: "/index"
+      to: "/"
   files:
     dev:
       contentRoot: "build/processedResources/js/main/public"

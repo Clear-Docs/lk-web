@@ -38,7 +38,7 @@ fun requireProfileAuthRedirect(
 fun requireGuestRedirect(
     authState: AuthState,
     navigate: (path: String) -> Unit,
-    redirectTo: String = "/profile",
+    redirectTo: String = "/",
 ) {
     if (authState == AuthState.Authenticated) {
         navigate(redirectTo)
