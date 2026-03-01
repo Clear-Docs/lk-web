@@ -35,7 +35,7 @@ import ru.cleardocs.lkweb.profile.ProfileAuthState
 import org.kodein.di.instance
 
 
-@Page(routeOverride = "/index")
+@Page("/")
 @Composable
 fun HomePage() {
     val repository = FirebaseProvider.repository

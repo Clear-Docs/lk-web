@@ -188,7 +188,7 @@ fun NavHeader() {
                         onSignOut = onSignOut,
                         onEntrySelected = {
                             drawerOpen = false
-                            ctx.router.tryRoutingTo("/index")
+                            ctx.router.tryRoutingTo("/")
                         }
                     )
                 }
