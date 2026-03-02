@@ -3,24 +3,17 @@ package ru.cleardocs.lkweb.connectors
 import androidx.compose.runtime.Composable
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
-import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.modifiers.onClick
-import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
-import com.varabyte.kobweb.compose.ui.modifiers.backgroundColor
-import com.varabyte.kobweb.compose.ui.modifiers.borderRadius
-import com.varabyte.kobweb.compose.ui.modifiers.boxShadow
 import com.varabyte.kobweb.compose.ui.modifiers.color
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.flexShrink
 import com.varabyte.kobweb.compose.ui.modifiers.fontSize
 import com.varabyte.kobweb.compose.ui.modifiers.gap
-import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import com.varabyte.kobweb.silk.theme.colors.palette.color
 import com.varabyte.kobweb.silk.theme.colors.palette.toPalette
 import com.varabyte.kobweb.silk.components.text.SpanText
-import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Img
@@ -47,16 +40,24 @@ fun ConnectorItem(
         else -> "/file-icon.svg"
     }
     val itemBg = ColorMode.current.cardItemBackground(palette)
-    Row(
-        Modifier
-            .fillMaxWidth()
-            .padding(SiteTokens.Spacing.xl)
-            .borderRadius(SiteTokens.Radius.md)
-            .backgroundColor(itemBg)
-            .boxShadow(2.px, 2.px, 8.px, color = palette.brand.primary.toRgb().copyf(alpha = 0.12f))
-            .gap(SiteTokens.Spacing.md)
-            .onClick { onClick() },
-        verticalAlignment = Alignment.CenterVertically
+    val shadowColor = palette.brand.primary.toRgb().copyf(alpha = 0.12f).toString()
+    Div(
+        attrs = {
+            classes("connector-item-clickable")
+            style {
+                property("display", "flex")
+                property("align-items", "center")
+                property("gap", "1rem")
+                property("width", "100%")
+                property("padding", "1.25rem")
+                property("border-radius", "0.75rem")
+                property("background", itemBg.toString())
+                property("box-shadow", "2px 2px 8px $shadowColor")
+                property("cursor", "pointer")
+                property("transition", "box-shadow 0.2s ease")
+            }
+            onClick { onClick() }
+        }
     ) {
         Img(
             src = iconSrc,
