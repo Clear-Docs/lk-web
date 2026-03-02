@@ -1,8 +1,10 @@
 package ru.cleardocs.lkweb.connectors
 
 import androidx.compose.runtime.Composable
+import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
+import com.varabyte.kobweb.compose.ui.modifiers.onClick
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.backgroundColor
@@ -31,6 +33,7 @@ import ru.cleardocs.lkweb.toSitePalette
 fun ConnectorItem(
     connector: Connector,
     palette: SitePalette,
+    onClick: () -> Unit,
     onDelete: (String) -> Unit,
     onPause: (String) -> Unit,
     onResume: (String) -> Unit,
@@ -51,7 +54,8 @@ fun ConnectorItem(
             .borderRadius(SiteTokens.Radius.md)
             .backgroundColor(itemBg)
             .boxShadow(2.px, 2.px, 8.px, color = palette.brand.primary.toRgb().copyf(alpha = 0.12f))
-            .gap(SiteTokens.Spacing.md),
+            .gap(SiteTokens.Spacing.md)
+            .onClick { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         Img(
@@ -79,19 +83,22 @@ fun ConnectorItem(
             SpanText(connector.name, Modifier.color(textColor.toRgb()).fontSize(1.cssRem))
         }
         ConnectorStatusBadge(connector.status, Modifier.flexShrink(0))
-        ConnectorStatusButtons(
-            connectorId = connector.id,
-            statusUpper = statusUpper,
-            onPause = onPause,
-            onResume = onResume,
-            onDelete = onDelete,
-        )
+        Box(Modifier.onClick { it.stopPropagation() }) {
+            ConnectorStatusButtons(
+                connectorId = connector.id,
+                statusUpper = statusUpper,
+                onPause = onPause,
+                onResume = onResume,
+                onDelete = onDelete,
+            )
+        }
     }
 }
 
 @Composable
 fun ConnectorsList(
     connectors: List<Connector>,
+    onClick: () -> Unit,
     onDelete: (String) -> Unit,
     onPause: (String) -> Unit,
     onResume: (String) -> Unit,
@@ -106,6 +113,7 @@ fun ConnectorsList(
             ConnectorItem(
                 connector = c,
                 palette = palette,
+                onClick = onClick,
                 onDelete = onDelete,
                 onPause = onPause,
                 onResume = onResume,

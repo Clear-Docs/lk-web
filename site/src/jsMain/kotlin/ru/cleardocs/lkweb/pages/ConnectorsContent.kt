@@ -73,6 +73,7 @@ internal fun ConnectorsContent() {
                 } else {
                     ConnectorsList(
                         connectors = s.connectors,
+                        onClick = { connectorsViewModel.goToChat() },
                         onDelete = { id -> connectorsViewModel.deleteConnector(id) },
                         onPause = { id -> connectorsViewModel.setConnectorStatus(id, "PAUSED") },
                         onResume = { id -> connectorsViewModel.setConnectorStatus(id, "ACTIVE") },
