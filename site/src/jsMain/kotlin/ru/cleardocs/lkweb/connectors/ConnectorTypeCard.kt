@@ -1,6 +1,7 @@
 package ru.cleardocs.lkweb.connectors
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import com.varabyte.kobweb.compose.dom.ElementTarget
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import com.varabyte.kobweb.silk.theme.colors.palette.color
 import com.varabyte.kobweb.silk.theme.colors.palette.toPalette
+import kotlinx.browser.document
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Img
@@ -94,17 +96,37 @@ fun ConnectorTypeCard(
             }
         }
     ) {
-        Img(
-            src = iconSrc,
-            alt = label,
-            attrs = {
-                style {
-                    property("width", "2rem")
-                    property("height", "2rem")
-                    property("object-fit", "contain")
+        val isHighlighted = iconSrc == "/globe-icon.svg" || iconSrc == "/file-icon.svg"
+        val brandColor = palette.brand.primary.toString()
+        if (isHighlighted) {
+            Div(
+                attrs = {
+                    style {
+                        property("width", "2rem")
+                        property("height", "2rem")
+                        property("background-color", brandColor)
+                        property("mask", "url($iconSrc) no-repeat center")
+                        property("mask-size", "contain")
+                        property("-webkit-mask", "url($iconSrc) no-repeat center")
+                        property("-webkit-mask-size", "contain")
+                        property("--connector-highlight-color", brandColor)
+                        property("animation", "connector-highlight-pulse 2s ease-in-out infinite")
+                    }
                 }
-            }
-        )
+            )
+        } else {
+            Img(
+                src = iconSrc,
+                alt = label,
+                attrs = {
+                    style {
+                        property("width", "2rem")
+                        property("height", "2rem")
+                        property("object-fit", "contain")
+                    }
+                }
+            )
+        }
         SpanText(label, Modifier.color(textColor.toRgb()).fontSize(1.cssRem))
     }
         if (hint != null) {
@@ -112,6 +134,8 @@ fun ConnectorTypeCard(
         }
     }
 }
+
+private const val CONNECTOR_HIGHLIGHT_KEYFRAMES_ID = "connector-highlight-icon-keyframes"
 
 @Composable
 fun ConnectorTypeCardsRow(
@@ -122,6 +146,26 @@ fun ConnectorTypeCardsRow(
     connectorsViewModel: ConnectorsViewModel,
 ) {
     val showToast = rememberTimedToast()
+
+    DisposableEffect(Unit) {
+        if (document.getElementById(CONNECTOR_HIGHLIGHT_KEYFRAMES_ID) == null) {
+            val style = document.createElement("style").unsafeCast<org.w3c.dom.HTMLStyleElement>()
+            style.id = CONNECTOR_HIGHLIGHT_KEYFRAMES_ID
+            style.appendChild(
+                document.createTextNode(
+                    """
+                    @keyframes connector-highlight-pulse {
+                        0%, 100% { filter: drop-shadow(0 0 4px var(--connector-highlight-color)); opacity: 0.9; }
+                        50% { filter: drop-shadow(0 0 12px var(--connector-highlight-color)); opacity: 1; }
+                    }
+                    """.trimIndent()
+                )
+            )
+            document.head?.appendChild(style)
+        }
+        onDispose { }
+    }
+
     Column(Modifier.fillMaxWidth().gap(SiteTokens.Spacing.lg)) {
         when (selectedType) {
             null -> {
