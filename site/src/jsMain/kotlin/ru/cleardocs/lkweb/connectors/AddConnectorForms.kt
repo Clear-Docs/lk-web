@@ -118,6 +118,11 @@ fun AddFileConnectorForm(
             },
             enabled = !isAdding
         )
+
+        SpanText(
+            "Загрузите файлы, выберите путь.",
+            Modifier.fontSize(0.85.cssRem).color(palette.brand.primary)
+        )
     }
 }
 
@@ -181,6 +186,11 @@ fun AddUrlConnectorForm(
                 }
             },
             enabled = !isAdding
+        )
+
+        SpanText(
+            "Подключите любой сайт рекурсивно, укажите url сайта.",
+            Modifier.fontSize(0.85.cssRem).color(palette.brand.primary)
         )
     }
 }
