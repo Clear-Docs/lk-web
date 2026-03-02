@@ -71,9 +71,13 @@ fun ConnectorTypeCard(
 ) {
     val textColor = ColorMode.current.toPalette().color
     val cardBg = ColorMode.current.cardItemBackground(palette).toString()
+    val isHighlighted = iconSrc == "/globe-icon.svg" || iconSrc == "/file-icon.svg"
+    val brandColor = palette.brand.primary.toString()
+    val shadowColor = palette.brand.primary.toRgb().copyf(alpha = 0.12f).toString()
     Box {
     Div(
         attrs = {
+            if (isHighlighted && enabled) classes("connector-featured-card")
             style {
                 property("cursor", if (enabled) "pointer" else "default")
                 property("display", "flex")
@@ -86,8 +90,14 @@ fun ConnectorTypeCard(
                 property("min-height", "6rem")
                 property("border-radius", "0.75rem")
                 property("background", cardBg)
-                property("box-shadow", "2px 2px 8px ${palette.brand.primary.toRgb().copyf(alpha = 0.12f).toString()}")
-                property("transition", "box-shadow 0.2s ease")
+                property("box-shadow", "2px 2px 8px $shadowColor")
+                property("transition", "transform 0.2s ease, box-shadow 0.2s ease")
+                if (isHighlighted && enabled) {
+                    property("--connector-glow-color", palette.brand.primary.toRgb().copyf(alpha = 0.4f).toString())
+                    property("--connector-base-shadow", "2px 2px 8px $shadowColor")
+                    property("animation", "connector-card-glow 2.5s ease-in-out infinite")
+                    if (iconSrc == "/file-icon.svg") property("animation-delay", "0.6s")
+                }
                 if (!enabled) property("opacity", "0.6")
             }
             onClick {
@@ -96,8 +106,6 @@ fun ConnectorTypeCard(
             }
         }
     ) {
-        val isHighlighted = iconSrc == "/globe-icon.svg" || iconSrc == "/file-icon.svg"
-        val brandColor = palette.brand.primary.toString()
         if (isHighlighted) {
             Div(
                 attrs = {
@@ -110,7 +118,8 @@ fun ConnectorTypeCard(
                         property("-webkit-mask", "url($iconSrc) no-repeat center")
                         property("-webkit-mask-size", "contain")
                         property("--connector-highlight-color", brandColor)
-                        property("animation", "connector-highlight-pulse 2s ease-in-out infinite")
+                        property("animation", "connector-icon-bounce 2s ease-in-out infinite")
+                        if (iconSrc == "/file-icon.svg") property("animation-delay", "0.6s")
                     }
                 }
             )
@@ -154,9 +163,35 @@ fun ConnectorTypeCardsRow(
             style.appendChild(
                 document.createTextNode(
                     """
-                    @keyframes connector-highlight-pulse {
-                        0%, 100% { filter: drop-shadow(0 0 4px var(--connector-highlight-color)); opacity: 0.9; }
-                        50% { filter: drop-shadow(0 0 12px var(--connector-highlight-color)); opacity: 1; }
+                    @keyframes connector-icon-bounce {
+                        0%, 100% {
+                            transform: scale(1) translateY(0);
+                            filter: drop-shadow(0 0 6px var(--connector-highlight-color));
+                        }
+                        25% {
+                            transform: scale(1.1) translateY(-4px);
+                            filter: drop-shadow(0 0 14px var(--connector-highlight-color)) drop-shadow(0 0 20px var(--connector-highlight-color));
+                        }
+                        50% {
+                            transform: scale(1.05) translateY(-2px);
+                            filter: drop-shadow(0 0 18px var(--connector-highlight-color));
+                        }
+                        75% {
+                            transform: scale(1.08) translateY(-3px);
+                            filter: drop-shadow(0 0 12px var(--connector-highlight-color));
+                        }
+                    }
+                    .connector-featured-card:hover {
+                        transform: scale(1.05);
+                        box-shadow: var(--connector-base-shadow), 0 0 35px var(--connector-glow-color) !important;
+                    }
+                    @keyframes connector-card-glow {
+                        0%, 100% {
+                            box-shadow: var(--connector-base-shadow), 0 0 18px var(--connector-glow-color);
+                        }
+                        50% {
+                            box-shadow: var(--connector-base-shadow), 0 0 32px var(--connector-glow-color);
+                        }
                     }
                     """.trimIndent()
                 )
