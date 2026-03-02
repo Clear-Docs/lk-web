@@ -1,18 +1,20 @@
 package ru.cleardocs.lkweb.connectors
 
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
-import com.varabyte.kobweb.compose.foundation.layout.Column
+import com.varabyte.kobweb.compose.dom.ElementTarget
+import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.color
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.gap
 import com.varabyte.kobweb.compose.ui.modifiers.fontSize
+import com.varabyte.kobweb.silk.components.overlay.PopupPlacement
+import com.varabyte.kobweb.silk.components.overlay.Tooltip
+import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import com.varabyte.kobweb.silk.theme.colors.palette.color
 import com.varabyte.kobweb.silk.theme.colors.palette.toPalette
-import com.varabyte.kobweb.silk.components.text.SpanText
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Img
@@ -63,9 +65,11 @@ fun ConnectorTypeCard(
     enabled: Boolean = true,
     disabledMessage: String = "В разработке",
     showToast: (String) -> Unit = {},
+    hint: String? = null,
 ) {
     val textColor = ColorMode.current.toPalette().color
     val cardBg = ColorMode.current.cardItemBackground(palette).toString()
+    Box {
     Div(
         attrs = {
             style {
@@ -102,6 +106,10 @@ fun ConnectorTypeCard(
             }
         )
         SpanText(label, Modifier.color(textColor.toRgb()).fontSize(1.cssRem))
+    }
+        if (hint != null) {
+            Tooltip(ElementTarget.PreviousSibling, hint, placement = PopupPlacement.Bottom)
+        }
     }
 }
 
@@ -140,7 +148,12 @@ fun ConnectorTypeCardsRow(
                                 !canAdd -> "Измените тариф"
                                 else -> "В разработке"
                             },
-                            showToast = showToast
+                            showToast = showToast,
+                            hint = when (type) {
+                                ConnectorType.Url -> "Подключите любой сайт рекурсивно, укажите url сайта."
+                                ConnectorType.File -> "Загрузите файлы, выберите путь."
+                                else -> null
+                            }
                         )
                     }
                 }
