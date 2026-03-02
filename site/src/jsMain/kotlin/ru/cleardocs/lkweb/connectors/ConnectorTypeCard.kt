@@ -1,6 +1,7 @@
 package ru.cleardocs.lkweb.connectors
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import com.varabyte.kobweb.compose.dom.ElementTarget
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
@@ -15,6 +16,7 @@ import com.varabyte.kobweb.silk.components.text.SpanText
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import com.varabyte.kobweb.silk.theme.colors.palette.color
 import com.varabyte.kobweb.silk.theme.colors.palette.toPalette
+import kotlinx.browser.document
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.dom.Div
 import org.jetbrains.compose.web.dom.Img
@@ -69,9 +71,13 @@ fun ConnectorTypeCard(
 ) {
     val textColor = ColorMode.current.toPalette().color
     val cardBg = ColorMode.current.cardItemBackground(palette).toString()
+    val isHighlighted = iconSrc == "/globe-icon.svg" || iconSrc == "/file-icon.svg"
+    val brandColor = palette.brand.primary.toString()
+    val shadowColor = palette.brand.primary.toRgb().copyf(alpha = 0.12f).toString()
     Box {
     Div(
         attrs = {
+            if (isHighlighted && enabled) classes("connector-featured-card")
             style {
                 property("cursor", if (enabled) "pointer" else "default")
                 property("display", "flex")
@@ -84,8 +90,14 @@ fun ConnectorTypeCard(
                 property("min-height", "6rem")
                 property("border-radius", "0.75rem")
                 property("background", cardBg)
-                property("box-shadow", "2px 2px 8px ${palette.brand.primary.toRgb().copyf(alpha = 0.12f).toString()}")
-                property("transition", "box-shadow 0.2s ease")
+                property("box-shadow", "2px 2px 8px $shadowColor")
+                property("transition", "transform 0.2s ease, box-shadow 0.2s ease")
+                if (isHighlighted && enabled) {
+                    property("--connector-glow-color", palette.brand.primary.toRgb().copyf(alpha = 0.4f).toString())
+                    property("--connector-base-shadow", "2px 2px 8px $shadowColor")
+                    property("animation", "connector-card-glow 2.5s ease-in-out infinite")
+                    if (iconSrc == "/file-icon.svg") property("animation-delay", "0.6s")
+                }
                 if (!enabled) property("opacity", "0.6")
             }
             onClick {
@@ -94,17 +106,36 @@ fun ConnectorTypeCard(
             }
         }
     ) {
-        Img(
-            src = iconSrc,
-            alt = label,
-            attrs = {
-                style {
-                    property("width", "2rem")
-                    property("height", "2rem")
-                    property("object-fit", "contain")
+        if (isHighlighted) {
+            Div(
+                attrs = {
+                    style {
+                        property("width", "2rem")
+                        property("height", "2rem")
+                        property("background-color", brandColor)
+                        property("mask", "url($iconSrc) no-repeat center")
+                        property("mask-size", "contain")
+                        property("-webkit-mask", "url($iconSrc) no-repeat center")
+                        property("-webkit-mask-size", "contain")
+                        property("--connector-highlight-color", brandColor)
+                        property("animation", "connector-icon-bounce 2s ease-in-out infinite")
+                        if (iconSrc == "/file-icon.svg") property("animation-delay", "0.6s")
+                    }
                 }
-            }
-        )
+            )
+        } else {
+            Img(
+                src = iconSrc,
+                alt = label,
+                attrs = {
+                    style {
+                        property("width", "2rem")
+                        property("height", "2rem")
+                        property("object-fit", "contain")
+                    }
+                }
+            )
+        }
         SpanText(label, Modifier.color(textColor.toRgb()).fontSize(1.cssRem))
     }
         if (hint != null) {
@@ -112,6 +143,8 @@ fun ConnectorTypeCard(
         }
     }
 }
+
+private const val CONNECTOR_HIGHLIGHT_KEYFRAMES_ID = "connector-highlight-icon-keyframes"
 
 @Composable
 fun ConnectorTypeCardsRow(
@@ -122,6 +155,52 @@ fun ConnectorTypeCardsRow(
     connectorsViewModel: ConnectorsViewModel,
 ) {
     val showToast = rememberTimedToast()
+
+    DisposableEffect(Unit) {
+        if (document.getElementById(CONNECTOR_HIGHLIGHT_KEYFRAMES_ID) == null) {
+            val style = document.createElement("style").unsafeCast<org.w3c.dom.HTMLStyleElement>()
+            style.id = CONNECTOR_HIGHLIGHT_KEYFRAMES_ID
+            style.appendChild(
+                document.createTextNode(
+                    """
+                    @keyframes connector-icon-bounce {
+                        0%, 100% {
+                            transform: scale(1) translateY(0);
+                            filter: drop-shadow(0 0 6px var(--connector-highlight-color));
+                        }
+                        25% {
+                            transform: scale(1.1) translateY(-4px);
+                            filter: drop-shadow(0 0 14px var(--connector-highlight-color)) drop-shadow(0 0 20px var(--connector-highlight-color));
+                        }
+                        50% {
+                            transform: scale(1.05) translateY(-2px);
+                            filter: drop-shadow(0 0 18px var(--connector-highlight-color));
+                        }
+                        75% {
+                            transform: scale(1.08) translateY(-3px);
+                            filter: drop-shadow(0 0 12px var(--connector-highlight-color));
+                        }
+                    }
+                    .connector-featured-card:hover {
+                        transform: scale(1.05);
+                        box-shadow: var(--connector-base-shadow), 0 0 35px var(--connector-glow-color) !important;
+                    }
+                    @keyframes connector-card-glow {
+                        0%, 100% {
+                            box-shadow: var(--connector-base-shadow), 0 0 18px var(--connector-glow-color);
+                        }
+                        50% {
+                            box-shadow: var(--connector-base-shadow), 0 0 32px var(--connector-glow-color);
+                        }
+                    }
+                    """.trimIndent()
+                )
+            )
+            document.head?.appendChild(style)
+        }
+        onDispose { }
+    }
+
     Column(Modifier.fillMaxWidth().gap(SiteTokens.Spacing.lg)) {
         when (selectedType) {
             null -> {
