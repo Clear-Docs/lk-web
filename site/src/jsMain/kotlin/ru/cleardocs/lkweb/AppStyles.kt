@@ -45,6 +45,10 @@ fun initSiteStyles(ctx: InitSilkContext) {
     ctx.theme.modifyComponentStyleBase(HorizontalDividerStyle) {
         Modifier.fillMaxWidth()
     }
+
+    ctx.stylesheet.registerStyleBase(".connector-item-clickable:hover") {
+        Modifier.boxShadow(3.px, 3.px, 14.px, color = Colors.Black.toRgb().copyf(alpha = 0.18f))
+    }
 }
 
 val HeadlineTextStyle by ComponentStyle.base {
