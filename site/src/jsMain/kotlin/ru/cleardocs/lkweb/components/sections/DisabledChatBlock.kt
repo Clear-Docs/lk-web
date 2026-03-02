@@ -120,7 +120,7 @@ fun DisabledChatBlock(
                         .padding(0.5.cssRem),
                     enabled = false
                 ) {
-                    Img(src = "/send-icon.svg", alt = "Отправить") {
+                    Img(src = "/send-icon.svg") {
                         style {
                             property("width", "100%")
                             property("height", "100%")
