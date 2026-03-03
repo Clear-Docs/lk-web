@@ -1,9 +1,11 @@
 package ru.cleardocs.lkweb.connectors
 
 import androidx.compose.runtime.Composable
+import com.varabyte.kobweb.compose.foundation.layout.Row
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.borderRadius
 import com.varabyte.kobweb.compose.ui.modifiers.fontSize
+import com.varabyte.kobweb.compose.ui.modifiers.gap
 import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.compose.ui.toAttrs
 import com.varabyte.kobweb.compose.ui.graphics.Color
@@ -31,9 +33,9 @@ fun connectorStatusColors(status: String?): Pair<Color, Color> = when (status?.u
     "ACTIVE" -> Color.rgb(0x22C55E) to Colors.White
     "SCHEDULED", "INITIAL_INDEXING" -> Color.rgb(0xF59E0B) to Color.rgb(0x1F2937)
     "INVALID" -> Color.rgb(0xDC2626) to Colors.White
-    "PAUSED" -> Color.rgb(0x94A3B8) to Color.rgb(0x1E293B)
+    "PAUSED" -> Color.rgb(0x64748B) to Colors.White
     "DELETING" -> Color.rgb(0x64748B) to Colors.White
-    else -> Color.rgb(0x94A3B8) to Color.rgb(0x1E293B)
+    else -> Color.rgb(0x64748B) to Colors.White
 }
 
 @Composable
@@ -66,26 +68,28 @@ fun ConnectorStatusButtons(
     onResume: (String) -> Unit,
     onDelete: (String) -> Unit,
 ) {
-    if (statusUpper == "ACTIVE") {
-        Button(
-            onClick = { onPause(connectorId) },
-            modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
-        ) {
-            SpanText("Пауза")
+    Row(Modifier.gap(0.5.cssRem)) {
+        if (statusUpper == "ACTIVE") {
+            Button(
+                onClick = { onPause(connectorId) },
+                modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
+            ) {
+                SpanText("Пауза")
+            }
         }
-    }
-    if (statusUpper == "PAUSED") {
-        Button(
-            onClick = { onResume(connectorId) },
-            modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
-        ) {
-            SpanText("Возобновить")
-        }
-        Button(
-            onClick = { onDelete(connectorId) },
-            modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
-        ) {
-            SpanText("Удалить")
+        if (statusUpper == "PAUSED") {
+            Button(
+                onClick = { onResume(connectorId) },
+                modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
+            ) {
+                SpanText("Возобновить")
+            }
+            Button(
+                onClick = { onDelete(connectorId) },
+                modifier = Modifier.fontSize(0.8.cssRem).padding(0.2.cssRem)
+            ) {
+                SpanText("Удалить")
+            }
         }
     }
 }
