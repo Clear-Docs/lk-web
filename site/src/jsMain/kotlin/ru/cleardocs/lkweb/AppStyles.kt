@@ -46,6 +46,25 @@ fun initSiteStyles(ctx: InitSilkContext) {
         Modifier.fillMaxWidth()
     }
 
+    // Default Button: project style (card-like, shadow, rounded) — affects Buttons without explicit variant
+    // Light mode: nearBackground + cobweb border for visibility on white; stronger shadow
+    ctx.theme.modifyComponentStyleBase(ButtonStyle) {
+        val palette = colorMode.toSitePalette()
+        val itemBg = when (colorMode) {
+            ColorMode.LIGHT -> palette.nearBackground
+            ColorMode.DARK -> palette.nearBackground
+        }
+        Modifier
+            .setVariable(ButtonVars.BackgroundDefaultColor, itemBg)
+            .color(colorMode.toPalette().color)
+            .borderRadius(SiteTokens.Radius.md)
+            .padding(SiteTokens.Spacing.sm)
+            .border(1.px, LineStyle.Solid, palette.cobweb)
+            .boxShadow(2.px, 2.px, 10.px, color = palette.brand.primary.toRgb().copyf(alpha = 0.2f))
+            .display(DisplayStyle.Flex)
+            .alignItems(AlignItems.Center)
+    }
+
     ctx.stylesheet.registerStyleBase(".connector-item-clickable:hover") {
         Modifier.boxShadow(3.px, 3.px, 14.px, color = Colors.Black.toRgb().copyf(alpha = 0.18f))
     }
