@@ -9,6 +9,7 @@ import ru.cleardocs.lkweb.auth.AuthFormMode
 import ru.cleardocs.lkweb.auth.AuthViewModel
 import ru.cleardocs.lkweb.firebase.AuthState
 import ru.cleardocs.lkweb.firebase.FirebaseProvider
+import ru.cleardocs.lkweb.firebase.firebaseLog
 import ru.cleardocs.lkweb.toSitePalette
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
@@ -60,7 +61,10 @@ fun AuthPage() {
     val palette = ColorMode.current.toSitePalette()
     val inputColors = rememberInputColors()
 
+    firebaseLog("AuthPage", "render", "authState=", authState)
+
     if (state.navigateToProfile) {
+        firebaseLog("AuthPage", "navigateToProfile=true, routing to /")
         vm.clearNavigateToProfile()
         ctx.router.tryRoutingTo("/")
     }
@@ -83,6 +87,7 @@ fun AuthPage() {
 
                 if (authState != AuthState.Authenticated) {
                     if (authState == AuthState.Loading) {
+                        firebaseLog("AuthPage", "showing Loading (Проверяем сессию...)")
                         SpanText("Проверяем сессию...")
                         return@Column
                     }
@@ -200,6 +205,7 @@ fun AuthPage() {
                         }
                     }
                 } else {
+                    firebaseLog("AuthPage", "showing Authenticated (Перенаправляем в профиль...)")
                     state.successMessage?.let { message ->
                         SpanText(
                             message,
