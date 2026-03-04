@@ -23,24 +23,36 @@ class FirebaseRepository(
         get() = firebase.auth
 
     init {
+        firebaseLog("FirebaseRepository", "init START")
         CoroutineScope(Dispatchers.Default).launch {
             try {
+                firebaseLog("FirebaseRepository", "calling authStateReady...")
                 authStateReady(firebase.auth)
                 val user = firebase.auth.currentUser
-                _authStateFlow.value =
-                    if (user != null) AuthState.Authenticated else AuthState.Unauthenticated
+                firebaseLog("FirebaseRepository", "authStateReady DONE", "currentUser.uid=", user?.uid, "currentUser.email=", user?.email)
+                val initialState = if (user != null) AuthState.Authenticated else AuthState.Unauthenticated
+                firebaseLog("FirebaseRepository", "setting initial authState=", initialState, "(user != null:", user != null, ")")
+                _authStateFlow.value = initialState
+                firebaseLog("FirebaseRepository", "registering onAuthStateChanged")
                 onAuthStateChanged(firebase.auth) { u ->
-                    _authStateFlow.value =
-                        if (u == null) AuthState.Unauthenticated else AuthState.Authenticated
+                    val prevState = _authStateFlow.value
+                    val newState = if (u == null) AuthState.Unauthenticated else AuthState.Authenticated
+                    firebaseLog("FirebaseRepository", "onAuthStateChanged callback", "user.uid=", u?.uid, "prevState=", prevState, "newState=", newState)
+                    _authStateFlow.value = newState
                 }
             } catch (e: Throwable) {
+                firebaseLog("FirebaseRepository", "init ERROR", e)
                 console.error("[FirebaseRepository.init] authStateReady failed", e)
+                val user = firebase.auth.currentUser
+                firebaseLog("FirebaseRepository", "fallback: auth.currentUser=", user?.uid)
                 _authStateFlow.value =
-                    if (firebase.auth.currentUser != null) AuthState.Authenticated
+                    if (user != null) AuthState.Authenticated
                     else AuthState.Unauthenticated
                 onAuthStateChanged(firebase.auth) { u ->
-                    _authStateFlow.value =
-                        if (u == null) AuthState.Unauthenticated else AuthState.Authenticated
+                    val prevState = _authStateFlow.value
+                    val newState = if (u == null) AuthState.Unauthenticated else AuthState.Authenticated
+                    firebaseLog("FirebaseRepository", "onAuthStateChanged callback (fallback)", "user.uid=", u?.uid, "prevState=", prevState, "newState=", newState)
+                    _authStateFlow.value = newState
                 }
             }
         }

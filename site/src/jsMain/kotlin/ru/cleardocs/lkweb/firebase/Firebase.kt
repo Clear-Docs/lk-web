@@ -5,6 +5,17 @@ import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
 import kotlin.js.json
 
+internal fun firebaseLog(tag: String, vararg args: Any?) {
+    @Suppress("UNCHECKED_CAST")
+    val t = try {
+        val ts: Number = js("(typeof performance !== 'undefined' && performance.now ? performance.now() : Date.now())")
+        ts.toDouble().toString()
+    } catch (_: Throwable) {
+        "?"
+    }
+    console.log("[$t ms] [$tag]", *args)
+}
+
 private suspend fun <T> promiseToSuspend(promise: dynamic): T = suspendCoroutine { cont ->
     val p = when {
         promise != null && jsTypeOf(promise.then) == "function" -> promise
@@ -81,7 +92,7 @@ fun firebaseUserProfile(user: dynamic?): FirebaseProfile? {
 fun initializeFirebase(config: FirebaseConfig): FirebaseContext {
     // Ensure FirebaseUI styles are bundled.
     firebaseUiCss
-    console.log("FirebaseUI: css module ensured")
+    firebaseLog("Firebase", "FirebaseUI css module ensured")
 
     val options = js("{}")
     options.apiKey = config.apiKey
@@ -94,16 +105,16 @@ fun initializeFirebase(config: FirebaseConfig): FirebaseContext {
     config.measurementId?.let { options.measurementId = it }
 
     val app = FirebaseApp.initializeApp(options)
-    console.log("Firebase: app initialized (modular API)")
-    
+    firebaseLog("Firebase", "app initialized (modular API)")
+
     val auth = FirebaseAuth.getAuth(app)
-    console.log("Firebase: auth ready (modular API)")
+    firebaseLog("Firebase", "auth ready (modular API)")
 
     val authUiClass = run {
         val raw = if (jsTypeOf(firebaseUiModule) != "undefined") firebaseUiModule else js("require('firebaseui')")
         val mod = if (raw != null && jsTypeOf(raw.default) != "undefined") raw.default else raw
-        console.log("FirebaseUI raw keys", if (raw != null) js("Object.keys(raw)") else "null")
-        console.log("FirebaseUI mod keys", if (mod != null) js("Object.keys(mod)") else "null")
+        firebaseLog("FirebaseUI", "raw keys", if (raw != null) js("Object.keys(raw)") else "null")
+        firebaseLog("FirebaseUI", "mod keys", if (mod != null) js("Object.keys(mod)") else "null")
         if (jsTypeOf(mod) == "undefined") return FirebaseContext(app, auth, null)
         mod.auth?.AuthUI
             ?: mod.AuthUI
@@ -123,7 +134,7 @@ fun initializeFirebase(config: FirebaseConfig): FirebaseContext {
             }
         }
     }
-    console.log("FirebaseUI: class resolved", authUiClass != null, "ui instance", ui != null)
+    firebaseLog("FirebaseUI", "class resolved", authUiClass != null, "ui instance", ui != null)
     return FirebaseContext(app, auth, ui)
 }
 
@@ -138,13 +149,13 @@ fun startFirebaseUi(ui: dynamic, containerSelector: String, providers: Array<dyn
     val callbacks = js("{}")
     callbacks.signInSuccessWithAuthResult = { _: dynamic, _: dynamic -> false }
     uiConfig.callbacks = callbacks
-    console.log("FirebaseUI: starting widget", json("providers" to providers.map { it ?: "null" }))
+    firebaseLog("FirebaseUI", "starting widget", json("providers" to providers.map { it ?: "null" }))
     ui.start(containerSelector, uiConfig)
 }
 
 fun resetFirebaseUi(ui: dynamic) {
     if (ui != null && jsTypeOf(ui.reset) != "undefined") {
-        console.log("FirebaseUI: reset")
+        firebaseLog("FirebaseUI", "reset")
         ui.reset()
     }
 }
@@ -152,38 +163,41 @@ fun resetFirebaseUi(ui: dynamic) {
 /** Ждёт, пока Firebase определит начальное состояние auth (persistence восстановлен). */
 suspend fun authStateReady(auth: dynamic) {
     if (auth == null) {
-        console.log("[Firebase.authStateReady] auth is null, skip")
+        firebaseLog("Firebase.authStateReady", "auth is null, skip")
         return
     }
-    console.log("[Firebase.authStateReady] start waiting for initial auth state")
+    firebaseLog("Firebase.authStateReady", "start waiting for initial auth state")
     val promise = try {
         val fn = auth["authStateReady"]
         if (fn != null && jsTypeOf(fn) == "function") {
             js("(function(f, a) { return f.call(a); })")(fn, auth)
         } else null
     } catch (e: dynamic) {
-        console.warn("[Firebase.authStateReady] authStateReady() not available or threw:", e)
+        firebaseLog("Firebase.authStateReady", "authStateReady() not available or threw:", e)
         null
     }
     if (promise != null && jsTypeOf(promise.then) == "function") {
         promiseToSuspend<Unit>(promise)
-        console.log("[Firebase.authStateReady] resolved, currentUser uid=", auth.currentUser?.uid)
+        val user = auth.currentUser
+        firebaseLog("Firebase.authStateReady", "resolved, currentUser uid=", user?.uid, "email=", user?.email)
     } else {
-        console.log("[Firebase.authStateReady] no promise (authStateReady missing?), skipping wait")
+        val user = auth.currentUser
+        firebaseLog("Firebase.authStateReady", "no promise, auth.currentUser=", user?.uid, user?.email)
     }
 }
 
 fun onAuthStateChanged(auth: dynamic, handler: (dynamic) -> Unit): () -> Unit {
     val unsub = FirebaseAuth.onAuthStateChanged(auth) { user ->
-        console.log(
+        firebaseLog(
             "Firebase.onAuthStateChanged",
-            "uid=",
-            user?.uid,
-            "path=",
-            js("window.location.pathname")
+            "uid=", user?.uid,
+            "email=", user?.email,
+            "isAnonymous=", user?.isAnonymous,
+            "path=", js("window.location.pathname")
         )
         handler(user)
     }
+    firebaseLog("Firebase.onAuthStateChanged", "registered, unsub fn=", unsub != null && jsTypeOf(unsub) == "function")
     return {
         try {
             if (unsub != null && jsTypeOf(unsub) == "function") {
@@ -199,7 +213,7 @@ fun signOut(auth: dynamic) {
     try {
         // Firebase v9+ signOut returns a Promise; we don't need to await it here.
         val result = FirebaseAuth.signOut(auth)
-        console.log("Firebase: signOut invoked", result)
+        firebaseLog("Firebase", "signOut invoked", result)
     } catch (e: dynamic) {
         console.error("Firebase: signOut threw synchronously", e)
     }

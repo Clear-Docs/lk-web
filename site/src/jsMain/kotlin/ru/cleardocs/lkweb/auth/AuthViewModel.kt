@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import ru.cleardocs.lkweb.api.BackendApi
 import ru.cleardocs.lkweb.firebase.FirebaseProvider
 import ru.cleardocs.lkweb.firebase.AuthState
+import ru.cleardocs.lkweb.firebase.firebaseLog
 import ru.cleardocs.lkweb.firebase.createUserWithEmailAndPassword
 import ru.cleardocs.lkweb.firebase.sendEmailVerification
 import ru.cleardocs.lkweb.firebase.signInWithEmailAndPassword
@@ -42,10 +43,11 @@ class AuthViewModel(
     val state: StateFlow<AuthUiState> = _state.asStateFlow()
 
     init {
+        firebaseLog("Auth", "AuthViewModel init, starting authStateFlow collect")
         scope.launch {
             repository.authStateFlow.collect { authState ->
                 if (authState == AuthState.Authenticated && !_state.value.isLoading) {
-                    console.log("[Auth] navigate: authState=Authenticated (already logged in)")
+                    firebaseLog("Auth", "authStateFlow: Authenticated, setting navigateToProfile")
                     _state.value = _state.value.copy(
                         errorMessage = null,
                         navigateToProfile = true,
@@ -103,7 +105,7 @@ class AuthViewModel(
             )
             try {
                 signInWithEmailAndPassword(repository.auth, normalizedEmail, s.password)
-                console.log("[Auth] signInWithEmail: success, navigate (no register)")
+                firebaseLog("Auth", "signInWithEmail: success, navigate (no register)")
                 _state.value = _state.value.copy(
                     isLoading = false,
                     navigateToProfile = true,
@@ -153,9 +155,9 @@ class AuthViewModel(
                     } catch (verifyErr: dynamic) {
                         console.error("[Auth] sendEmailVerification ошибка", verifyErr)
                     }
-                    console.log("[Auth] signUp: calling register()")
+                    firebaseLog("Auth", "signUp: calling register()")
                     BackendApi.register()
-                    console.log("[Auth] signUp: register() OK, navigate")
+                    firebaseLog("Auth", "signUp: register() OK, navigate")
                 }
                 _state.value = _state.value.copy(
                     isLoading = false,
@@ -180,9 +182,9 @@ class AuthViewModel(
             )
             try {
                 signInWithGoogle(repository.auth)
-                console.log("[Auth] Google: calling register()")
+                firebaseLog("Auth", "Google: calling register()")
                 BackendApi.register()
-                console.log("[Auth] Google: register() OK, navigate")
+                firebaseLog("Auth", "Google: register() OK, navigate")
                 _state.value = _state.value.copy(
                     isLoading = false,
                     navigateToProfile = true,

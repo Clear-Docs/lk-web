@@ -6,10 +6,17 @@ package ru.cleardocs.lkweb.firebase
  */
 object FirebaseProvider {
     val context: FirebaseContext by lazy(LazyThreadSafetyMode.NONE) {
-        initializeFirebase(defaultFirebaseConfig)
+        firebaseLog("FirebaseProvider", "context lazy init START")
+        val ctx = initializeFirebase(defaultFirebaseConfig)
+        firebaseLog("FirebaseProvider", "context init DONE")
+        ctx
     }
 
     val repository: FirebaseRepository by lazy(LazyThreadSafetyMode.NONE) {
-        FirebaseRepository(context)
+        firebaseLog("FirebaseProvider", "repository lazy init START")
+        context
+        val repo = FirebaseRepository(context)
+        firebaseLog("FirebaseProvider", "repository init DONE")
+        repo
     }
 }

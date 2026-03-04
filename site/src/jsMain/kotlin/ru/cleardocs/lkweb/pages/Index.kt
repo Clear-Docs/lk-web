@@ -28,6 +28,7 @@ import ru.cleardocs.lkweb.components.sections.ProfileMenu
 import ru.cleardocs.lkweb.di.kodein
 import ru.cleardocs.lkweb.firebase.AuthState
 import ru.cleardocs.lkweb.firebase.FirebaseProvider
+import ru.cleardocs.lkweb.firebase.firebaseLog
 import ru.cleardocs.lkweb.firebase.signOut
 import org.kodein.di.instance
 
@@ -40,15 +41,26 @@ fun HomePage() {
     val ctx = rememberPageContext()
     val navigateToAuth: () -> Unit = { ctx.router.tryRoutingTo("/auth") }
 
+    firebaseLog("HomePage", "render", "authState=", authState, "path=", js("window.location.pathname"))
     when (authState) {
-        AuthState.Loading -> HomeLoadingContent()
-        AuthState.Unauthenticated -> HomeRedirectingToAuthContent(navigateToAuth)
-        AuthState.Authenticated -> HomeProfileMainContent(navigateToAuth)
+        AuthState.Loading -> {
+            firebaseLog("HomePage", "branch: Loading")
+            HomeLoadingContent()
+        }
+        AuthState.Unauthenticated -> {
+            firebaseLog("HomePage", "branch: RedirectingToAuth")
+            HomeRedirectingToAuthContent(navigateToAuth)
+        }
+        AuthState.Authenticated -> {
+            firebaseLog("HomePage", "branch: Authenticated")
+            HomeProfileMainContent(navigateToAuth)
+        }
     }
 }
 
 @Composable
 private fun HomeLoadingContent() {
+    firebaseLog("HomePage", "HomeLoadingContent mounted")
     val palette = ColorMode.current.toSitePalette()
     val brandColor = palette.brand.primary.toString()
 
@@ -88,11 +100,13 @@ private fun HomeLoadingContent() {
 
 @Composable
 private fun HomeRedirectingToAuthContent(navigateToAuth: () -> Unit) {
+    firebaseLog("HomePage", "HomeRedirectingToAuth, navigating to /auth")
     navigateToAuth()
 }
 
 @Composable
 private fun HomeProfileMainContent(navigateToAuth: () -> Unit) {
+    firebaseLog("HomePage", "HomeProfileMainContent mounted")
     val scope = rememberCoroutineScope()
     val onSignOut: () -> Unit = {
         scope.launch {
