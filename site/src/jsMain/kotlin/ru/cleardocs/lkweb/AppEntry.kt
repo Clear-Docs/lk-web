@@ -1,7 +1,13 @@
 package ru.cleardocs.lkweb
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import ru.cleardocs.lkweb.firebase.firebaseLog
 import com.varabyte.kobweb.compose.css.ScrollBehavior
 import com.varabyte.kobweb.compose.ui.modifiers.fillMaxWidth
 import com.varabyte.kobweb.compose.ui.modifiers.minHeight
@@ -22,6 +28,18 @@ import org.w3c.dom.HTMLScriptElement
 private const val COLOR_MODE_KEY = "clearDocs:colorMode"
 private const val JIVO_WIDGET_ID = "jivo-widget"
 
+@Composable
+private fun RoutePathLogger() {
+    var lastPath by remember { mutableStateOf<String?>(null) }
+    SideEffect {
+        val path = js("window.location.pathname") as String
+        if (path != lastPath) {
+            firebaseLog("Route", "path changed", "from=", lastPath, "to=", path)
+            lastPath = path
+        }
+    }
+}
+
 @InitSilk
 fun initColorMode(ctx: InitSilkContext) {
     ctx.config.initialColorMode = localStorage.getItem(COLOR_MODE_KEY)?.let { ColorMode.valueOf(it) } ?: ColorMode.LIGHT
@@ -41,6 +59,18 @@ fun AppEntry(content: @Composable () -> Unit) {
     }
 
     SilkApp {
+        DisposableEffect(Unit) {
+            firebaseLog("App", "mounted", "path=", js("window.location.pathname"))
+            val handler: (dynamic) -> Unit = {
+                firebaseLog("App", "visibilityChange", "hidden=", document.asDynamic().hidden)
+            }
+            document.addEventListener("visibilitychange", handler)
+            onDispose {
+                document.removeEventListener("visibilitychange", handler)
+                firebaseLog("App", "disposed")
+            }
+        }
+
         val colorMode = ColorMode.current
         SideEffect {
             localStorage.setItem(COLOR_MODE_KEY, colorMode.name)
@@ -52,6 +82,7 @@ fun AppEntry(content: @Composable () -> Unit) {
                 .minHeight(100.vh)
                 .scrollBehavior(ScrollBehavior.Smooth)
         ) {
+            RoutePathLogger()
             content()
         }
     }

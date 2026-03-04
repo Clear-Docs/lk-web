@@ -2,9 +2,14 @@ package ru.cleardocs.lkweb.pages
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import kotlinx.coroutines.delay
 import com.varabyte.kobweb.compose.foundation.layout.Box
 import com.varabyte.kobweb.compose.foundation.layout.Column
 import com.varabyte.kobweb.compose.foundation.layout.Row
@@ -58,9 +63,18 @@ fun HomePage() {
     }
 }
 
+/** Минимальная задержка перед показом спиннера — избегает мерцания при быстром auth. */
+private const val LOADING_SPINNER_DELAY_MS = 180
+
 @Composable
 private fun HomeLoadingContent() {
     firebaseLog("HomePage", "HomeLoadingContent mounted")
+    var showSpinner by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        delay(LOADING_SPINNER_DELAY_MS.toLong())
+        showSpinner = true
+    }
+
     val palette = ColorMode.current.toSitePalette()
     val brandColor = palette.brand.primary.toString()
 
@@ -83,7 +97,7 @@ private fun HomeLoadingContent() {
     }
 
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Div(
+        if (showSpinner) Div(
             attrs = {
                 style {
                     property("width", "48px")
@@ -100,6 +114,7 @@ private fun HomeLoadingContent() {
 
 @Composable
 private fun HomeRedirectingToAuthContent(navigateToAuth: () -> Unit) {
+    firebaseLog("Nav", "tryRoutingTo /auth", "reason= Firebase Unauthenticated")
     firebaseLog("HomePage", "HomeRedirectingToAuth, navigating to /auth")
     navigateToAuth()
 }

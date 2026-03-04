@@ -12,6 +12,7 @@ import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.components.text.SpanText
 import org.jetbrains.compose.web.css.cssRem
+import ru.cleardocs.lkweb.firebase.firebaseLog
 import ru.cleardocs.lkweb.profile.MeViewModel
 import ru.cleardocs.lkweb.profile.ProfileAuthState
 
@@ -25,6 +26,7 @@ fun ProfileBlock() {
     val ctx = rememberPageContext()
 
     if (authState == ProfileAuthState.Unauthenticated) {
+        firebaseLog("Nav", "tryRoutingTo /auth", "reason= ProfileBlock me() 401")
         ctx.router.tryRoutingTo("/auth")
     }
 

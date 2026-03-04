@@ -39,6 +39,7 @@ import ru.cleardocs.lkweb.chat.ChatCredentialsViewModel
 import ru.cleardocs.lkweb.components.sections.ChatBlock
 import ru.cleardocs.lkweb.ActionButtonVariant
 import ru.cleardocs.lkweb.SiteTokens
+import ru.cleardocs.lkweb.firebase.firebaseLog
 import ru.cleardocs.lkweb.toSitePalette
 
 @Composable
@@ -56,8 +57,10 @@ internal fun ConnectorsContent() {
     ) {
         when (val s = state) {
             is ConnectorsViewState.Loading -> {}
-            is ConnectorsViewState.GotoAuth ->
+            is ConnectorsViewState.GotoAuth -> {
+                firebaseLog("Nav", "GotoAuth", "reason= ConnectorsViewModel 401", "redirect= no")
                 SpanText("Перенаправляем на авторизацию...")
+            }
 
             is ConnectorsViewState.Error ->
                 SpanText("Ошибка: ${s.message}")

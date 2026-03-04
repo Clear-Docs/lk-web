@@ -40,6 +40,7 @@ import org.jetbrains.compose.web.css.*
 import ru.cleardocs.lkweb.CircleButtonVariant
 import ru.cleardocs.lkweb.UncoloredButtonVariant
 import ru.cleardocs.lkweb.firebase.FirebaseProvider
+import ru.cleardocs.lkweb.firebase.firebaseLog
 import ru.cleardocs.lkweb.firebase.signOut
 import ru.cleardocs.lkweb.toSitePalette
 import ru.cleardocs.lkweb.components.sections.ProfileMenu
@@ -132,6 +133,7 @@ fun NavHeader() {
 
     val onSignOut: () -> Unit = {
         scope.launch {
+            firebaseLog("Nav", "tryRoutingTo /auth", "reason= signOut clicked")
             signOut(repository.auth)
             ctx.router.tryRoutingTo("/auth")
         }
