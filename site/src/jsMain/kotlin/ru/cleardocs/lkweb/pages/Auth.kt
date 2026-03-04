@@ -61,9 +61,10 @@ fun AuthPage() {
     val palette = ColorMode.current.toSitePalette()
     val inputColors = rememberInputColors()
 
-    firebaseLog("AuthPage", "render", "authState=", authState)
+    firebaseLog("AuthPage", "render", "authState=", authState, "path=", js("window.location.pathname"))
 
     if (state.navigateToProfile) {
+        firebaseLog("Nav", "tryRoutingTo /", "reason= Authenticated navigateToProfile")
         firebaseLog("AuthPage", "navigateToProfile=true, routing to /")
         vm.clearNavigateToProfile()
         ctx.router.tryRoutingTo("/")
