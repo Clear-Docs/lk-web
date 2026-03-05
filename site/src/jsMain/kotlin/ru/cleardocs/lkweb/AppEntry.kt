@@ -27,6 +27,7 @@ import org.w3c.dom.HTMLScriptElement
 
 private const val COLOR_MODE_KEY = "clearDocs:colorMode"
 private const val JIVO_WIDGET_ID = "jivo-widget"
+private const val YANDEX_METRIKA_ID = "yandex-metrika"
 
 @Composable
 private fun RoutePathLogger() {
@@ -54,6 +55,24 @@ fun AppEntry(content: @Composable () -> Unit) {
             script.id = JIVO_WIDGET_ID
             script.src = "https://code.jivo.ru/widget/pRFQhqJ7tP"
             script.async = true
+            document.head?.appendChild(script)
+        }
+    }
+
+    SideEffect {
+        if (document.getElementById(YANDEX_METRIKA_ID) == null) {
+            val script = document.createElement("script").unsafeCast<HTMLScriptElement>()
+            script.id = YANDEX_METRIKA_ID
+            script.type = "text/javascript"
+            script.textContent = """
+                (function(m,e,t,r,i,k,a){
+                    m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+                    m[i].l=1*new Date();
+                    for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
+                    k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)
+                })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=106956563', 'ym');
+                ym(106956563, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", referrer: document.referrer, url: location.href, accurateTrackBounce:true, trackLinks:true});
+            """.trimIndent()
             document.head?.appendChild(script)
         }
     }
