@@ -17,7 +17,7 @@ import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.dom.Text
 import ru.cleardocs.lkweb.components.layouts.PageLayout
 
-@Page("/plans/connect")
+@Page("/plans/pay")
 @Composable
 fun PlanConnectPage() {
     val ctx = rememberPageContext()
