@@ -11,11 +11,13 @@ import com.varabyte.kobweb.compose.ui.modifiers.padding
 import com.varabyte.kobweb.silk.components.text.SpanText
 import org.jetbrains.compose.web.css.cssRem
 import ru.cleardocs.lkweb.api.dto.LimitDto
+import ru.cleardocs.lkweb.components.widgets.rememberTimedToast
 import ru.cleardocs.lkweb.plans.Plan
 import ru.cleardocs.lkweb.plans.PlansList
 
 @Composable
 fun PlansDemoContent() {
+    val showToast = rememberTimedToast()
     Column(
         Modifier
             .width(36.cssRem)
@@ -25,7 +27,10 @@ fun PlansDemoContent() {
         SpanText("PlansList (фейковые тарифы)", Modifier.padding(bottom = 0.5.cssRem))
 
         SpanText("Полный список:", Modifier.fillMaxWidth())
-        PlansList(plans = FakeData.plans)
+        PlansList(
+            plans = FakeData.plans,
+            onPlanSelect = { showToast("Функционал в разработке") }
+        )
 
         SpanText("Один тариф:", Modifier.fillMaxWidth().padding(top = 0.5.cssRem))
         PlansList(
@@ -38,10 +43,11 @@ fun PlansDemoContent() {
                     periodDays = 14,
                     limit = LimitDto(maxConnectors = 2),
                 )
-            )
+            ),
+            onPlanSelect = { showToast("Функционал в разработке") }
         )
 
         SpanText("Пустой список:", Modifier.fillMaxWidth().padding(top = 0.5.cssRem))
-        PlansList(plans = emptyList())
+        PlansList(plans = emptyList(), onPlanSelect = {})
     }
 }
