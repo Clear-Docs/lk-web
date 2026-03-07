@@ -46,7 +46,7 @@ fun Plans() {
             plans.isEmpty() -> SpanText("Нет доступных тарифов.")
             else -> PlansList(
                 plans = plans,
-                onPlanSelect = { plan -> ctx.router.tryRoutingTo("/plans/connect?plan=${plan.code}") }
+                onPlanSelect = { plan -> ctx.router.tryRoutingTo("/plans/pay?plan=${plan.code}") }
             )
         }
     }
