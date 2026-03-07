@@ -13,6 +13,7 @@ import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.*
 import com.varabyte.kobweb.compose.ui.graphics.Colors
+import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.compose.ui.modifiers.color
 import com.varabyte.kobweb.silk.components.forms.Button
 import com.varabyte.kobweb.silk.components.text.SpanText
@@ -21,7 +22,6 @@ import org.jetbrains.compose.web.css.LineStyle
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
 import org.jetbrains.compose.web.dom.Text
-import ru.cleardocs.lkweb.components.widgets.rememberTimedToast
 import ru.cleardocs.lkweb.components.widgets.cardSurface
 import ru.cleardocs.lkweb.SiteTokens
 import ru.cleardocs.lkweb.toSitePalette
@@ -32,6 +32,7 @@ import ru.cleardocs.lkweb.toSitePalette
  */
 @Composable
 fun Plans() {
+    val ctx = rememberPageContext()
     val viewModel = remember { PlansViewModel() }
     val plans by viewModel.plans.collectAsState()
     val loading by viewModel.loading.collectAsState()
@@ -43,7 +44,10 @@ fun Plans() {
             loading -> { }
             error != null -> SpanText("Ошибка: $error")
             plans.isEmpty() -> SpanText("Нет доступных тарифов.")
-            else -> PlansList(plans = plans)
+            else -> PlansList(
+                plans = plans,
+                onPlanSelect = { plan -> ctx.router.tryRoutingTo("/plans/connect?plan=${plan.code}") }
+            )
         }
     }
 }
@@ -52,11 +56,10 @@ fun Plans() {
  * Список карточек тарифов — переиспользуемый компонент для отображения [plans].
  */
 @Composable
-fun PlansList(plans: List<Plan>) {
+fun PlansList(plans: List<Plan>, onPlanSelect: (Plan) -> Unit) {
     val palette = ColorMode.current.toSitePalette()
-    val showToast = rememberTimedToast()
     Column(Modifier.fillMaxWidth().gap(SiteTokens.Spacing.lg)) {
-        plans.forEach { plan -> PlanCard(plan = plan, palette = palette, onSelectClick = { showToast("Функционал в разработке") }) }
+        plans.forEach { plan -> PlanCard(plan = plan, palette = palette, onSelectClick = { onPlanSelect(plan) }) }
     }
 }
 
