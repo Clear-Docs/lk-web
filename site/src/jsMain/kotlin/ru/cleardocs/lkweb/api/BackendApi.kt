@@ -27,6 +27,8 @@ import ru.cleardocs.lkweb.api.dto.GetPlansDto
 import ru.cleardocs.lkweb.api.dto.MeDto
 import ru.cleardocs.lkweb.api.dto.PlanDto
 import ru.cleardocs.lkweb.api.dto.MeResponseDto
+import ru.cleardocs.lkweb.api.dto.TochkaPaymentRequestDto
+import ru.cleardocs.lkweb.api.dto.TochkaPaymentResponseDto
 import ru.cleardocs.lkweb.firebase.FirebaseProvider
 import ru.cleardocs.lkweb.firebase.getIdToken
 
@@ -225,6 +227,39 @@ object BackendApi {
             throw BackendError(response.status.value, errorBody)
         }
         return response.body()
+    }
+
+    /**
+     * Инициализация платежа через Точка Банк.
+     * POST /api/v1/pay/tochka/createPayment. Возвращает URL для редиректа пользователя.
+     */
+    suspend fun createTochkaPayment(planCode: String): TochkaPaymentResponseDto {
+        val token = requireToken()
+        val response = client.post("api/v1/pay/tochka/createPayment") {
+            header("Authorization", "Bearer $token")
+            contentType(ContentType.Application.Json)
+            setBody(TochkaPaymentRequestDto(planCode = planCode))
+        }
+        if (!response.status.isSuccess()) {
+            val body = try { response.bodyAsText() } catch (_: Throwable) { "" }
+            throw BackendError(response.status.value, body)
+        }
+        return response.body()
+    }
+
+    /**
+     * Отписаться от подписки Точка Банк.
+     * POST /api/v1/pay/tochka/unsubscribe.
+     */
+    suspend fun unsubscribeTochka() {
+        val token = requireToken()
+        val response = client.post("api/v1/pay/tochka/unsubscribe") {
+            header("Authorization", "Bearer $token")
+        }
+        if (!response.status.isSuccess()) {
+            val body = try { response.bodyAsText() } catch (_: Throwable) { "" }
+            throw BackendError(response.status.value, body)
+        }
     }
 }
 
