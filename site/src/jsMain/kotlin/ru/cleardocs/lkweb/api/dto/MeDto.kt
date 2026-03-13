@@ -8,4 +8,5 @@ data class MeDto(
     val email: String,
     val name: String,
     val plan: PlanDto,
+    val isCanceled: Boolean = false,
 )

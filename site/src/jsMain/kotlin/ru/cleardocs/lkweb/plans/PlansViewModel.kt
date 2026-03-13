@@ -33,6 +33,9 @@ class PlansViewModel(
     private val _unsubscribeError = MutableStateFlow<String?>(null)
     val unsubscribeError: StateFlow<String?> = _unsubscribeError.asStateFlow()
 
+    private val _subscriptionCanceled = MutableStateFlow(false)
+    val subscriptionCanceled: StateFlow<Boolean> = _subscriptionCanceled.asStateFlow()
+
     /**
      * Отписка от подписки Точка Банк. После успеха перезагружает список тарифов.
      */
@@ -60,11 +63,13 @@ class PlansViewModel(
         _loading.value = true
         _error.value = null
         try {
-            val currentPlanCode = try {
-                BackendApi.me().plan.code
+            val meResult = try {
+                BackendApi.me()
             } catch (_: Throwable) {
                 null
             }
+            val currentPlanCode = meResult?.plan?.code
+            _subscriptionCanceled.value = meResult?.isCanceled == true
             val response = BackendApi.plans()
             _plans.value = response.plans.map { dto ->
                 Plan(

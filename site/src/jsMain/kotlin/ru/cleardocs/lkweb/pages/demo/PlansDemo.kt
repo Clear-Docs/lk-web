@@ -29,6 +29,7 @@ fun PlansDemoContent() {
         SpanText("Полный список:", Modifier.fillMaxWidth())
         PlansList(
             plans = FakeData.plans,
+            subscriptionCanceled = false,
             onPlanSelect = { showToast("Функционал в разработке") },
             onUnsubscribe = { showToast("Отписка (демо)") },
             unsubscribeLoading = false,
@@ -47,6 +48,7 @@ fun PlansDemoContent() {
                     limit = LimitDto(maxConnectors = 2),
                 )
             ),
+            subscriptionCanceled = false,
             onPlanSelect = { showToast("Функционал в разработке") },
             onUnsubscribe = { showToast("Отписка (демо)") },
             unsubscribeLoading = false,
@@ -56,6 +58,7 @@ fun PlansDemoContent() {
         SpanText("Пустой список:", Modifier.fillMaxWidth().padding(top = 0.5.cssRem))
         PlansList(
             plans = emptyList(),
+            subscriptionCanceled = false,
             onPlanSelect = {},
             onUnsubscribe = {},
             unsubscribeLoading = false,

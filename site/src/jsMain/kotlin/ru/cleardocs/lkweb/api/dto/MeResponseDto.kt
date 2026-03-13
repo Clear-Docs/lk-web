@@ -2,7 +2,7 @@ package ru.cleardocs.lkweb.api.dto
 
 import kotlinx.serialization.Serializable
 
-/** Ответ GET /api/v1/users/me — обёртка с ключом "user". */
+/** Ответ GET /api/v1/users/me — обёртка с ключом "user". Совпадает со Swagger (GetMeDto, UserDto). */
 @Serializable
 data class MeResponseDto(
     val user: UserMeDto,
@@ -14,4 +14,5 @@ data class UserMeDto(
     val email: String? = null,
     val name: String? = null,
     val plan: PlanDto? = null,
+    val isCanceled: Boolean = false,
 )

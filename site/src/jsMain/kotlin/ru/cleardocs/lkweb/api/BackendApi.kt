@@ -99,6 +99,7 @@ object BackendApi {
                 periodDays = 0,
                 limit = LimitDto(maxConnectors = 0),
             ),
+            isCanceled = u.isCanceled,
         )
         console.log("[BackendApi] me() - done")
         return result
