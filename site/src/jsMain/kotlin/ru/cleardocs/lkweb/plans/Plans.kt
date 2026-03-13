@@ -37,6 +37,9 @@ fun Plans() {
     val plans by viewModel.plans.collectAsState()
     val loading by viewModel.loading.collectAsState()
     val error by viewModel.error.collectAsState()
+    val unsubscribeLoading by viewModel.unsubscribeLoading.collectAsState()
+    val unsubscribeError by viewModel.unsubscribeError.collectAsState()
+    val subscriptionCanceled by viewModel.subscriptionCanceled.collectAsState()
 
     Column(Modifier.fillMaxWidth().gap(SiteTokens.Spacing.xl)) {
         SpanText("Тарифы", Modifier.fontSize(1.5.cssRem))
@@ -46,7 +49,11 @@ fun Plans() {
             plans.isEmpty() -> SpanText("Нет доступных тарифов.")
             else -> PlansList(
                 plans = plans,
-                onPlanSelect = { plan -> ctx.router.tryRoutingTo("/plans/pay?plan=${plan.code}") }
+                subscriptionCanceled = subscriptionCanceled,
+                onPlanSelect = { plan -> ctx.router.tryRoutingTo("/plans/pay?plan=${plan.code}") },
+                onUnsubscribe = { viewModel.unsubscribe() },
+                unsubscribeLoading = unsubscribeLoading,
+                unsubscribeError = unsubscribeError,
             )
         }
     }
@@ -56,10 +63,29 @@ fun Plans() {
  * Список карточек тарифов — переиспользуемый компонент для отображения [plans].
  */
 @Composable
-fun PlansList(plans: List<Plan>, onPlanSelect: (Plan) -> Unit) {
+fun PlansList(
+    plans: List<Plan>,
+    subscriptionCanceled: Boolean,
+    onPlanSelect: (Plan) -> Unit,
+    onUnsubscribe: () -> Unit,
+    unsubscribeLoading: Boolean,
+    unsubscribeError: String?,
+) {
     val palette = ColorMode.current.toSitePalette()
     Column(Modifier.fillMaxWidth().gap(SiteTokens.Spacing.lg)) {
-        plans.forEach { plan -> PlanCard(plan = plan, palette = palette, onSelectClick = { onPlanSelect(plan) }) }
+        if (unsubscribeError != null) {
+            SpanText("Ошибка: $unsubscribeError", Modifier.fontSize(0.9.cssRem))
+        }
+        plans.forEach { plan ->
+            PlanCard(
+                plan = plan,
+                subscriptionCanceled = subscriptionCanceled,
+                palette = palette,
+                onSelectClick = { onPlanSelect(plan) },
+                onUnsubscribeClick = onUnsubscribe,
+                unsubscribeLoading = unsubscribeLoading,
+            )
+        }
     }
 }
 
@@ -77,7 +103,14 @@ private fun formatPeriod(days: Int): String = when {
 }
 
 @Composable
-private fun PlanCard(plan: Plan, palette: ru.cleardocs.lkweb.SitePalette, onSelectClick: () -> Unit) {
+private fun PlanCard(
+    plan: Plan,
+    subscriptionCanceled: Boolean,
+    palette: ru.cleardocs.lkweb.SitePalette,
+    onSelectClick: () -> Unit,
+    onUnsubscribeClick: () -> Unit,
+    unsubscribeLoading: Boolean,
+) {
     Column(
         Modifier
             .fillMaxWidth()
@@ -95,14 +128,25 @@ private fun PlanCard(plan: Plan, palette: ru.cleardocs.lkweb.SitePalette, onSele
         Row(Modifier.fillMaxWidth().gap(0.5.cssRem)) {
             SpanText(plan.title, Modifier.fontSize(1.15.cssRem))
             if (plan.isActive) {
-                SpanText(
-                    "Выбран",
-                    Modifier
-                        .padding(topBottom = 0.2.cssRem, leftRight = 0.5.cssRem)
-                        .fontSize(0.8.cssRem)
-                        .backgroundColor(palette.brand.primary)
-                        .color(Colors.White)
-                )
+                if (subscriptionCanceled) {
+                    SpanText(
+                        "Отменена (действует до конца периода)",
+                        Modifier
+                            .padding(topBottom = 0.2.cssRem, leftRight = 0.5.cssRem)
+                            .fontSize(0.8.cssRem)
+                            .backgroundColor(palette.cobweb)
+                            .color(Colors.White)
+                    )
+                } else {
+                    SpanText(
+                        "Выбран",
+                        Modifier
+                            .padding(topBottom = 0.2.cssRem, leftRight = 0.5.cssRem)
+                            .fontSize(0.8.cssRem)
+                            .backgroundColor(palette.brand.primary)
+                            .color(Colors.White)
+                    )
+                }
             }
         }
         SpanText("Цена: ${plan.priceRub} ₽")
@@ -110,11 +154,19 @@ private fun PlanCard(plan: Plan, palette: ru.cleardocs.lkweb.SitePalette, onSele
             SpanText("Период: ${formatPeriod(plan.periodDays)}")
         }
         SpanText("Лимит коннекторов: ${plan.limit.maxConnectors}")
-        if (!plan.isActive && plan.priceRub > 0) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
-            ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            if (plan.isActive && plan.priceRub > 0 && !subscriptionCanceled) {
+                Button(
+                    onClick = { onUnsubscribeClick() },
+                    modifier = Modifier.padding(0.25.cssRem),
+                    enabled = !unsubscribeLoading
+                ) {
+                    Text(if (unsubscribeLoading) "Отписка…" else "Отписаться")
+                }
+            } else if (!plan.isActive && plan.priceRub > 0) {
                 Button(
                     onClick = { onSelectClick() },
                     modifier = Modifier.padding(0.25.cssRem)

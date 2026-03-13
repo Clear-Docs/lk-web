@@ -27,6 +27,33 @@ class PlansViewModel(
     private val _error = MutableStateFlow<String?>(null)
     val error: StateFlow<String?> = _error.asStateFlow()
 
+    private val _unsubscribeLoading = MutableStateFlow(false)
+    val unsubscribeLoading: StateFlow<Boolean> = _unsubscribeLoading.asStateFlow()
+
+    private val _unsubscribeError = MutableStateFlow<String?>(null)
+    val unsubscribeError: StateFlow<String?> = _unsubscribeError.asStateFlow()
+
+    private val _subscriptionCanceled = MutableStateFlow(false)
+    val subscriptionCanceled: StateFlow<Boolean> = _subscriptionCanceled.asStateFlow()
+
+    /**
+     * Отписка от подписки Точка Банк. После успеха перезагружает список тарифов.
+     */
+    fun unsubscribe() {
+        scope.launch {
+            _unsubscribeLoading.value = true
+            _unsubscribeError.value = null
+            try {
+                BackendApi.unsubscribeTochka()
+                loadPlans()
+            } catch (e: Throwable) {
+                _unsubscribeError.value = e.toUserFriendlyMessage("Ошибка отписки")
+            } finally {
+                _unsubscribeLoading.value = false
+            }
+        }
+    }
+
     /**
      * Загружает список тарифов из REST GET /api/v1/plans и обновляет [plans].
      * Текущий тариф пользователя (для [Plan.isActive]) берётся из GET /api/v1/users/me.
@@ -36,11 +63,9 @@ class PlansViewModel(
         _loading.value = true
         _error.value = null
         try {
-            val currentPlanCode = try {
-                BackendApi.me().plan.code
-            } catch (_: Throwable) {
-                null
-            }
+            val meResult = BackendApi.me()
+            val currentPlanCode = meResult.plan.code
+            _subscriptionCanceled.value = meResult.isCanceled == true
             val response = BackendApi.plans()
             _plans.value = response.plans.map { dto ->
                 Plan(
