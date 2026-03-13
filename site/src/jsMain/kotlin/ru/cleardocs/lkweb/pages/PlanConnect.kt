@@ -71,7 +71,9 @@ fun PlanConnectPage() {
         scope.launch {
             try {
                 val response = BackendApi.createTochkaPayment(planCode)
-                window.location.href = response.paymentUrl
+                window.open(response.paymentUrl, "_blank")
+                loading = false
+                ctx.router.tryRoutingTo("/")
             } catch (e: Throwable) {
                 error = e.toUserFriendlyMessage("Ошибка создания платежа")
                 loading = false
