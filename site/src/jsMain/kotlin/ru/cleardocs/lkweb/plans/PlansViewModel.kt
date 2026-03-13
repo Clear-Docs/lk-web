@@ -63,13 +63,9 @@ class PlansViewModel(
         _loading.value = true
         _error.value = null
         try {
-            val meResult = try {
-                BackendApi.me()
-            } catch (_: Throwable) {
-                null
-            }
-            val currentPlanCode = meResult?.plan?.code
-            _subscriptionCanceled.value = meResult?.isCanceled == true
+            val meResult = BackendApi.me()
+            val currentPlanCode = meResult.plan.code
+            _subscriptionCanceled.value = meResult.isCanceled == true
             val response = BackendApi.plans()
             _plans.value = response.plans.map { dto ->
                 Plan(
