@@ -15,6 +15,7 @@ import com.varabyte.kobweb.compose.foundation.layout.Spacer
 import com.varabyte.kobweb.compose.ui.Alignment
 import com.varabyte.kobweb.compose.ui.Modifier
 import com.varabyte.kobweb.compose.ui.modifiers.*
+import com.varabyte.kobweb.compose.ui.toAttrs
 import com.varabyte.kobweb.core.rememberPageContext
 import com.varabyte.kobweb.silk.components.forms.Button
 import com.varabyte.kobweb.silk.components.forms.ButtonVars
@@ -23,9 +24,6 @@ import com.varabyte.kobweb.silk.components.icons.MoonIcon
 import com.varabyte.kobweb.silk.components.icons.SunIcon
 import com.varabyte.kobweb.silk.components.layout.breakpoint.displayIfAtLeast
 import com.varabyte.kobweb.silk.components.layout.breakpoint.displayUntil
-import com.varabyte.kobweb.silk.components.navigation.Link
-import com.varabyte.kobweb.silk.components.navigation.UncoloredLinkVariant
-import com.varabyte.kobweb.silk.components.navigation.UndecoratedLinkVariant
 import com.varabyte.kobweb.silk.components.overlay.PopupPlacement
 import com.varabyte.kobweb.silk.components.overlay.Tooltip
 import com.varabyte.kobweb.silk.components.style.ComponentStyle
@@ -35,6 +33,7 @@ import com.varabyte.kobweb.silk.components.style.toModifier
 import com.varabyte.kobweb.silk.theme.colors.ColorMode
 import kotlinx.coroutines.launch
 import com.varabyte.kobweb.compose.ui.graphics.Colors
+import org.jetbrains.compose.web.dom.A
 import org.jetbrains.compose.web.dom.Text
 import org.jetbrains.compose.web.css.*
 import ru.cleardocs.lkweb.CircleButtonVariant
@@ -143,7 +142,12 @@ fun NavHeader() {
     Box(Modifier.fillMaxWidth()) {
         Row(NavHeaderStyle.toModifier(), verticalAlignment = Alignment.CenterVertically) {
             Spacer()
-            Link("/", modifier = ClearDocsLogoStyle.toModifier(), variant = UndecoratedLinkVariant.then(UncoloredLinkVariant)) {
+            A(
+                href = "https://cleardocs.ru",
+                attrs = ClearDocsLogoStyle.toModifier().toAttrs {
+                    style { property("text-decoration", "none"); property("cursor", "pointer") }
+                }
+            ) {
                 SpanText("ClearDocs")
             }
             Spacer()
