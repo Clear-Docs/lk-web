@@ -15,6 +15,8 @@ import com.varabyte.kobweb.silk.components.text.SpanText
 import kotlin.js.Date
 import org.jetbrains.compose.web.css.cssRem
 import org.jetbrains.compose.web.css.px
+import org.jetbrains.compose.web.css.style
+import org.jetbrains.compose.web.dom.A
 import org.jetbrains.compose.web.dom.Span
 import ru.cleardocs.lkweb.toSitePalette
 
@@ -31,7 +33,15 @@ fun Footer(modifier: Modifier = Modifier) {
     val currentYear = Date().getFullYear()
     Box(FooterStyle.toModifier().then(modifier), contentAlignment = Alignment.Center) {
         Span(Modifier.textAlign(TextAlign.Center).toAttrs()) {
-            SpanText("ClearDocs © $currentYear")
+            A(
+                href = "https://cleardocs.ru",
+                attrs = Modifier.toAttrs {
+                    style { property("text-decoration", "none") }
+                }
+            ) {
+                SpanText("ClearDocs")
+            }
+            SpanText(" © $currentYear")
         }
     }
 }
