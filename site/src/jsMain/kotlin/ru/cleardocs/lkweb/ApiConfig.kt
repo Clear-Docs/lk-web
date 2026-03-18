@@ -25,13 +25,17 @@ object ApiConfig {
 
     /**
      * Базовый URL Onyx API для send-chat-message.
-     * localhost → прокси 9081, production → api.cleardocs.ru (HTTPS, через nginx).
+     * localhost → прокси 9081.
+     * Хост сервера Onyx (например 155.212.162.11) → тот же хост (как в UI Onyx, без обрывов стрима).
+     * Остальное (lk.cleardocs.ru и т.д.) → api.cleardocs.ru.
      */
     val onyxBaseUrl: String
         get() {
             val h = window.location.hostname
+            val protocol = if (window.location.protocol == "https:") "https" else "http"
             return when {
                 h == "localhost" || h == "127.0.0.1" -> "http://localhost:9081"
+                h == "155.212.162.11" -> "$protocol://155.212.162.11"
                 else -> "https://api.cleardocs.ru"
             }
         }
