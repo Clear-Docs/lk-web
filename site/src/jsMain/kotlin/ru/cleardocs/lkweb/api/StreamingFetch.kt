@@ -43,27 +43,34 @@ internal fun fetchStream(
         awaitClose { }
         return@callbackFlow
     }
-    val reader = response.body.getReader()
+    var streamReader: dynamic = null
+    streamReader = response.body.getReader()
     val decoder = js("new TextDecoder()")
     var buffer = ""
-    while (true) {
-        val readResult = suspendCoroutine { cont ->
-            reader.read().unsafeCast<dynamic>().then(
-                { r: dynamic -> cont.resume(r) },
-                { e: dynamic -> cont.resumeWithException((e ?: js("new Error('Read failed')")).unsafeCast<Throwable>()) }
-            )
+    try {
+        while (true) {
+            val readResult = suspendCoroutine { cont ->
+                streamReader.read().unsafeCast<dynamic>().then(
+                    { r: dynamic -> cont.resume(r) },
+                    { e: dynamic -> cont.resumeWithException((e ?: js("new Error('Read failed')")).unsafeCast<Throwable>()) }
+                )
+            }
+            if (readResult.done.unsafeCast<Boolean>()) break
+            val chunk = decoder.decode(readResult.value).unsafeCast<String>()
+            buffer += chunk
+            val lines = buffer.split("\n")
+            buffer = lines.last()
+            for (i in 0 until lines.size - 1) {
+                val line = lines[i].trim()
+                if (line.isNotEmpty()) trySend(line)
+            }
         }
-        if (readResult.done.unsafeCast<Boolean>()) break
-        val chunk = decoder.decode(readResult.value).unsafeCast<String>()
-        buffer += chunk
-        val lines = buffer.split("\n")
-        buffer = lines.last()
-        for (i in 0 until lines.size - 1) {
-            val line = lines[i].trim()
-            if (line.isNotEmpty()) trySend(line)
-        }
+        if (buffer.isNotBlank()) trySend(buffer)
+        close()
+    } finally {
+        js("try { if (typeof streamReader !== 'undefined' && streamReader != null && typeof streamReader.cancel === 'function') streamReader.cancel(); } catch (e) {}")
     }
-    if (buffer.isNotBlank()) trySend(buffer)
-    close()
-    awaitClose { }
+    awaitClose {
+        js("try { if (typeof streamReader !== 'undefined' && streamReader != null && typeof streamReader.cancel === 'function') streamReader.cancel(); } catch (e) {}")
+    }
 }

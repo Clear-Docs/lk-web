@@ -4,11 +4,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeout
 import ru.cleardocs.lkweb.api.ChatApi
 
 /**
@@ -35,6 +37,17 @@ class ChatViewModel(
 
     private var sendJob: Job? = null
 
+    /** Таймаут ожидания ответа от сервера (мс). По истечении показываем ошибку вместо бесконечной загрузки. */
+    private val responseTimeoutMs = 120_000L
+
+    private fun userFriendlyError(e: Throwable): String = when {
+        e is TimeoutCancellationException -> "Превышено время ожидания ответа. Проверьте работу сервера или попробуйте снова."
+        e.message?.lowercase()?.contains("network") == true ||
+            e.message?.lowercase()?.contains("failed to fetch") == true ->
+            "Нет связи с сервером. Проверьте интернет и доступность сервиса."
+        else -> e.message ?: "Неизвестная ошибка"
+    }
+
     /**
      * Отправляет сообщение и подписывается на стрим ответа.
      */
@@ -50,6 +63,10 @@ class ChatViewModel(
         _messages.update { it + ChatMessage(ChatRole.ASSISTANT, "", isLoading = true) }
 
         sendJob = scope.launch {
+            var fullText = ""
+            var reasoningText = ""
+            val citationToDocId = mutableMapOf<Int, String>()
+            val docIdToTitle = mutableMapOf<String, String>()
             try {
                 var sessionId = _chatSessionId.value
                 if (sessionId == null) {
@@ -64,36 +81,33 @@ class ChatViewModel(
                     apiKey = apiKey,
                 )
 
-                var fullText = ""
-                var reasoningText = ""
-                val citationToDocId = mutableMapOf<Int, String>()
-                val docIdToTitle = mutableMapOf<String, String>()
-
-                flow.collect { event ->
-                    when (event) {
-                        is ru.cleardocs.lkweb.api.StreamEvent.Content -> {
-                            fullText += event.text
-                            _messages.update { list ->
-                                val last = list.lastOrNull()
-                                if (last?.role == ChatRole.ASSISTANT && last.isLoading) {
-                                    list.dropLast(1) + last.copy(content = fullText)
-                                } else list
+                withTimeout(responseTimeoutMs) {
+                    flow.collect { event ->
+                        when (event) {
+                            is ru.cleardocs.lkweb.api.StreamEvent.Content -> {
+                                fullText += event.text
+                                _messages.update { list ->
+                                    val last = list.lastOrNull()
+                                    if (last?.role == ChatRole.ASSISTANT && last.isLoading) {
+                                        list.dropLast(1) + last.copy(content = fullText)
+                                    } else list
+                                }
                             }
-                        }
-                        is ru.cleardocs.lkweb.api.StreamEvent.Reasoning -> {
-                            reasoningText += event.text
-                            _messages.update { list ->
-                                val last = list.lastOrNull()
-                                if (last?.role == ChatRole.ASSISTANT && last.isLoading) {
-                                    list.dropLast(1) + last.copy(reasoning = reasoningText)
-                                } else list
+                            is ru.cleardocs.lkweb.api.StreamEvent.Reasoning -> {
+                                reasoningText += event.text
+                                _messages.update { list ->
+                                    val last = list.lastOrNull()
+                                    if (last?.role == ChatRole.ASSISTANT && last.isLoading) {
+                                        list.dropLast(1) + last.copy(reasoning = reasoningText)
+                                    } else list
+                                }
                             }
-                        }
-                        is ru.cleardocs.lkweb.api.StreamEvent.Citation -> {
-                            citationToDocId[event.citationNumber] = event.documentId
-                        }
-                        is ru.cleardocs.lkweb.api.StreamEvent.Document -> {
-                            event.title?.let { docIdToTitle[event.documentId] = it }
+                            is ru.cleardocs.lkweb.api.StreamEvent.Citation -> {
+                                citationToDocId[event.citationNumber] = event.documentId
+                            }
+                            is ru.cleardocs.lkweb.api.StreamEvent.Document -> {
+                                event.title?.let { docIdToTitle[event.documentId] = it }
+                            }
                         }
                     }
                 }
@@ -115,16 +129,34 @@ class ChatViewModel(
                     } else list
                 }
             } catch (e: Throwable) {
+                val msg = userFriendlyError(e)
+                val isNetworkBreak = e.message?.lowercase()?.let {
+                    it.contains("network") || it.contains("failed to fetch")
+                } ?: false
                 _messages.update { list ->
                     val last = list.lastOrNull()
                     if (last?.role == ChatRole.ASSISTANT && last.isLoading) {
+                        val hasPartial = fullText.isNotBlank() || reasoningText.isNotBlank()
+                        val content = when {
+                            hasPartial && isNetworkBreak ->
+                                fullText.ifBlank { "(нет текста)" } + "\n\nСоединение прервано. Ответ может быть неполным."
+                            else -> "Ошибка: $msg"
+                        }
+                        val citations = citationToDocId.mapValues { (_, docId) ->
+                            docIdToTitle[docId] ?: "Источник"
+                        }
                         list.dropLast(1) + last.copy(
-                            content = "Ошибка: ${e.message ?: "Неизвестная ошибка"}",
+                            content = content,
                             isLoading = false,
+                            reasoning = reasoningText,
+                            citations = citations,
+                            citationDocumentIds = citationToDocId,
                         )
                     } else list
                 }
-                _error.value = e.message
+                _error.value = if (fullText.isNotBlank() || reasoningText.isNotBlank()) {
+                    "Соединение прервано. Ответ может быть неполным."
+                } else msg
             } finally {
                 _loading.value = false
             }
